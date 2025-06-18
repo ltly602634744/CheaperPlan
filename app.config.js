@@ -8,5 +8,6 @@ export default {
             dbUrl: process.env.SUPABASE_URL,
             dbANONKey: process.env.SUPABASE_ANON_KEY,
         },
+        scheme: 'cheaperplan', // 添加此行，替换为您的应用标识
     },
 };

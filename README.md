@@ -10,7 +10,16 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Create a `.env` file in the project root:
+   - Copy `.env.example` and rename it to `.env`
+   - Go to your Supabase project dashboard: Project Settings > Data API
+   - Copy the Project URL value to `SUPABASE_URL`
+   - Go to Project Settings > API keys
+   - Copy the `anon` `public` key to `SUPABASE_ANON_KEY`
+   - Ensure all environment variables are properly filled without any extra spaces or quotes
+
+
+3. Start the app
 
    ```bash
    npx expo start

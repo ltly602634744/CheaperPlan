@@ -6,7 +6,7 @@ import Profile from './components/Profile';
 import { View } from 'react-native';
 import { Session } from '@supabase/supabase-js';
 
-export default function App() {
+export default function Index() {
     const [session, setSession] = useState<Session | null>(null);
 
     useEffect(() => {
