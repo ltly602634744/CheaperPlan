@@ -1,45 +1,41 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, ActivityIndicator } from 'react-native';
+import 'react-native-url-polyfill/auto';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { supabase } from '@/lib/supabase';
+import Auth from './components/Auth';
+import Profile from './components/Profile';
+import { View } from 'react-native';
+import { Session } from '@supabase/supabase-js';
 
 export default function App() {
-    const [message, setMessage] = useState<string>('Waiting for server response...');
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    // const url = 'http://192.168.0.17:8000/';
-    const url = 'https://ez3dgames.com/cheap_api/hello';
+    const [session, setSession] = useState<Session | null>(null);
 
-    const fetchHello = async () => {
-        setIsLoading(true);
-        try {
-            const response = await axios.get(url);
-            setMessage(response.data.msg);
-        } catch (error) {
-            console.error('Error fetching message:', error);
-            setMessage('Failed to connect to server');
-        } finally {
-            setIsLoading(false);
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+        });
+
+        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+        });
+
+        return () => {
+            listener.subscription.unsubscribe();
+        };
+    }, []);
+
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.log('Error logging out:', error.message);
+        } else {
+            setSession(null); // 重置 session 状态
         }
     };
 
-    useEffect(() => {
-        fetchHello();
-    }, []);
-
     return (
-        <View style={styles.container}>
-            {isLoading ? <ActivityIndicator size="large" /> : <Text>{message}</Text>}
-            <Button title="Refresh" onPress={fetchHello} disabled={isLoading} />
-            <StatusBar style="auto" />
+        <View style={{ flex: 1 }}>
+            {!session ? <Auth /> : <Profile session={session} onLogout={handleLogout} />}
         </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
