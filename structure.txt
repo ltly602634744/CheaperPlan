@@ -1,0 +1,54 @@
+cheaper-plan-app/
+├── assets/                      # 静态资源
+│   ├── images/
+│   ├── fonts/
+│   └── icons/
+├── src/                         # 源代码
+│   ├── components/             # 可复用组件
+│   │   ├── Button.tsx
+│   │   ├── TextInput.tsx
+│   │   ├── PlanCard.tsx      # 显示套餐信息的卡片
+│   │   └── index.ts
+│   ├── screens/               # 页面
+│   │   ├── AuthScreen.tsx    # 登录/注册
+│   │   ├── PlanInputScreen.tsx # 填写套餐信息
+│   │   ├── PaymentScreen.tsx # 支付页面
+│   │   ├── ResultScreen.tsx  # 显示推荐套餐
+│   │   └── index.ts
+│   ├── navigation/            # 导航
+│   │   ├── AppNavigator.tsx
+│   │   ├── types.ts
+│   │   └── index.ts
+│   ├── hooks/                # 自定义 Hooks
+│   │   ├── useAuth.ts       # 认证状态
+│   │   ├── useSupabase.ts   # Supabase 查询
+│   │   └── index.ts
+│   ├── supabase/             # Supabase 服务
+│   │   ├── client.ts        # Supabase 客户端
+│   │   ├── auth.ts          # 认证方法
+│   │   ├── database.ts      # 数据库操作（用户套餐、支付状态）
+│   │   ├── functions.ts     # 调用 Supabase Edge Functions
+│   │   └── types.ts         # Supabase 类型
+│   ├── types/                # TypeScript 类型
+│   │   ├── supabase.ts      # 数据库类型
+│   │   ├── user.ts          # 用户类型
+│   │   ├── plan.ts          # 套餐类型
+│   │   └── index.ts
+│   ├── constants/            # 常量
+│   │   ├── colors.ts
+│   │   ├── supabase.ts      # Supabase 配置
+│   │   └── index.ts
+│   ├── utils/                # 工具函数
+│   │   ├── formatCurrency.ts # 格式化货币
+│   │   └── index.ts
+│   ├── context/              # 状态管理
+│   │   ├── AuthContext.tsx  # 认证上下文
+│   │   └── PaymentContext.tsx # 支付状态
+│   └── App.tsx               # 应用入口
+├── .env                      # 环境变量
+├── .eslintrc.js              # ESLint 配置
+├── .prettierrc               # Prettier 配置
+├── tsconfig.json             # TypeScript 配置
+├── app.json                  # Expo 配置
+├── package.json              # 依赖和脚本
+└── README.md                 # 项目文档
