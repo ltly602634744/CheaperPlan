@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {Session} from "@supabase/supabase-js";
 import {supabase} from "@/app/services/supabase";
-import {signIn, signOut, signUp} from "@/app/services/auth";
+import {signIn, signOut, signUp} from "@/app/services/authService";
 
 export const useAuth = () => {
     const [session, setSession] = useState<Session | null>(null);
