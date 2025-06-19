@@ -1,37 +1,19 @@
-import React, { useState } from 'react';
+import {useAuth} from "@/app/hooks/useAuth";
+import React, {useState} from "react";
 import { Alert, StyleSheet, View, TextInput, TouchableOpacity, Text } from 'react-native';
-import { supabase } from '@/lib/supabase';
 
-export default function Auth() {
+
+const AuthScreen: React.FC = () => {
+    const { signIn } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
-    async function signInWithEmail() {
-        setLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (error) Alert.alert(error.message);
+    const handleLogin = async () => {
+        const { error } = await signIn(email, password);
+        if (error) alert(error.message);
         setLoading(false);
-    }
-
-    async function signUpWithEmail() {
-        setLoading(true);
-        const {
-            data: { session },
-            error,
-        } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-        });
-
-        if (error) Alert.alert(error.message);
-        if (!session) Alert.alert('Please check your inbox for email verification!');
-        setLoading(false);
-    }
+    };
 
     return (
         <View style={styles.container}>
@@ -67,23 +49,25 @@ export default function Auth() {
                 <TouchableOpacity
                     style={[styles.button, loading && styles.buttonDisabled]}
                     disabled={loading}
-                    onPress={() => signInWithEmail()}
+                    onPress={() => handleLogin()}
                 >
                     <Text style={styles.buttonText}>Sign in</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.verticallySpaced}>
-                <TouchableOpacity
-                    style={[styles.button, loading && styles.buttonDisabled]}
-                    disabled={loading}
-                    onPress={() => signUpWithEmail()}
-                >
-                    <Text style={styles.buttonText}>Sign up</Text>
-                </TouchableOpacity>
-            </View>
+            {/*<View style={styles.verticallySpaced}>*/}
+            {/*    <TouchableOpacity*/}
+            {/*        style={[styles.button, loading && styles.buttonDisabled]}*/}
+            {/*        disabled={loading}*/}
+            {/*        onPress={() => signUpWithEmail()}*/}
+            {/*    >*/}
+            {/*        <Text style={styles.buttonText}>Sign up</Text>*/}
+            {/*    </TouchableOpacity>*/}
+            {/*</View>*/}
         </View>
     );
-}
+};
+
+export default AuthScreen;
 
 const styles = StyleSheet.create({
     container: {

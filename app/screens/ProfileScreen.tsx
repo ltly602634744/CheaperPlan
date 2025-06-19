@@ -1,15 +1,22 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 import { supabase } from '@/app/services/supabase';
+import {useAuthContext} from "@/app/context/AuthContext";
 
-interface ProfileProps {
-    session: any; // 可以使用更具体的类型，如 Session from '@supabase/supabase-js'
-    onLogout: () => void;
-}
-
-export default function Profile({ session, onLogout }: ProfileProps) {
-    const user = session.user;
+export default function ProfileScreen() {
+    const {session, signOut} = useAuthContext();
+    const user = session?.user;
     const createdAt = user?.created_at ? new Date(user.created_at).toLocaleString() : 'N/A';
+
+    const onLogout = async () => {
+        const { error } = await signOut();
+        if (error) {
+            Alert.alert('Error', `：${error.message}`);
+        } else {
+            // 导航会自动跳转到 AuthScreen（由 AppNavigator 处理）
+            Alert.alert('Succeed', 'Logged out successfully!');
+        }
+    }
 
     return (
         <View style={styles.container}>
