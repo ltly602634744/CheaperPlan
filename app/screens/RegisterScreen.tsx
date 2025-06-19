@@ -5,19 +5,29 @@ import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import {NativeStackNavigationProp} from "@react-navigation/native-stack"; // 导入类型定义
 
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
 
-
-const AuthScreen: React.FC = () => {
-    const { signIn } = useAuth();
-    const navigation = useNavigation<HomeScreenNavigationProp>(); // 显式指定类型
+const RegisterScreen: React.FC = () => {
+    const { signUp } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const navigation = useNavigation<HomeScreenNavigationProp>();
 
-    const handleLogin = async () => {
-        const { error } = await signIn(email, password);
-        if (error) Alert.alert('Error', error.message);
+    const handleRegister = async () => {
+        setLoading(true);
+        const { data, error } = await signUp(email, password);
+
+        if (error){
+            Alert.alert('Error', error.message);
+        } else if (!data.session){
+            Alert.alert('Please check your inbox for email verification!');
+            navigation.goBack();
+        }else{
+            // Alert.alert('Success', 'Registration successful!');
+            // TODO: The email is existed
+            navigation.goBack(); // 返回登录界面
+        }
         setLoading(false);
     };
 
@@ -55,15 +65,7 @@ const AuthScreen: React.FC = () => {
                 <TouchableOpacity
                     style={[styles.button, loading && styles.buttonDisabled]}
                     disabled={loading}
-                    onPress={() => handleLogin()}
-                >
-                    <Text style={styles.buttonText}>Sign in</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={[styles.verticallySpaced, styles.mt20]}>
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => navigation.navigate('Register')}
+                    onPress={handleRegister}
                 >
                     <Text style={styles.buttonText}>Register</Text>
                 </TouchableOpacity>
@@ -72,7 +74,7 @@ const AuthScreen: React.FC = () => {
     );
 };
 
-export default AuthScreen;
+export default RegisterScreen;
 
 const styles = StyleSheet.create({
     container: {

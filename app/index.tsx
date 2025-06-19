@@ -45,7 +45,7 @@ import React from 'react';
 import AppNavigator from './navigation/AppNavigator';
 import { AuthProvider } from './context/AuthContext';
 
-const App: React.FC = () => {
+const Index: React.FC = () => {
     return (
         <AuthProvider>
             <AppNavigator />
@@ -54,4 +54,4 @@ const App: React.FC = () => {
     );
 };
 
-export default App;
+export default Index;
