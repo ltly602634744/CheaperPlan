@@ -1,37 +1,35 @@
-import React, { useState } from 'react';
+import { useAuth } from "@/app/hooks/useAuth";
+import React, { useState } from "react";
 import { Alert, StyleSheet, View, TextInput, TouchableOpacity, Text } from 'react-native';
-import { supabase } from '@/lib/supabase';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import {NativeStackNavigationProp} from "@react-navigation/native-stack"; // 导入类型定义
 
-export default function Auth() {
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
+
+const RegisterScreen: React.FC = () => {
+    const { signUp } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const navigation = useNavigation<HomeScreenNavigationProp>();
 
-    async function signInWithEmail() {
+    const handleRegister = async () => {
         setLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
+        const { data, error } = await signUp(email, password);
 
-        if (error) Alert.alert(error.message);
+        if (error){
+            Alert.alert('Error', error.message);
+        } else if (!data.session){
+            Alert.alert('Please check your inbox for email verification!');
+            navigation.goBack();
+        }else{
+            // Alert.alert('Success', 'Registration successful!');
+            // TODO: The email is existed
+            navigation.goBack(); // 返回登录界面
+        }
         setLoading(false);
-    }
-
-    async function signUpWithEmail() {
-        setLoading(true);
-        const {
-            data: { session },
-            error,
-        } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-        });
-
-        if (error) Alert.alert(error.message);
-        if (!session) Alert.alert('Please check your inbox for email verification!');
-        setLoading(false);
-    }
+    };
 
     return (
         <View style={styles.container}>
@@ -67,23 +65,16 @@ export default function Auth() {
                 <TouchableOpacity
                     style={[styles.button, loading && styles.buttonDisabled]}
                     disabled={loading}
-                    onPress={() => signInWithEmail()}
+                    onPress={handleRegister}
                 >
-                    <Text style={styles.buttonText}>Sign in</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.verticallySpaced}>
-                <TouchableOpacity
-                    style={[styles.button, loading && styles.buttonDisabled]}
-                    disabled={loading}
-                    onPress={() => signUpWithEmail()}
-                >
-                    <Text style={styles.buttonText}>Sign up</Text>
+                    <Text style={styles.buttonText}>Register</Text>
                 </TouchableOpacity>
             </View>
         </View>
     );
-}
+};
+
+export default RegisterScreen;
 
 const styles = StyleSheet.create({
     container: {
