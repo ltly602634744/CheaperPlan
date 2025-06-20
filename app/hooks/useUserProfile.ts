@@ -7,6 +7,14 @@ export const useUserProfile = (userId: string) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const refetch = async () => {
+        setLoading(true);
+        const { data, error } = await fetchUserPlan(userId);
+        setPlan(data || null);
+        setError(error?.message || null);
+        setLoading(false);
+    };
+
     useEffect(() => {
         if (!userId) return;
         fetchUserPlan(userId).then(({ data, error }) => {
@@ -16,5 +24,5 @@ export const useUserProfile = (userId: string) => {
         });
     }, [userId]);
 
-    return { plan, loading, error };
+    return { plan, loading, error, refetch };
 };

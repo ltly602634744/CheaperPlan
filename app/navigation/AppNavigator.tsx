@@ -5,11 +5,23 @@ import { useAuth } from '../hooks/useAuth';
 import ProfileScreen from '../screens/ProfileScreen';
 import AuthScreen from '../screens/AuthScreen';
 import RegisterScreen from "@/app/screens/RegisterScreen";
+import AddPlanScreen from "@/app/screens/AddPlanScreen";
 
 export type RootStackParamList = {
     Auth: undefined;
     Register: undefined;
     Profile: undefined;
+    AddPlan: undefined;
+    // Details: {
+    //     id: string;
+    // };
+    //
+    // EditPlan: {
+    //     id: string;
+    // };
+    // DeletePlan: {
+    //     id: string;
+    // }
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -33,6 +45,7 @@ const AppNavigator: React.FC = () => {
                     <Stack.Screen name="Register" component={RegisterScreen} />
                     </>
                 )}
+                <Stack.Screen name="AddPlan" component={AddPlanScreen} />
             </Stack.Navigator>
         // </NavigationContainer>
     );

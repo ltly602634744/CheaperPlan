@@ -22,7 +22,7 @@ cheaper-plan-app/
 │   │   └── index.ts
 │   ├── hooks/                # 自定义 Hooks
 │   │   ├── useAuth.ts       # 认证状态
-│   │   ├── useSupabase.ts   # Supabase 查询
+│   │   ├── useUserProfile.ts   # Supabase 查询
 │   │   └── index.ts
 │   ├── services/
 │   │   ├── authService.ts          # 认证方法
