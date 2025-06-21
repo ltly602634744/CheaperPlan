@@ -1,28 +1,30 @@
 import { useAuth } from "@/app/hooks/useAuth";
 import React, { useState } from "react";
 import { Alert, StyleSheet, View, TextInput, TouchableOpacity, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import {NativeStackNavigationProp} from "@react-navigation/native-stack"; // 导入类型定义
-
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
+import { Link, useRouter } from 'expo-router';
 
 
 const AuthScreen: React.FC = () => {
+    const router = useRouter();
     const { signIn } = useAuth();
-    const navigation = useNavigation<HomeScreenNavigationProp>(); // 显式指定类型
+    // const navigation = useNavigation<HomeScreenNavigationProp>(); // 显式指定类型
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleLogin = async () => {
-        const { error } = await signIn(email, password);
-        if (error) Alert.alert('Error', error.message);
+        const {data, error } = await signIn(email, password);
+        if (error) {
+            Alert.alert('Error', error.message);
+        }else if (data.session){
+            router.replace("/profile");
+        }
         setLoading(false);
     };
 
     return (
         <View style={styles.container}>
+            <Text style={styles.title}>Log in</Text>
             <View style={[styles.verticallySpaced, styles.mt20]}>
                 <Text style={styles.label}>Email</Text>
                 <View style={styles.inputContainer}>
@@ -60,13 +62,18 @@ const AuthScreen: React.FC = () => {
                     <Text style={styles.buttonText}>Sign in</Text>
                 </TouchableOpacity>
             </View>
+            {/* 4. 修改注册按钮，使用 <Link> 组件 */}
             <View style={[styles.verticallySpaced, styles.mt20]}>
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => navigation.navigate('Register')}
-                >
-                    <Text style={styles.buttonText}>Register</Text>
-                </TouchableOpacity>
+                {/*
+                  - href 指向的是你在 app 目录下的文件路径。
+                  - 例如，对于 app/register.tsx 文件，href 就是 "/register"。
+                  - <Link> 组件可以接受 `asChild` prop，这样它就不会渲染自己的 TouchableOpacity，而是把导航功能赋予给它的直接子组件。
+                */}
+                <Link href="/register" asChild>
+                    <TouchableOpacity style={styles.button}>
+                        <Text style={styles.buttonText}>Register</Text>
+                    </TouchableOpacity>
+                </Link>
             </View>
         </View>
     );
@@ -125,5 +132,11 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 20,
     },
 });

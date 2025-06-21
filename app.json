@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "hello_world",
-    "slug": "hello_world",
+    "name": "cheaper_plan_frontend",
+    "slug": "cheaper_plan_frontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

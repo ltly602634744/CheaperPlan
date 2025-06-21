@@ -1,18 +1,17 @@
 import { useAuth } from "@/app/hooks/useAuth";
 import React, { useState } from "react";
 import { Alert, StyleSheet, View, TextInput, TouchableOpacity, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import {NativeStackNavigationProp} from "@react-navigation/native-stack"; // 导入类型定义
+import {useRouter} from "expo-router"; // 导入类型定义
 
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
+// type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
 
 const RegisterScreen: React.FC = () => {
+    const router = useRouter()
     const { signUp } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigation = useNavigation<HomeScreenNavigationProp>();
+    // const navigation = useNavigation<HomeScreenNavigationProp>();
 
     const handleRegister = async () => {
         setLoading(true);
@@ -22,11 +21,11 @@ const RegisterScreen: React.FC = () => {
             Alert.alert('Error', error.message);
         } else if (!data.session){
             Alert.alert('Please check your inbox for email verification!');
-            navigation.goBack();
+            router.back();
         }else{
             // Alert.alert('Success', 'Registration successful!');
-            // TODO: The email is existed
-            navigation.goBack(); // 返回登录界面
+            // TODO: Handle the email is existing
+            router.back();
         }
         setLoading(false);
     };

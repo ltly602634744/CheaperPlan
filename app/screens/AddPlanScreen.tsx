@@ -1,13 +1,25 @@
-import React, {useEffect, useState} from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+    View,
+    TextInput,
+    TouchableOpacity,
+    Text,
+    StyleSheet,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    TouchableWithoutFeedback,
+    Keyboard
+} from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigation } from '@react-navigation/native';
-import {createUserPlan, fetchUserPlan, updateUserPlan} from "@/app/services/planService";
+import { createUserPlan, fetchUserPlan, updateUserPlan } from '@/app/services/planService';
+import {useRouter} from "expo-router";
 
 const AddPlanScreen: React.FC = () => {
+    const router = useRouter();
     const { session } = useAuth();
-    const navigation = useNavigation();
     const [plan, setPlan] = useState({
         provider: '',
         data: null as number | null,
@@ -17,9 +29,9 @@ const AddPlanScreen: React.FC = () => {
     });
     const [isUpdating, setIsUpdating] = useState(false);
 
-    useEffect(()=>{
-        const loadCurrentPlan = async () =>{
-            if(session?.user.id){
+    useEffect(() => {
+        const loadCurrentPlan = async () => {
+            if (session?.user.id) {
                 const { data, error } = await fetchUserPlan(session.user.id);
                 if (data) {
                     setPlan({
@@ -30,7 +42,7 @@ const AddPlanScreen: React.FC = () => {
                         price: data.price || 0,
                     });
                     setIsUpdating(true);
-                }else{
+                } else {
                     setIsUpdating(false);
                 }
             }
@@ -42,85 +54,112 @@ const AddPlanScreen: React.FC = () => {
         if (!session?.user.id) return;
 
         const userId = session.user.id;
-        const {error} = isUpdating ? await updateUserPlan(userId, plan): await createUserPlan(userId, plan);
+        const { error } = isUpdating
+            ? await updateUserPlan(userId, plan)
+            : await createUserPlan(userId, plan);
 
         if (error) {
             Alert.alert('Error', error.message);
         } else {
             Alert.alert('Success', `${isUpdating ? 'Plan updated' : 'Plan added'} successfully!`);
-            // const { refetch } = useUserProfile(userId);
-            navigation.goBack();
+            router.replace("/profile");
         }
     };
 
+    const handleCancel= async () => {
+        if (!session?.user.id) return;
+        router.replace("/profile");
+    };
+
     return (
-        <View style={styles.container}>
-            <Text style={styles.header}>{isUpdating ? 'Update Plan' : 'Add Plan'}</Text>
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Provider</Text>
-                <TextInput
-                    style={styles.input}
-                    value={plan.provider}
-                    onChangeText={(text) => setPlan({ ...plan, provider: text })}
-                    placeholder="Enter provider"
-                />
-            </View>
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Data (GB)</Text>
-                <TextInput
-                    style={styles.input}
-                    value={plan.data?.toString() || ''}
-                    onChangeText={(text) => setPlan({ ...plan, data: text ? parseFloat(text) : null })}
-                    placeholder="Enter data in GB"
-                    keyboardType="numeric"
-                />
-            </View>
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Coverage</Text>
-                <TextInput
-                    style={styles.input}
-                    value={plan.coverage}
-                    onChangeText={(text) => setPlan({ ...plan, coverage: text })}
-                    placeholder="Enter coverage"
-                />
-            </View>
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Price ($)</Text>
-                <TextInput
-                    style={styles.input}
-                    value={plan.price?.toString() || ''}
-                    onChangeText={(text) => setPlan({ ...plan, price: text ? parseFloat(text) : 0 })}
-                    placeholder="Enter price"
-                    keyboardType="numeric"
-                />
-            </View>
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Voicemail</Text>
-                <RNPickerSelect
-                    onValueChange={(value) => setPlan({ ...plan, voicemail: value })}
-                    items={[
-                        { label: 'No', value: false },
-                        { label: 'Yes', value: true },
-                    ]}
-                    value={plan.voicemail}
-                    style={pickerSelectStyles}
-                    placeholder={{ label: 'Select voicemail option', value: null }}
-                />
-            </View>
-            <TouchableOpacity style={styles.button} onPress={handleSavePlan}>
-                <Text style={styles.buttonText}>Save Plan</Text>
-            </TouchableOpacity>
-        </View>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={80}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView contentContainerStyle={styles.container}
+                            keyboardShouldPersistTaps="handled"
+                >
+                    <Text style={styles.header}>{isUpdating ? 'Update Plan' : 'Add Plan'}</Text>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Provider</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={plan.provider}
+                            onChangeText={(text) => setPlan({ ...plan, provider: text })}
+                            placeholder="Enter provider"
+                        />
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Data (GB)</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={plan.data?.toString() || ''}
+                            onChangeText={(text) => setPlan({ ...plan, data: text ? parseFloat(text) : null })}
+                            placeholder="Enter data in GB"
+                            keyboardType="numeric"
+                        />
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Coverage</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={plan.coverage}
+                            onChangeText={(text) => setPlan({ ...plan, coverage: text })}
+                            placeholder="Enter coverage"
+                        />
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Price ($)</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={plan.price?.toString() || ''}
+                            onChangeText={(text) => setPlan({ ...plan, price: text ? parseFloat(text) : 0 })}
+                            placeholder="Enter price"
+                            keyboardType="numeric"
+                        />
+                    </View>
+
+                    <View style={[styles.inputGroup]}>
+                        <Text style={styles.label}>Voicemail</Text>
+                        <RNPickerSelect
+                            onValueChange={(value) => setPlan({ ...plan, voicemail: value })}
+                            items={[
+                                { label: 'No', value: false },
+                                { label: 'Yes', value: true },
+                            ]}
+                            value={plan.voicemail}
+                            style={pickerSelectStyles}
+                            useNativeAndroidPickerStyle={false}
+                            placeholder={{ label: 'Select Yes or No', value: '' }}
+                        />
+                    </View>
+                    <View style={styles.buttonContainer}>
+                        {/* 第一个按钮 */}
+                        <TouchableOpacity style={styles.button} onPress={handleSavePlan}>
+                            <Text style={styles.buttonText}>Save Plan</Text>
+                        </TouchableOpacity>
+                        {/* 第二个按钮 */}
+                        <TouchableOpacity style={styles.button} onPress={handleCancel}>
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 };
 
 export default AddPlanScreen;
 
-
-
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
@@ -131,7 +170,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     inputGroup: {
-        width: '80%',
+        width: '100%',
         marginBottom: 15,
     },
     label: {
@@ -145,16 +184,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 10,
-    },
-    pickerContainer: {
-        borderColor: 'gray',
-        borderWidth: 1,
-        borderRadius: 8,
-        // overflow: 'hidden',
-    },
-    picker: {
-        height: 40,
-        width: '100%',
+        backgroundColor: 'white',
     },
     button: {
         backgroundColor: '#007AFF',
@@ -168,17 +198,36 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
+    buttonContainer: {
+        flexDirection: 'row',       // 核心：让子元素水平排列
+        justifyContent: 'space-between', // 让子元素在两端对齐，中间留出空间
+        // 或者使用 'space-around' 让元素周围都有空间
+        // 或者使用 'center' 让元素居中
+        gap: 10,                    // 现代推荐：在子元素之间添加10个单位的间距
+    },
 
 });
+
 const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
+        height: 40,
+        width: '100%',    // 确保有一个明确的宽度
+        borderColor: 'gray',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        color: 'black',
+        backgroundColor: 'white',
+        position: 'relative',
+        zIndex: 10, // ⭐️确保 iOS 下点击不会被 ScrollView 等挡住
+    },
+    inputAndroid: {
         height: 40,
         borderColor: 'gray',
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 10,
-        color: 'black',               // ✅ 确保文字可见
-        backgroundColor: 'white',     // ✅ 确保点击区域可见
-        justifyContent: 'center',     // 可选，对齐文本
+        color: 'black',
+        backgroundColor: 'white',
     },
 });

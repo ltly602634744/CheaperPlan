@@ -1,4 +1,3 @@
-// 假设 ProfileScreen 是用户登录后看到的主页
 import ProfileScreen from './screens/ProfileScreen';
 
 export default ProfileScreen;
