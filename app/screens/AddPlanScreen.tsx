@@ -12,7 +12,8 @@ import {
     TouchableWithoutFeedback,
     Keyboard
 } from 'react-native';
-import RNPickerSelect from 'react-native-picker-select';
+import { Picker } from '@react-native-picker/picker';
+import Modal from 'react-native-modal';
 import { useAuth } from '../hooks/useAuth';
 import { createUserPlan, fetchUserPlan, updateUserPlan } from '@/app/services/planService';
 import {useRouter} from "expo-router";
@@ -28,6 +29,7 @@ const AddPlanScreen: React.FC = () => {
         price: 0,
     });
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isPickerVisible, setPickerVisible] = useState(false);
 
     useEffect(() => {
         const loadCurrentPlan = async () => {
@@ -79,7 +81,7 @@ const AddPlanScreen: React.FC = () => {
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <ScrollView contentContainerStyle={styles.container}
-                            keyboardShouldPersistTaps="handled"
+                            keyboardShouldPersistTaps="handled" // 💡 关键点
                 >
                     <Text style={styles.header}>{isUpdating ? 'Update Plan' : 'Add Plan'}</Text>
 
@@ -125,19 +127,75 @@ const AddPlanScreen: React.FC = () => {
                         />
                     </View>
 
-                    <View style={[styles.inputGroup]}>
+                    {/*<View style={[styles.inputGroup, { zIndex: 1000, position: 'relative'}]}>*/}
+                    {/*    <Text style={styles.label}>Voicemail</Text>*/}
+                    {/*    <RNPickerSelect*/}
+                    {/*        onValueChange={(value) => setPlan({ ...plan, voicemail: value })}*/}
+                    {/*        items={[*/}
+                    {/*            { label: 'No', value: false },*/}
+                    {/*            { label: 'Yes', value: true },*/}
+                    {/*        ]}*/}
+                    {/*        value={plan.voicemail}*/}
+                    {/*        style={pickerSelectStyles}*/}
+                    {/*        useNativeAndroidPickerStyle={false}*/}
+                    {/*        placeholder={{ label: 'Select Yes or No', value: '' }}*/}
+                    {/*    />*/}
+                    {/*</View>*/}
+                    {/*<View style={styles.inputGroup}>*/}
+                    {/*    <Text style={styles.label}>Voicemail</Text>*/}
+                    {/*    <View style={styles.pickerWrapper}>*/}
+                    {/*        <Picker*/}
+                    {/*            selectedValue={plan.voicemail}*/}
+                    {/*            onValueChange={(value) => setPlan({ ...plan, voicemail: value })}*/}
+                    {/*            mode="dialog" // 默认在 iOS 是弹出选择器*/}
+                    {/*        >*/}
+                    {/*            <Picker.Item label="Select Yes or No" value={null} />*/}
+                    {/*            <Picker.Item label="Yes" value={true} />*/}
+                    {/*            <Picker.Item label="No" value={false} />*/}
+                    {/*        </Picker>*/}
+                    {/*    </View>*/}
+                    {/*</View>*/}
+                    <View style={styles.inputGroup}>
                         <Text style={styles.label}>Voicemail</Text>
-                        <RNPickerSelect
-                            onValueChange={(value) => setPlan({ ...plan, voicemail: value })}
-                            items={[
-                                { label: 'No', value: false },
-                                { label: 'Yes', value: true },
-                            ]}
-                            value={plan.voicemail}
-                            style={pickerSelectStyles}
-                            useNativeAndroidPickerStyle={false}
-                            placeholder={{ label: 'Select Yes or No', value: '' }}
-                        />
+                        <TouchableOpacity
+                            style={styles.pickerButton}
+                            onPress={() => setPickerVisible(true)}
+                        >
+                            <Text style={styles.pickerButtonText}>
+                                {plan.voicemail === true
+                                    ? 'Yes'
+                                    : plan.voicemail === false
+                                        ? 'No'
+                                        : 'Select Yes or No'}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <Modal
+                            isVisible={isPickerVisible}
+                            onBackdropPress={() => setPickerVisible(false)}
+                            style={styles.modal}
+                            backdropOpacity={Platform.OS === 'android' ? 0.6 : 0.5} // Modified: Higher opacity for Android
+                            backdropColor="#000"
+                            animationIn={Platform.OS === 'android' ? 'fadeIn' : 'slideInUp'} // Modified: Fade animation for Android
+                            animationOut={Platform.OS === 'android' ? 'fadeOut' : 'slideOutDown'} // Modified: Fade animation for Android
+                        >
+                            <View style={styles.modalContent}>
+                                <Picker
+                                    selectedValue={plan.voicemail}
+                                    onValueChange={(value) => {
+                                        setPlan({ ...plan, voicemail: value });
+                                        setPickerVisible(false);
+                                    }}
+                                    style={Platform.OS === 'android' ? styles.pickerAndroid : styles.pickerIOS}
+                                    itemStyle={styles.pickerItem}
+                                    // useNativeAndroidPickerStyle={false}
+                                >
+                                    {/*<Picker.Item label="Select Yes or No" value={null} />*/}
+                                    <Picker.Item label="Yes" value={true} />
+                                    <Picker.Item label="No" value={false} />
+                                </Picker>
+                            </View>
+                        </Modal>
                     </View>
                     <View style={styles.buttonContainer}>
                         {/* 第一个按钮 */}
@@ -199,13 +257,66 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     buttonContainer: {
-        flexDirection: 'row',       // 核心：让子元素水平排列
-        justifyContent: 'space-between', // 让子元素在两端对齐，中间留出空间
-        // 或者使用 'space-around' 让元素周围都有空间
-        // 或者使用 'center' 让元素居中
-        gap: 10,                    // 现代推荐：在子元素之间添加10个单位的间距
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 10,
     },
-
+    pickerWrapper: {
+        borderWidth: 1,
+        borderColor: 'gray',
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
+    pickerButton: {
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        borderRadius: 8,
+        justifyContent: 'center',
+        paddingHorizontal: 10,
+        backgroundColor: 'white',
+    },
+    pickerButtonText: {
+        color: '#000',
+    },
+    modal: {
+        justifyContent: 'flex-end',
+        margin: 0,
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        paddingBottom: Platform.OS === 'android' ? 20 : 30, // Modified: Less padding for Android
+        paddingTop: 20,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+        minHeight: Platform.OS === 'android' ? 150 : 200, // Modified: Smaller minHeight for Android
+    },
+    pickerIOS: { // Added: iOS-specific Picker style
+        width: '100%',
+        height: 150,
+    },
+    pickerAndroid: { // Added: Android-specific Picker style
+        width: '100%',
+        height: 50,
+        color: '#000',
+    },
+    pickerItem: { // Added: Consistent Picker item style
+        color: '#000',
+        fontSize: 16,
+    },
+    cancelButton: { // Added: Cancel button style for Android
+        marginTop: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        alignSelf: 'center',
+        backgroundColor: '#f0f0f0',
+        borderRadius: 8,
+    },
+    cancelButtonText: { // Added: Cancel button text style
+        color: '#000',
+        fontSize: 16,
+        fontWeight: '600',
+    },
 });
 
 const pickerSelectStyles = StyleSheet.create({
@@ -216,6 +327,7 @@ const pickerSelectStyles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 10,
+        paddingVertical: 12,
         color: 'black',
         backgroundColor: 'white',
         position: 'relative',
@@ -231,3 +343,5 @@ const pickerSelectStyles = StyleSheet.create({
         backgroundColor: 'white',
     },
 });
+
+

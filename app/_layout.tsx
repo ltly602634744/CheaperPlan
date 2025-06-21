@@ -55,6 +55,7 @@ import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth'; // 确保路径正确
 import { useEffect } from 'react';
 import { Text, View } from 'react-native';
+import {PaperProvider} from "react-native-paper";
 
 // 你可能还需要一个内部组件来处理重定向，因为它现在可以安全地使用 useAuth 了
 function AppLayout() {
@@ -100,7 +101,9 @@ export default function RootLayout() {
   // 2. 在根布局组件中，使用 AuthProvider 包裹所有内容
   return (
       <AuthProvider>
-        <AppLayout />
+          {/*<PaperProvider>*/}
+          <AppLayout />
+          {/*</PaperProvider>*/}
       </AuthProvider>
   );
 }
