@@ -157,45 +157,62 @@ const AddPlanScreen: React.FC = () => {
                     {/*</View>*/}
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Voicemail</Text>
-                        <TouchableOpacity
-                            style={styles.pickerButton}
-                            onPress={() => setPickerVisible(true)}
-                        >
-                            <Text style={styles.pickerButtonText}>
-                                {plan.voicemail === true
-                                    ? 'Yes'
-                                    : plan.voicemail === false
-                                        ? 'No'
-                                        : 'Select Yes or No'}
-                            </Text>
-                        </TouchableOpacity>
-
-                        <Modal
-                            isVisible={isPickerVisible}
-                            onBackdropPress={() => setPickerVisible(false)}
-                            style={styles.modal}
-                            backdropOpacity={Platform.OS === 'android' ? 0.6 : 0.5} // Modified: Higher opacity for Android
-                            backdropColor="#000"
-                            animationIn={Platform.OS === 'android' ? 'fadeIn' : 'slideInUp'} // Modified: Fade animation for Android
-                            animationOut={Platform.OS === 'android' ? 'fadeOut' : 'slideOutDown'} // Modified: Fade animation for Android
-                        >
-                            <View style={styles.modalContent}>
+                        {Platform.OS === 'android' ? (
+                            <View style={styles.pickerWrapper}>
                                 <Picker
                                     selectedValue={plan.voicemail}
                                     onValueChange={(value) => {
+                                        console.log('Android: Picker value changed to:', value);
                                         setPlan({ ...plan, voicemail: value });
-                                        setPickerVisible(false);
                                     }}
-                                    style={Platform.OS === 'android' ? styles.pickerAndroid : styles.pickerIOS}
+                                    style={styles.pickerAndroid}
                                     itemStyle={styles.pickerItem}
                                     // useNativeAndroidPickerStyle={false}
+                                    dropdownIconColor="#000"
                                 >
-                                    {/*<Picker.Item label="Select Yes or No" value={null} />*/}
+                                    <Picker.Item label="Select Yes or No" value="" />
                                     <Picker.Item label="Yes" value={true} />
                                     <Picker.Item label="No" value={false} />
                                 </Picker>
                             </View>
-                        </Modal>
+                        ) : (
+                            <>
+                                <TouchableOpacity
+                                    style={styles.pickerButton}
+                                    onPress={() => setPickerVisible(true)}
+                                >
+                                    <Text style={styles.pickerButtonText}>
+                                        {plan.voicemail
+                                            ? 'Yes'
+                                            : !plan.voicemail
+                                                ? 'No'
+                                                : 'Select Yes or No'}
+                                    </Text>
+                                </TouchableOpacity>
+
+                                <Modal
+                                    isVisible={isPickerVisible}
+                                    onBackdropPress={() => setPickerVisible(false)}
+                                    style={styles.modal}
+                                    backdropColor="#000"
+                                >
+                                    <View style={styles.modalContent}>
+                                        <Picker
+                                            selectedValue={plan.voicemail}
+                                            onValueChange={(value) => {
+                                                setPlan({ ...plan, voicemail: value });
+                                                setPickerVisible(false);
+                                            }}
+                                            itemStyle={styles.pickerItem}
+                                        >
+                                            {/*<Picker.Item label="Select Yes or No" value={null} />*/}
+                                            <Picker.Item label="Yes" value={true} />
+                                            <Picker.Item label="No" value={false} />
+                                        </Picker>
+                                    </View>
+                                </Modal>
+                            </>
+                        )}
                     </View>
                     <View style={styles.buttonContainer}>
                         {/* 第一个按钮 */}
