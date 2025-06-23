@@ -133,7 +133,7 @@ const AddPlanScreen: React.FC = () => {
                                 <Picker
                                     selectedValue={plan.voicemail}
                                     onValueChange={(value) => {
-                                        console.log('Android: Picker value changed to:', value);
+                                        // console.log('Android: Picker value changed to:', value);
                                         setPlan({ ...plan, voicemail: value });
                                     }}
                                     style={styles.pickerAndroid}

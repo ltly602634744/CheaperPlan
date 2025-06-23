@@ -3,7 +3,6 @@ import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 import {useAuthContext} from "@/app/context/AuthContext";
 import {useUserProfile} from "@/app/hooks/useUserProfile";
 import {Link, useFocusEffect, useRouter} from 'expo-router';
-import {fetchBetterPlans} from "@/app/services/betterPlanService";
 
 
 
@@ -67,8 +66,12 @@ const ProfileScreen: React.FC = () => {
                                 <Text style={styles.buttonText}>Upgrade Plan</Text>
                             </TouchableOpacity>
                         </Link>
+                        <Link href="/screens/BetterPlanScreen" asChild replace={false}>
+                            <TouchableOpacity style={styles.button}>
+                                <Text style={styles.buttonText}>Better Plan</Text>
+                            </TouchableOpacity>
+                        </Link>
                     </View>
-
                 </>
             ) : (
                 <View style={[styles.verticallySpaced, styles.mt20]}>
