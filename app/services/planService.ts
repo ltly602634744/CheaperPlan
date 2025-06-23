@@ -47,13 +47,3 @@ export const updateUserPlan = async (userId: string,
         .single();
     return { data, error };
 };
-
-// export const updateUserProfile = async (userId: string, updates: Partial<Database['public']['Tables']['profiles']['Row']>) => {
-//     const { data, error } = await supabase
-//         .from('profiles')
-//         .update(updates)
-//         .eq('id', userId)
-//         .select()
-//         .single();
-//     return { data, error };
-// };

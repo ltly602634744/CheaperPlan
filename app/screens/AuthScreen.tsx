@@ -17,7 +17,7 @@ const AuthScreen: React.FC = () => {
         if (error) {
             Alert.alert('Error', error.message);
         }else if (data.session){
-            router.replace("/profile");
+            router.replace("/screens/ProfileScreen");
         }
         setLoading(false);
     };
@@ -69,7 +69,7 @@ const AuthScreen: React.FC = () => {
                   - 例如，对于 app/register.tsx 文件，href 就是 "/register"。
                   - <Link> 组件可以接受 `asChild` prop，这样它就不会渲染自己的 TouchableOpacity，而是把导航功能赋予给它的直接子组件。
                 */}
-                <Link href="/register" asChild>
+                <Link href="/screens/RegisterScreen" asChild>
                     <TouchableOpacity style={styles.button}>
                         <Text style={styles.buttonText}>Register</Text>
                     </TouchableOpacity>

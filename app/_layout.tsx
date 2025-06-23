@@ -71,7 +71,7 @@ function AppLayout() {
     if (!session) {
       // 假设 auth 和 register 是公共路由
       // 如果用户未登录，可以重定向到登录页
-      router.replace('/auth');
+      router.replace('/screens/AuthScreen');
     } else {
       // 如果用户已登录，但处于登录页，可以重定向到主页
       // router.replace('/profile');
@@ -89,10 +89,10 @@ function AppLayout() {
   // 你的 Stack 导航器
   return (
       <Stack>
-          <Stack.Screen name="profile" options={{headerShown: false}}/>
-          <Stack.Screen name="auth" options={{ header: () => <View style={{ height: 160 }} />}}/>
-          <Stack.Screen name="register" />
-          <Stack.Screen name="add_plan" options={{headerTransparent: true, title: ''}}/>
+          <Stack.Screen name="screens/ProfileScreen" options={{headerShown: false}}/>
+          <Stack.Screen name="screens/AuthScreen" options={{ header: () => <View style={{ height: 160 }} />}}/>
+          <Stack.Screen name="screens/RegisterScreen" options={{title: 'Register'}}/>
+          <Stack.Screen name="screens/AddPlanScreen" options={{headerTransparent: true, title: ''}}/>
       </Stack>
   );
 }

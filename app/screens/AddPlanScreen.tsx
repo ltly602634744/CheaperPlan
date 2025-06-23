@@ -64,13 +64,12 @@ const AddPlanScreen: React.FC = () => {
             Alert.alert('Error', error.message);
         } else {
             Alert.alert('Success', `${isUpdating ? 'Plan updated' : 'Plan added'} successfully!`);
-            router.replace("/profile");
-        }
+            router.replace("/screens/ProfileScreen");        }
     };
 
     const handleCancel= async () => {
         if (!session?.user.id) return;
-        router.replace("/profile");
+        router.replace("/screens/ProfileScreen");
     };
 
     return (
@@ -127,34 +126,6 @@ const AddPlanScreen: React.FC = () => {
                         />
                     </View>
 
-                    {/*<View style={[styles.inputGroup, { zIndex: 1000, position: 'relative'}]}>*/}
-                    {/*    <Text style={styles.label}>Voicemail</Text>*/}
-                    {/*    <RNPickerSelect*/}
-                    {/*        onValueChange={(value) => setPlan({ ...plan, voicemail: value })}*/}
-                    {/*        items={[*/}
-                    {/*            { label: 'No', value: false },*/}
-                    {/*            { label: 'Yes', value: true },*/}
-                    {/*        ]}*/}
-                    {/*        value={plan.voicemail}*/}
-                    {/*        style={pickerSelectStyles}*/}
-                    {/*        useNativeAndroidPickerStyle={false}*/}
-                    {/*        placeholder={{ label: 'Select Yes or No', value: '' }}*/}
-                    {/*    />*/}
-                    {/*</View>*/}
-                    {/*<View style={styles.inputGroup}>*/}
-                    {/*    <Text style={styles.label}>Voicemail</Text>*/}
-                    {/*    <View style={styles.pickerWrapper}>*/}
-                    {/*        <Picker*/}
-                    {/*            selectedValue={plan.voicemail}*/}
-                    {/*            onValueChange={(value) => setPlan({ ...plan, voicemail: value })}*/}
-                    {/*            mode="dialog" // 默认在 iOS 是弹出选择器*/}
-                    {/*        >*/}
-                    {/*            <Picker.Item label="Select Yes or No" value={null} />*/}
-                    {/*            <Picker.Item label="Yes" value={true} />*/}
-                    {/*            <Picker.Item label="No" value={false} />*/}
-                    {/*        </Picker>*/}
-                    {/*    </View>*/}
-                    {/*</View>*/}
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Voicemail</Text>
                         {Platform.OS === 'android' ? (
@@ -336,29 +307,5 @@ const styles = StyleSheet.create({
     },
 });
 
-const pickerSelectStyles = StyleSheet.create({
-    inputIOS: {
-        height: 40,
-        width: '100%',    // 确保有一个明确的宽度
-        borderColor: 'gray',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        paddingVertical: 12,
-        color: 'black',
-        backgroundColor: 'white',
-        position: 'relative',
-        zIndex: 10, // ⭐️确保 iOS 下点击不会被 ScrollView 等挡住
-    },
-    inputAndroid: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        color: 'black',
-        backgroundColor: 'white',
-    },
-});
 
 

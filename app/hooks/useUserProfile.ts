@@ -7,6 +7,7 @@ export const useUserProfile = (userId: string) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+
     const refetch = async () => {
         setLoading(true);
         const { data, error } = await fetchUserPlan(userId);
