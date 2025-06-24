@@ -1,5 +1,4 @@
 // src/types/userPlan.ts
-import animatedHeaderHeightContext from "react-native-screens/src/native-stack/utils/AnimatedHeaderHeightContext";
 
 export interface UserPlan {
     provider: string;

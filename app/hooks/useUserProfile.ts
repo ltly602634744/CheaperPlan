@@ -16,7 +16,6 @@ export const useUserProfile = () => {
         cratedAt: session?.user?.created_at || '',
     }
 
-
     const refetch = async () => {
         setLoading(true);
         try {

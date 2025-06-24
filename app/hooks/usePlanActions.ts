@@ -1,9 +1,9 @@
 import {useEffect, useState} from "react";
 import {fetchUserPlan} from "@/app/services/planService";
-import {useAuth} from "@/app/hooks/useAuth";
+import {useAuthContext} from "@/app/context/AuthContext";
 
 export const usePlanActions = ()=>{
-    const { session } = useAuth();
+    const {session} = useAuthContext();
     const [isUpdating, setIsUpdating] = useState(false);
     const [plan, setPlan] = useState({
         provider: '',
