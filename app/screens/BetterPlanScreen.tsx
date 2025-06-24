@@ -3,25 +3,11 @@ import React, {useEffect, useState} from "react";
 import {View, Text, StyleSheet, ActivityIndicator, Button} from 'react-native';
 import {RecommendedPlan, UserPlan} from "@/app/types/userPlan";
 import {router} from "expo-router";
+import {useRecommendPlans} from "@/app/hooks/useRecommendPlans";
 
 const BetterPlanScreen:React.FC = () => {
+    const {betterPlans} = useRecommendPlans();
 
-    const [betterPlans, setBetterPlans] = useState<UserPlan[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    // console.log(betterPlans);
-    useEffect(()=>{
-        const loadPlans = async () =>{
-            setLoading(true);
-            const plans = await fetchBetterPlans();
-            setBetterPlans(plans || []);
-            // console.log(plans);
-            // 假设 fetchBetterPlans 返回 { Users: BetterPlan[] }
-            // setBetterPlans(plans. || []);
-            setLoading(false);
-        }
-        loadPlans();
-    }, []);
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Better Plans</Text>
