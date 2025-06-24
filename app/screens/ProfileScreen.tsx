@@ -1,8 +1,8 @@
-import React, {useCallback} from 'react';
+import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 import {useAuthContext} from "@/app/context/AuthContext";
 import {useUserProfile} from "@/app/hooks/useUserProfile";
-import {Link, useFocusEffect, useRouter} from 'expo-router';
+import {Link, useRouter} from 'expo-router';
 
 
 
@@ -11,18 +11,10 @@ const ProfileScreen: React.FC = () => {
     const {session, signOut} = useAuthContext();
     const user = session?.user;
     const createdAt = user?.created_at ? new Date(user.created_at).toLocaleString() : 'N/A';
-    // const userPlan = useUserProfile(user?.id as string).plan;
-    const { plan: userPlan, loading, error, refetch } = useUserProfile(user?.id || '');
-    // const betterPlan = fetchBetterPlans();
-    useFocusEffect(
-        useCallback(() => {
-            if (user?.id) {
-                refetch(); // ✅ 返回时刷新最新 Plan 数据
-            }
-        }, [user?.id])
-    );
+    const { plan: userPlan, loading } = useUserProfile(user?.id || '');
 
-    const onLogout = async () => {
+
+    const handleLogOut = async () => {
         const { error } = await signOut();
         if (error) {
             Alert.alert('Error', `：${error.message}`);
@@ -30,6 +22,16 @@ const ProfileScreen: React.FC = () => {
             Alert.alert('Succeed', 'Logged out successfully!');
             router.replace("/screens/AuthScreen");
         }
+    }
+
+    const handleAddPlan = async () => {
+        if (!user?.id) return;
+        router.replace("/screens/AddPlanScreen");
+    }
+
+    const handleBetterPlan = async () => {
+        if (!user?.id || !userPlan) return;
+        router.push("/screens/BetterPlanScreen");
     }
 
     // const handleDeletePlan = async () => {
@@ -45,7 +47,7 @@ const ProfileScreen: React.FC = () => {
     // };
 
     if (loading) return <Text style={styles.info}>Loading...</Text>;
-    // if (error) return <Text style={styles.info}>Error: {error}</Text>;
+
 
     return (
         <View style={styles.container}>
@@ -61,28 +63,39 @@ const ProfileScreen: React.FC = () => {
                     <Text style={styles.info}>Price: ${userPlan.price || 'N/A'}</Text>
                     <Text style={styles.info}>Voicemail: {userPlan.voicemail ? 'Yes' : 'No'}</Text>
                     <View style={[styles.verticallySpaced, styles.mt20]}>
-                        <Link href="/screens/AddPlanScreen" asChild replace={true}>
-                            <TouchableOpacity style={styles.button}>
-                                <Text style={styles.buttonText}>Upgrade Plan</Text>
-                            </TouchableOpacity>
-                        </Link>
-                        <Link href="/screens/BetterPlanScreen" asChild replace={false}>
-                            <TouchableOpacity style={styles.button}>
-                                <Text style={styles.buttonText}>Better Plan</Text>
-                            </TouchableOpacity>
-                        </Link>
+                        <TouchableOpacity style={styles.button} onPress={handleAddPlan}>
+                            <Text style={styles.buttonText}>Upgrade Plan</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={handleBetterPlan}>
+                            <Text style={styles.buttonText}>Better Plan</Text>
+                        </TouchableOpacity>
+                        {/*<Link href="/screens/AddPlanScreen" asChild replace={true}>*/}
+                        {/*    <TouchableOpacity style={styles.button}>*/}
+                        {/*        <Text style={styles.buttonText}>Upgrade Plan</Text>*/}
+                        {/*    </TouchableOpacity>*/}
+                        {/*</Link>*/}
+                        {/*<Link href="/screens/BetterPlanScreen" asChild replace={false}>*/}
+                        {/*    <TouchableOpacity style={styles.button}>*/}
+                        {/*        <Text style={styles.buttonText}>Better Plan</Text>*/}
+                        {/*    </TouchableOpacity>*/}
+                        {/*</Link>*/}
                     </View>
                 </>
             ) : (
                 <View style={[styles.verticallySpaced, styles.mt20]}>
-                    <Link href="/screens/AddPlanScreen" asChild replace={true}>
-                        <TouchableOpacity style={styles.button}>
-                            <Text style={styles.buttonText}>Add Current Plan</Text>
-                        </TouchableOpacity>
-                    </Link>
+                    <TouchableOpacity style={styles.button} onPress={handleAddPlan}>
+                        <Text style={styles.buttonText}>Add Current Plan</Text>
+                    </TouchableOpacity>
                 </View>
+                // <View style={[styles.verticallySpaced, styles.mt20]}>
+                //     <Link href="/screens/AddPlanScreen" asChild replace={true}>
+                //         <TouchableOpacity style={styles.button}>
+                //             <Text style={styles.buttonText}>Add Current Plan</Text>
+                //         </TouchableOpacity>
+                //     </Link>
+                // </View>
             )}
-            <TouchableOpacity style={styles.button} onPress={onLogout}>
+            <TouchableOpacity style={styles.button} onPress={handleLogOut}>
                 <Text style={styles.buttonText}>Logout</Text>
             </TouchableOpacity>
         </View>

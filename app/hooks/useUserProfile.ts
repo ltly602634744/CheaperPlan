@@ -1,6 +1,8 @@
 import {fetchUserPlan} from "@/app/services/planService";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {UserPlan} from "@/app/types/userPlan";
+import {Alert} from "react-native";
+import {useFocusEffect} from "expo-router";
 
 export const useUserProfile = (userId: string) => {
     const [plan, setPlan] = useState<UserPlan | null>();
@@ -15,6 +17,14 @@ export const useUserProfile = (userId: string) => {
         setError(error?.message || null);
         setLoading(false);
     };
+
+    useFocusEffect(
+        useCallback(() => {
+            if (userId) {
+                refetch(); // ✅ 返回时刷新最新 Plan 数据
+            }
+        }, [userId])
+    );
 
     useEffect(() => {
         if (!userId) return;

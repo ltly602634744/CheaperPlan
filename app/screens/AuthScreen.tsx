@@ -7,7 +7,6 @@ import { Link, useRouter } from 'expo-router';
 const AuthScreen: React.FC = () => {
     const router = useRouter();
     const { signIn } = useAuth();
-    // const navigation = useNavigation<HomeScreenNavigationProp>(); // 显式指定类型
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -21,6 +20,10 @@ const AuthScreen: React.FC = () => {
         }
         setLoading(false);
     };
+
+    const handleRegister= async () => {
+        router.push("/screens/RegisterScreen");
+    }
 
     return (
         <View style={styles.container}>
@@ -62,18 +65,10 @@ const AuthScreen: React.FC = () => {
                     <Text style={styles.buttonText}>Sign in</Text>
                 </TouchableOpacity>
             </View>
-            {/* 4. 修改注册按钮，使用 <Link> 组件 */}
             <View style={[styles.verticallySpaced, styles.mt20]}>
-                {/*
-                  - href 指向的是你在 app 目录下的文件路径。
-                  - 例如，对于 app/register.tsx 文件，href 就是 "/register"。
-                  - <Link> 组件可以接受 `asChild` prop，这样它就不会渲染自己的 TouchableOpacity，而是把导航功能赋予给它的直接子组件。
-                */}
-                <Link href="/screens/RegisterScreen" asChild>
-                    <TouchableOpacity style={styles.button}>
-                        <Text style={styles.buttonText}>Register</Text>
-                    </TouchableOpacity>
-                </Link>
+                <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                    <Text style={styles.buttonText}>Register</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
