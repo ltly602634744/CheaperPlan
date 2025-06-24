@@ -36,7 +36,7 @@ export const useUserProfile = () => {
         if (user.id) {
             refetch(); // ✅ 返回时刷新最新 Plan 数据
         }
-    }, [refetch, user.id]);
+    }, [user.id]);
 
     return { user, plan, loading, error, refetch };
 };

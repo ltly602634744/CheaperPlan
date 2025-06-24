@@ -24,7 +24,7 @@ const ProfileScreen: React.FC = () => {
 
     const handleAddPlan = async () => {
         if (!user?.id) return;
-        router.replace("/screens/AddPlanScreen");
+        router.replace("/screens/PlanFormScreen");
     }
 
     const handleBetterPlan = async () => {
@@ -67,7 +67,7 @@ const ProfileScreen: React.FC = () => {
                         <TouchableOpacity style={styles.button} onPress={handleBetterPlan}>
                             <Text style={styles.buttonText}>Better Plan</Text>
                         </TouchableOpacity>
-                        {/*<Link href="/screens/AddPlanScreen" asChild replace={true}>*/}
+                        {/*<Link href="/screens/PlanFormScreen" asChild replace={true}>*/}
                         {/*    <TouchableOpacity style={styles.button}>*/}
                         {/*        <Text style={styles.buttonText}>Upgrade Plan</Text>*/}
                         {/*    </TouchableOpacity>*/}
@@ -86,7 +86,7 @@ const ProfileScreen: React.FC = () => {
                     </TouchableOpacity>
                 </View>
                 // <View style={[styles.verticallySpaced, styles.mt20]}>
-                //     <Link href="/screens/AddPlanScreen" asChild replace={true}>
+                //     <Link href="/screens/PlanFormScreen" asChild replace={true}>
                 //         <TouchableOpacity style={styles.button}>
                 //             <Text style={styles.buttonText}>Add Current Plan</Text>
                 //         </TouchableOpacity>
