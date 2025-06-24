@@ -2,16 +2,14 @@ import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 import {useAuthContext} from "@/app/context/AuthContext";
 import {useUserProfile} from "@/app/hooks/useUserProfile";
-import {Link, useRouter} from 'expo-router';
+import {useRouter} from 'expo-router';
 
 
 
 const ProfileScreen: React.FC = () => {
     const router = useRouter();
-    const {session, signOut} = useAuthContext();
-    const user = session?.user;
-    const createdAt = user?.created_at ? new Date(user.created_at).toLocaleString() : 'N/A';
-    const { plan: userPlan, loading } = useUserProfile(user?.id || '');
+    const {signOut} = useAuthContext();
+    const { user:user, plan: userPlan, loading } = useUserProfile();
 
 
     const handleLogOut = async () => {
@@ -54,7 +52,7 @@ const ProfileScreen: React.FC = () => {
             <Text style={styles.title}>Profile</Text>
             <Text style={styles.info}>ID: {user?.id || 'N/A'}</Text>
             <Text style={styles.info}>Email: {user?.email || 'N/A'}</Text>
-            <Text style={styles.info}>Registered: {createdAt}</Text>
+            <Text style={styles.info}>Registered: {user?.cratedAt}</Text>
             {userPlan ? (
                 <>
                     <Text style={styles.info}>Provider: {userPlan.provider || 'N/A'}</Text>
