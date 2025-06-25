@@ -21,3 +21,17 @@ export const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     return { error };
 };
+
+// Save token to supabase
+export const savePushToken = async (userId: string, pushToken: string) => {
+    const { error } = await supabase
+        .from('user_profile')
+        .upsert({
+            user_id: userId,
+            exponent_push_token : pushToken
+        }, {
+            onConflict: 'user_id'
+        });
+    return { error };
+}
+

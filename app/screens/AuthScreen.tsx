@@ -1,7 +1,7 @@
 import { useAuth } from "@/app/hooks/useAuth";
 import React, { useState } from "react";
 import { Alert, StyleSheet, View, TextInput, TouchableOpacity, Text } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 
 const AuthScreen: React.FC = () => {
