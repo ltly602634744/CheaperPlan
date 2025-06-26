@@ -16,10 +16,12 @@ export default {
         },
         ios: {
             supportsTablet: true,
+            bundleIdentifier: "com.yinghan.cheaperplan",
+            entitlements: {
+                'com.apple.developer.push-notifications': true
+            },
             infoPlist: {
-                NSAppTransportSecurity: {
-                    NSAllowsArbitraryLoads: true
-                }
+                NSPushNotificationsUsageDescription: 'We use push notifications to send you reminders.',
             }
         },
         android: {
