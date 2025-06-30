@@ -80,7 +80,7 @@ function waitForPermissionAfterSettings(): Promise<boolean> {
   // 兜底 Alert 方案
   return new Promise(resolve => {
     Alert.alert(
-      '需要通知权限',
+      '需要通知权限(alert)',
       '请在系统设置中开启通知权限，然后返回应用。',
       [
         { text: '去设置', onPress: () => Linking.openSettings() },
