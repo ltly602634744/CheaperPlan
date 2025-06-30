@@ -26,14 +26,36 @@ function AppLayout() {
   const router = useRouter();
 
     useEffect(() => {
+        // const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+        //     const route = response?.notification?.request?.content?.data?.route;
+        //     // 🔁 跳转逻辑：检查通知携带的 route
+        //     if (route) {
+        //         router.push(route as Href);
+        //     }
+        // });
+
+        // 1. 处理当 App 在前台或后台时，用户点击通知的场景
         const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-            const route = response?.notification?.request?.content?.data?.route;
-            // 🔁 跳转逻辑：检查通知携带的 route
-            if (route) {
-                router.push(route as Href);
+             const route = response?.notification?.request?.content?.data?.route;
+             if (route) {
+                 console.log('Notification tapped while app is running, navigating to:', route);
+                 router.push(route as Href);
+             }
+         });
+
+        // 2. 处理当 App 被终止时，用户通过点击通知来启动 App 的场景 (特别是 iOS)
+        Notifications.getLastNotificationResponseAsync().then(response => {
+            if (response) {
+                const route = response?.notification?.request?.content?.data?.route;
+                if (route) {
+                    console.log('App launched by notification, navigating to:', route);
+                    // 稍微延迟跳转，确保导航栈已准备好
+                    setTimeout(() => {
+                        router.push(route as Href);
+                    }, 100);
+                }
             }
         });
-
         return () => subscription.remove();
     }, []);
 

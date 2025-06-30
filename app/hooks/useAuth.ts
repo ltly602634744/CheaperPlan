@@ -7,6 +7,7 @@ import {registerForPushNotificationsAsync} from "@/app/hooks/usePushNotification
 export const useAuth = () => {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
+    console.log("useAuth");
 
     const registerAndSavePushToken = async (userId: string) => {
         const token = await registerForPushNotificationsAsync();

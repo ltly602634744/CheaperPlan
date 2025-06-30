@@ -15,6 +15,7 @@ export const useUserProfile = () => {
         email: session?.user?.email || '',
         cratedAt: session?.user?.created_at || '',
     }
+    console.log("useUserProfile");
 
     const refetch = async () => {
         setLoading(true);

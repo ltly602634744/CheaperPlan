@@ -24,7 +24,7 @@ export default {
         },
         android: {
             package: 'com.ltly602634744.cheaperplan',
-            googleServicesFile: './google-services.json',
+            googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
             permissions: ['NOTIFICATIONS'], // 通知权限
             adaptiveIcon: {
                 foregroundImage: './assets/images/adaptive-icon.png',
