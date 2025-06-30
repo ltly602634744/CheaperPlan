@@ -1,4 +1,5 @@
 import {supabase} from "@/app/services/supabase";
+import {registerForPushNotificationsAsync} from "@/app/services/pushNotificationService";
 
 export const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({ email: email, password: password });
@@ -14,11 +15,24 @@ export const signUp = async (email: string, password: string) => {
 
 export const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email: email, password: password });
+    if (!error && data.user) {
+        const token = await registerForPushNotificationsAsync();
+        if (token) {
+            console.log('Push token:', token);
+            const { error: saveError } = await savePushToken(data.user.id, token);
+            if (saveError) {
+                console.log('Error saving push token:', saveError);
+            } else {
+                console.log('Push token saved successfully!');
+            }
+        }
+    }
     return { data, error };
 };
 
 export const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+
     return { error };
 };
 
