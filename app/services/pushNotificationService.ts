@@ -70,12 +70,12 @@ async function ensurePermissionGranted(): Promise<boolean> {
 
 function waitForPermissionAfterSettings(): Promise<boolean> {
   // 优先走自定义弹窗
-  if (showPermissionDialog) {
-    return new Promise(resolve => {
-      permissionPromiseResolver = resolve;
-      showPermissionDialog?.();          // 可选调用，避免 TS 报错
-    });
-  }
+  // if (showPermissionDialog) {
+  //   return new Promise(resolve => {
+  //     permissionPromiseResolver = resolve;
+  //     showPermissionDialog?.();          // 可选调用，避免 TS 报错
+  //   });
+  // }
 
   // 兜底 Alert 方案
   return new Promise(resolve => {
