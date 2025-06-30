@@ -1,5 +1,5 @@
-import { registerForPushNotificationsAsync } from '@/app/hooks/usePushNotifications';
 import { savePushToken, signIn, signOut, signUp } from '@/app/services/authService';
+import { registerForPushNotificationsAsync } from '@/app/services/pushNotificationService';
 import { supabase } from "@/app/services/supabase";
 import { Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from 'react';
@@ -20,8 +20,6 @@ export const useAuth = () => {
       console.error('保存推送 token 发生异常：', e);
     }
   }, []);
-    const [session, setSession] = useState<Session | null>(null);
-    const [loading, setLoading] = useState(true);
     console.log("useAuth");
 
     useEffect(() => {

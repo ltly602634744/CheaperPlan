@@ -3,20 +3,20 @@ import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import React, { useEffect, useState } from 'react';
 import {
-    AppState,
-    AppStateStatus,
-    Button,
-    Modal,
-    NativeEventSubscription,
-    StyleSheet,
-    Text,
-    View,
+  AppState,
+  AppStateStatus,
+  Button,
+  Modal,
+  NativeEventSubscription,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import {
-    resolvePermission,
-    setPermissionDialog,
-} from '@/app/hooks/usePushNotifications';
+  resolvePermission,
+  setPermissionDialog,
+} from '@/app/services/pushNotificationService';
 
 export const PushNotificationPermissionModal: React.FC = () => {
   const [visible, setVisible] = useState(false);
