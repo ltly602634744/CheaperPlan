@@ -1,107 +1,124 @@
 // app/_layout.tsx
 
-import {Href, Stack, useRouter} from 'expo-router';
+import { Href, Stack, useRouter } from 'expo-router';
 // 1. 导入你的 AuthProvider
+import * as Notifications from 'expo-notifications';
+import React, { useEffect } from 'react';
+import { Platform, Text, View } from 'react-native';
+import Purchases from 'react-native-purchases';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth'; // 确保路径正确
-import { useEffect } from 'react';
-import { Text, View } from 'react-native'
-import * as Notifications from 'expo-notifications';
+
+// 导入 NativeWind 样式
+import '../global.css';
+
+// ------ RevenueCat 公钥（请替换成你项目里的实际值） ------
+import Constants from 'expo-constants';
+
+const rc_api_key_ios: string = Constants.expoConfig?.extra?.rc_api_key_ios;
+const rc_api_key_android: string = Constants.expoConfig?.extra?.rc_api_key_android;
+
+// -----------------------------------------------------------
 
 // 设置全局通知处理程序
 Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-        shouldShowBanner: true, // iOS 专用，显示顶部 banner
-        shouldShowList: true,   // iOS 专用，显示在通知中心列表中
-    }),
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true, // iOS 专用，显示顶部 banner
+    shouldShowList: true, // iOS 专用，显示在通知中心列表中
+  }),
 });
-
 
 // 你可能还需要一个内部组件来处理重定向，因为它现在可以安全地使用 useAuth 了
 function AppLayout() {
   const { session, loading } = useAuth();
   const router = useRouter();
 
-    useEffect(() => {
-        // const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-        //     const route = response?.notification?.request?.content?.data?.route;
-        //     // 🔁 跳转逻辑：检查通知携带的 route
-        //     if (route) {
-        //         router.push(route as Href);
-        //     }
-        // });
-
-        // 1. 处理当 App 在前台或后台时，用户点击通知的场景
-        const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-             const route = response?.notification?.request?.content?.data?.route;
-             if (route) {
-                 console.log('Notification tapped while app is running, navigating to:', route);
-                 router.push(route as Href);
-             }
-         });
-
-        // 2. 处理当 App 被终止时，用户通过点击通知来启动 App 的场景 (特别是 iOS)
-        Notifications.getLastNotificationResponseAsync().then(response => {
-            if (response) {
-                const route = response?.notification?.request?.content?.data?.route;
-                if (route) {
-                    console.log('App launched by notification, navigating to:', route);
-                    // 稍微延迟跳转，确保导航栈已准备好
-                    setTimeout(() => {
-                        router.push(route as Href);
-                    }, 100);
-                }
-            }
-        });
-        return () => subscription.remove();
-    }, []);
-
+  // ① 初始化 RevenueCat Purchases SDK，只执行一次
   useEffect(() => {
-    if (loading) return; // 如果正在加载，则不执行任何操作
+    Purchases.configure({
+      apiKey: Platform.select({
+        ios: rc_api_key_ios,
+        android: rc_api_key_android,
+      }) as string,
+    });
+  }, []);
 
-    // 根据你的逻辑，这里可以决定是否重定向
-    // 例如：如果用户未登录，并且当前不在登录/注册页，则强制跳转
-    // 注意：这个逻辑需要根据你的路由组来完善，但基本思想是这样
-    if (!session) {
-      // 假设 auth 和 register 是公共路由
-      // 如果用户未登录，可以重定向到登录页
-      router.replace('/screens/AuthScreen');
+  // 可选：当用户登录 / 登出时绑定 RC 用户
+  useEffect(() => {
+    if (session?.user?.id) {
+      Purchases.logIn(session.user.id).catch(() => {});
     } else {
-      // 如果用户已登录，但处于登录页，可以重定向到主页
-      // router.replace('/profile');
+      Purchases.logOut().catch(() => {});
+    }
+  }, [session]);
+
+  // ② 通知点击处理（保持原逻辑）
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const route = response?.notification?.request?.content?.data?.route;
+        if (route) {
+          console.log('Notification tapped while app is running, navigating to:', route);
+          router.push(route as Href);
+        }
+      },
+    );
+
+    // 处理杀死态点击通知启动 App
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) {
+        const route = response?.notification?.request?.content?.data?.route;
+        if (route) {
+          console.log('App launched by notification, navigating to:', route);
+          setTimeout(() => {
+            router.push(route as Href);
+          }, 100);
+        }
+      }
+    });
+    return () => subscription.remove();
+  }, []);
+
+  // ③ 登录状态变化时的重定向逻辑（保持原逻辑不变）
+  useEffect(() => {
+    if (loading) return;
+
+    if (!session) {
+      router.replace('/screens/AuthScreen');
     }
   }, [session, loading]);
 
   if (loading) {
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text>Loading...</Text>
-        </View>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </View>
     );
   }
 
-  // 你的 Stack 导航器
+  // ④ Stack 导航器
   return (
-      <Stack>
-          <Stack.Screen name="screens/ProfileScreen" options={{headerShown: false, title: ''}}/>
-          <Stack.Screen name="screens/AuthScreen" options={{ header: () => <View style={{ height: 160 }} />}}/>
-          <Stack.Screen name="screens/RegisterScreen" options={{title: 'Register'}}/>
-          <Stack.Screen name="screens/PlanFormScreen" options={{headerTransparent: true, title: ''}}/>
-          <Stack.Screen name="screens/BetterPlanScreen" options={{headerShown: true, title: ''}}/>
-      </Stack>
+    <Stack>
+      <Stack.Screen name="screens/ProfileScreen" options={{ headerShown: false, title: '' }} />
+      <Stack.Screen name="screens/AuthScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
+      <Stack.Screen name="screens/RegisterScreen" options={{ title: 'Register' }} />
+      <Stack.Screen name="screens/PlanFormScreen" options={{ headerTransparent: true, title: '' }} />
+      <Stack.Screen name="screens/BetterPlanScreen" options={{ headerShown: true, title: '' }} />
+      <Stack.Screen name="screens/PaywallScreen" options={{ title: 'subscript' }} />
+    </Stack>
   );
 }
 
 export default function RootLayout() {
-  // 2. 在根布局组件中，使用 AuthProvider 包裹所有内容
+  // ⑤ 在根布局组件中，使用 AuthProvider 包裹所有内容
   return (
-      <AuthProvider>
-          {/*<PaperProvider>*/}
-          <AppLayout />
-          {/*</PaperProvider>*/}
-      </AuthProvider>
+    <AuthProvider>
+      {/*<PaperProvider>*/}
+      <AppLayout />
+      {/*</PaperProvider>*/}
+    </AuthProvider>
   );
 }

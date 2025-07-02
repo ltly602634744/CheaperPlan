@@ -60,6 +60,8 @@ export default {
     extra: {
       dbUrl: process.env.SUPABASE_URL,
       dbANONKey: process.env.SUPABASE_ANON_KEY,
+      rc_api_key_ios: process.env.RC_API_KEY_IOS,
+      rc_api_key_android: process.env.RC_API_KEY_ANDROID,
       eas: {
         projectId: '61cc432d-e1b6-4575-96d3-320d93d76bdf',
       },

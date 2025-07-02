@@ -1,58 +1,56 @@
-import {fetchBetterPlans} from "@/app/services/betterPlanService";
-import React, {useEffect, useState} from "react";
-import {View, Text, StyleSheet, ActivityIndicator, Button} from 'react-native';
-import {RecommendedPlan, UserPlan} from "@/app/types/userPlan";
-import {router} from "expo-router";
-import {useRecommendPlans} from "@/app/hooks/useRecommendPlans";
+import { useRecommendPlans } from "@/app/hooks/useRecommendPlans";
+import React from "react";
+import { ScrollView, Text, View } from "react-native";
 
-const BetterPlanScreen:React.FC = () => {
-    const {betterPlans} = useRecommendPlans();
 
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Better Plans</Text>
-            {betterPlans.length > 0 ? (
-                betterPlans.map((plan, index) => (
-                    <View key={index} style={styles.planItem}>
-                        <Text>Coverage: {plan.coverage || 'N/A'}</Text>
-                        <Text>Data: {plan.data !== null ? `${plan.data} GB` : 'N/A'}</Text>
-                        <Text>Price: ${plan.price || 'N/A'}</Text>
-                        <Text>Provider: {plan.provider || 'N/A'}</Text>
-                        <Text>Voicemail: {plan.voicemail ? 'Yes' : 'No'}</Text>
-                    </View>
-                ))
-            ) : (
-                <Text>No better plans available</Text>
-            )}
+console.log("BetterPlanScreen loaded")
+const BetterPlanScreen: React.FC = () => {
+  const { betterPlans } = useRecommendPlans();
 
-        </View>
-    );
-}
+  return (
+    <View className="flex-1 bg-gray-100 px-2 pt-6">
+      <Text className="text-2xl font-bold text-center text-blue-600 mb-4">
+        Better Plans
+      </Text>
+
+      {betterPlans.length > 0 ? (
+        <ScrollView>
+          {betterPlans.map((plan, index) => (
+            <View key={index} className={index !== betterPlans.length - 1 ? 'mb-4' : ''}>
+              <View
+                className="bg-white p-4 rounded-2xl shadow-lg shadow-black/10 border border-gray-200"
+              >
+                <Text className="text-base text-gray-800 mb-1">
+                  <Text className="font-semibold">Coverage:</Text>{" "}
+                  {plan.coverage || "N/A"}
+                </Text>
+                <Text className="text-base text-gray-800 mb-1">
+                  <Text className="font-semibold">Data:</Text>{" "}
+                  {plan.data !== null ? `${plan.data} GB` : "N/A"}
+                </Text>
+                <Text className="text-base text-gray-800 mb-1">
+                  <Text className="font-semibold">Price:</Text>{" "}
+                  ${plan.price || "N/A"}
+                </Text>
+                <Text className="text-base text-gray-800 mb-1">
+                  <Text className="font-semibold">Provider:</Text>{" "}
+                  {plan.provider || "N/A"}
+                </Text>
+                <Text className="text-base text-gray-800">
+                  <Text className="font-semibold">Voicemail:</Text>{" "}
+                  {plan.voicemail ? "Yes" : "No"}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      ) : (
+        <Text className="text-center text-gray-500 mt-10">
+          No better plans available
+        </Text>
+      )}
+    </View>
+  );
+};
 
 export default BetterPlanScreen;
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: '#f5f5f5',
-        justifyContent: 'center',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    planItem: {
-        padding: 10,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        marginBottom: 10,
-    },
-    error: {
-        color: 'red',
-        textAlign: 'center',
-    },
-});

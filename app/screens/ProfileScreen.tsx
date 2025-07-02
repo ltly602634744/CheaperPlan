@@ -1,8 +1,8 @@
+import { useAuthContext } from "@/app/context/AuthContext";
+import { useUserProfile } from "@/app/hooks/useUserProfile";
+import { useRouter } from 'expo-router';
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
-import {useAuthContext} from "@/app/context/AuthContext";
-import {useUserProfile} from "@/app/hooks/useUserProfile";
-import {useRouter} from 'expo-router';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 
 
@@ -30,6 +30,10 @@ const ProfileScreen: React.FC = () => {
     const handleBetterPlan = async () => {
         if (!user?.id || !userPlan) return;
         router.push("/screens/BetterPlanScreen");
+    }
+
+    const handleTestPurchase = async () => {
+        router.push("/screens/PaywallScreen");
     }
 
     // const handleDeletePlan = async () => {
@@ -95,6 +99,9 @@ const ProfileScreen: React.FC = () => {
             )}
             <TouchableOpacity style={styles.button} onPress={handleLogOut}>
                 <Text style={styles.buttonText}>Logout</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleTestPurchase}>
+                <Text style={styles.buttonText}>Purchase</Text>
             </TouchableOpacity>
         </View>
     );
