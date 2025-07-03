@@ -1,4 +1,5 @@
-// 假设 ProfileScreen 是用户登录后看到的主页
-import ProfileScreen from './screens/ProfileScreen';
+import { Redirect } from 'expo-router';
 
-export default ProfileScreen;
+export default function Index() {
+  return <Redirect href='/(tabs)/ProfileScreen' />;
+}

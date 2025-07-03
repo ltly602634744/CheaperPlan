@@ -1,7 +1,7 @@
 import { useAuth } from "@/app/hooks/useAuth";
+import { useRouter } from "expo-router"; // 导入类型定义
 import React, { useState } from "react";
-import { Alert, StyleSheet, View, TextInput, TouchableOpacity, Text } from 'react-native';
-import {useRouter} from "expo-router"; // 导入类型定义
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
 
@@ -74,7 +74,6 @@ const RegisterScreen: React.FC = () => {
 };
 
 export default RegisterScreen;
-
 const styles = StyleSheet.create({
     container: {
         marginTop: 40,

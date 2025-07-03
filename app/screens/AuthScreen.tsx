@@ -1,7 +1,7 @@
 import { useAuth } from "@/app/hooks/useAuth";
-import React, { useState } from "react";
-import { Alert, StyleSheet, View, TextInput, TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import React, { useState } from "react";
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 
 const AuthScreen: React.FC = () => {
@@ -16,7 +16,7 @@ const AuthScreen: React.FC = () => {
         if (error) {
             Alert.alert('Error', error.message);
         }else if (data.session){
-            router.replace("/screens/ProfileScreen");
+            router.replace("/");
         }
         setLoading(false);
     };
@@ -75,7 +75,6 @@ const AuthScreen: React.FC = () => {
 };
 
 export default AuthScreen;
-
 const styles = StyleSheet.create({
     container: {
         marginTop: 40,

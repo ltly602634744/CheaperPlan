@@ -29,11 +29,11 @@ const ProfileScreen: React.FC = () => {
 
     const handleBetterPlan = async () => {
         if (!user?.id || !userPlan) return;
-        router.push("/screens/BetterPlanScreen");
+        router.push("/(tabs)/BetterPlanScreen");
     }
 
     const handleTestPurchase = async () => {
-        router.push("/screens/PaywallScreen");
+        router.push("/(tabs)/PaywallScreen");
     }
 
     // const handleDeletePlan = async () => {
@@ -109,7 +109,6 @@ const ProfileScreen: React.FC = () => {
 }
 
 export default ProfileScreen;
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,

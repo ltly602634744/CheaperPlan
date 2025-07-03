@@ -102,12 +102,10 @@ function AppLayout() {
   // ④ Stack 导航器
   return (
     <Stack>
-      <Stack.Screen name="screens/ProfileScreen" options={{ headerShown: false, title: '' }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="screens/AuthScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
       <Stack.Screen name="screens/RegisterScreen" options={{ title: 'Register' }} />
       <Stack.Screen name="screens/PlanFormScreen" options={{ headerTransparent: true, title: '' }} />
-      <Stack.Screen name="screens/BetterPlanScreen" options={{ headerShown: true, title: '' }} />
-      <Stack.Screen name="screens/PaywallScreen" options={{ title: 'subscript' }} />
     </Stack>
   );
 }
