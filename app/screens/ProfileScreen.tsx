@@ -50,10 +50,10 @@ const ProfileScreen: React.FC = () => {
       {userPlan && betterPlans.length > 0 && (
         <View className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
           <Text className="text-green-700 text-base font-semibold mb-1">
-            我们为你找到了 {betterPlans.length} 个更便宜的套餐！
+            🎉 Good news! We found {betterPlans.length} cheaper plans for you
           </Text>
           <Text className="text-green-700 text-base">
-            每月最多可节省 <Text className="font-bold">${maxSavings}</Text>
+            Save up to <Text className="font-bold">${maxSavings}</Text> every month! 
           </Text>
         </View>
       )}
