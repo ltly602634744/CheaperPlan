@@ -3,11 +3,11 @@ import { useUserProfile } from "@/app/hooks/useUserProfile";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const ProfileScreen: React.FC = () => {
@@ -61,9 +61,14 @@ const ProfileScreen: React.FC = () => {
       {userPlan ? (
         <View className="space-y-4">
           <View className="bg-white p-4 rounded-lg shadow-sm mb-4">
+            {/* 基本信息 */}
             <Text className="text-base text-gray-700 mb-1">
               <Text className="font-semibold">Provider: </Text>
               {userPlan.provider || "N/A"}
+            </Text>
+            <Text className="text-base text-gray-700 mb-1">
+              <Text className="font-semibold">Network: </Text>
+              {userPlan.network || "N/A"}
             </Text>
             <Text className="text-base text-gray-700 mb-1">
               <Text className="font-semibold">Coverage: </Text>
@@ -76,10 +81,39 @@ const ProfileScreen: React.FC = () => {
             <Text className="text-base text-gray-700 mb-1">
               <Text className="font-semibold">Price: </Text>${userPlan.price || "N/A"}
             </Text>
-            <Text className="text-base text-gray-700">
-              <Text className="font-semibold">Voicemail: </Text>
-              {userPlan.voicemail ? "Yes" : "No"}
-            </Text>
+            
+            {/* 功能特性 */}
+            <View className="mt-3 pt-3 border-t border-gray-200">
+              <Text className="text-base font-semibold text-gray-800 mb-2">Features:</Text>
+              <Text className="text-base text-gray-700 mb-1">
+                <Text className="font-semibold">Voicemail: </Text>
+                {userPlan.voicemail ? "Yes" : "No"}
+              </Text>
+              <Text className="text-base text-gray-700 mb-1">
+                <Text className="font-semibold">Call Display: </Text>
+                {userPlan.call_display ? "Yes" : "No"}
+              </Text>
+              <Text className="text-base text-gray-700 mb-1">
+                <Text className="font-semibold">Call Waiting: </Text>
+                {userPlan.call_waiting ? "Yes" : "No"}
+              </Text>
+              <Text className="text-base text-gray-700 mb-1">
+                <Text className="font-semibold">Suspicious Call Detection: </Text>
+                {userPlan.suspicious_call_detection ? "Yes" : "No"}
+              </Text>
+              <Text className="text-base text-gray-700 mb-1">
+                <Text className="font-semibold">Hotspot: </Text>
+                {userPlan.hotspot ? "Yes" : "No"}
+              </Text>
+              <Text className="text-base text-gray-700 mb-1">
+                <Text className="font-semibold">Conference Call: </Text>
+                {userPlan.conference_call ? "Yes" : "No"}
+              </Text>
+              <Text className="text-base text-gray-700">
+                <Text className="font-semibold">Video Call: </Text>
+                {userPlan.video_call ? "Yes" : "No"}
+              </Text>
+            </View>
           </View>
 
           <TouchableOpacity

@@ -1,5 +1,5 @@
 import { useNavigation, useRouter } from 'expo-router';
-import React, { useLayoutEffect } from 'react';
+import React, { useCallback, useLayoutEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface SettingPageTemplateProps {
@@ -20,22 +20,26 @@ export default function SettingPageTemplate({
   const router = useRouter();
   const navigation = useNavigation();
 
-  const handleSave = () => {
-    onSave();
-    router.back();
-  };
+  const handleSave = useCallback(async () => {
+    try {
+      await onSave();
+      router.back();
+    } catch (error) {
+      console.error('Save operation failed:', error);
+    }
+  }, [onSave, router]);
 
   // 设置header的保存按钮
   useLayoutEffect(() => {
     navigation.setOptions({
       title,
       headerRight: () => (
-        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+        <TouchableOpacity onPress={handleSave} style={styles.saveButton} disabled={loading}>
           <Text style={styles.saveButtonText}>{loading ? 'Saving...' : saveButtonText}</Text>
         </TouchableOpacity>
       ),
     });
-  }, [navigation, title, saveButtonText, loading]);
+  }, [navigation, title, saveButtonText, loading, handleSave]);
 
   return (
     <SafeAreaView style={styles.container}>

@@ -1,5 +1,5 @@
-import {supabase} from "@/app/services/supabase";
-import {UserPlan} from "@/app/types/userPlan";
+import { supabase } from "@/app/services/supabase";
+import { UserPlan } from "@/app/types/userPlan";
 
 
 export const fetchBetterPlans = async () => {
@@ -9,15 +9,23 @@ export const fetchBetterPlans = async () => {
             console.error('Error fetching better plans:', error);
             return null;
         }
-        // console.log('Users:', data);
+        console.log('Raw data from get_better_plans:', data);
+        console.log('First item keys:', data && data.length > 0 ? Object.keys(data[0]) : 'No data');
+        
         const userPlans: UserPlan[] = data.map((item: any) => ({
             provider: item.provider,
             data: item.data || null,
             coverage: item.coverage,
             voicemail: item.voicemail,
             price: item.price,
+            network: item.network,
+            call_display: item.call_display,
+            call_waiting: item.call_waiting,
+            suspicious_call_detection: item.suspicious_call_detection,
+            hotspot: item.hotspot,
+            conference_call: item.conference_call,
+            video_call: item.video_call,
         }));
-        // console.log(userPlans);
         return userPlans; // 返回查询结果
     } catch (err) {
         console.error('Unexpected error:', err);

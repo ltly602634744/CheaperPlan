@@ -6,6 +6,13 @@ export interface UserPlan {
     coverage: string;
     voicemail: boolean;
     price: number;
+    network: string;
+    call_display: boolean;
+    call_waiting: boolean;
+    suspicious_call_detection: boolean;
+    hotspot: boolean;
+    conference_call: boolean;
+    video_call: boolean;
     // minutes: number | null;
 }
 

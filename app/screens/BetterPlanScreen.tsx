@@ -20,6 +20,15 @@ const BetterPlanScreen: React.FC = () => {
               <View
                 className="bg-white p-4 rounded-2xl shadow-lg shadow-black/10 border border-gray-200"
               >
+                {/* 基本信息 */}
+                <Text className="text-base text-gray-800 mb-1">
+                  <Text className="font-semibold">Provider:</Text>{" "}
+                  {plan.provider || "N/A"}
+                </Text>
+                <Text className="text-base text-gray-800 mb-1">
+                  <Text className="font-semibold">Network:</Text>{" "}
+                  {plan.network || "N/A"}
+                </Text>
                 <Text className="text-base text-gray-800 mb-1">
                   <Text className="font-semibold">Coverage:</Text>{" "}
                   {plan.coverage || "N/A"}
@@ -32,14 +41,39 @@ const BetterPlanScreen: React.FC = () => {
                   <Text className="font-semibold">Price:</Text>{" "}
                   ${plan.price || "N/A"}
                 </Text>
-                <Text className="text-base text-gray-800 mb-1">
-                  <Text className="font-semibold">Provider:</Text>{" "}
-                  {plan.provider || "N/A"}
-                </Text>
-                <Text className="text-base text-gray-800">
-                  <Text className="font-semibold">Voicemail:</Text>{" "}
-                  {plan.voicemail ? "Yes" : "No"}
-                </Text>
+                
+                {/* 功能特性 */}
+                <View className="mt-3 pt-3 border-t border-gray-200">
+                  <Text className="text-base font-semibold text-gray-800 mb-2">Features:</Text>
+                  <Text className="text-base text-gray-700 mb-1">
+                    <Text className="font-semibold">Voicemail:</Text>{" "}
+                    {plan.voicemail ? "Yes" : "No"}
+                  </Text>
+                  <Text className="text-base text-gray-700 mb-1">
+                    <Text className="font-semibold">Call Display:</Text>{" "}
+                    {plan.call_display ? "Yes" : "No"}
+                  </Text>
+                  <Text className="text-base text-gray-700 mb-1">
+                    <Text className="font-semibold">Call Waiting:</Text>{" "}
+                    {plan.call_waiting ? "Yes" : "No"}
+                  </Text>
+                  <Text className="text-base text-gray-700 mb-1">
+                    <Text className="font-semibold">Suspicious Call Detection:</Text>{" "}
+                    {plan.suspicious_call_detection ? "Yes" : "No"}
+                  </Text>
+                  <Text className="text-base text-gray-700 mb-1">
+                    <Text className="font-semibold">Hotspot:</Text>{" "}
+                    {plan.hotspot ? "Yes" : "No"}
+                  </Text>
+                  <Text className="text-base text-gray-700 mb-1">
+                    <Text className="font-semibold">Conference Call:</Text>{" "}
+                    {plan.conference_call ? "Yes" : "No"}
+                  </Text>
+                  <Text className="text-base text-gray-700">
+                    <Text className="font-semibold">Video Call:</Text>{" "}
+                    {plan.video_call ? "Yes" : "No"}
+                  </Text>
+                </View>
               </View>
             </View>
           ))}

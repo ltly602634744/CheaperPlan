@@ -26,6 +26,11 @@ export default function InputSettingField({
   autoCorrect = true,
   editable = true,
 }: InputSettingFieldProps) {
+  const handleChangeText = (text: string) => {
+    console.log(`InputSettingField (${label}) onChangeText:`, text);
+    onChangeText(text);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
@@ -35,7 +40,7 @@ export default function InputSettingField({
           multiline && styles.multilineInput
         ]}
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={handleChangeText}
         placeholder={placeholder}
         keyboardType={keyboardType}
         multiline={multiline}

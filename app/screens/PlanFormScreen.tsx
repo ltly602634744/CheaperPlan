@@ -4,17 +4,17 @@ import { Picker } from '@react-native-picker/picker';
 import { useRouter } from "expo-router";
 import React, { useState } from 'react';
 import {
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -22,6 +22,7 @@ const PlanFormScreen: React.FC = () => {
   const router = useRouter();
   const { plan, setPlan, isUpdating, session } = usePlanActions();
   const [isPickerVisible, setPickerVisible] = useState(false);
+  const [pickerField, setPickerField] = useState<string>('');
 
   const handleSavePlan = async () => {
     if (!session?.user.id) return;
@@ -44,6 +45,40 @@ const PlanFormScreen: React.FC = () => {
     router.replace("/(tabs)/ProfileScreen");
   };
 
+  const renderBooleanPicker = (field: string, label: string, value: boolean) => {
+    return (
+      <View className="w-full mb-4">
+        <Text className="text-base mb-1">{label}</Text>
+        {Platform.OS === 'android' ? (
+          <View className="border border-gray-300 rounded-lg overflow-hidden">
+            <Picker
+              selectedValue={value}
+              onValueChange={(newValue) => setPlan({ ...plan, [field]: newValue })}
+            >
+              <Picker.Item label="Select Yes or No" value="" />
+              <Picker.Item label="Yes" value={true} />
+              <Picker.Item label="No" value={false} />
+            </Picker>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity
+              className="h-10 border border-gray-300 rounded-lg justify-center px-3 bg-white"
+              onPress={() => {
+                setPickerField(field);
+                setPickerVisible(true);
+              }}
+            >
+              <Text className="text-black">
+                {value ? 'Yes' : 'No'}
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
@@ -58,6 +93,7 @@ const PlanFormScreen: React.FC = () => {
                 {isUpdating ? "Update Plan" : "Add Plan"}
               </Text>
 
+              {/* 基本信息 */}
               <View className="w-full mb-4">
                 <Text className="text-base mb-1">Provider</Text>
                 <TextInput
@@ -65,6 +101,16 @@ const PlanFormScreen: React.FC = () => {
                   value={plan.provider}
                   onChangeText={(text) => setPlan({ ...plan, provider: text })}
                   placeholder="Enter provider"
+                />
+              </View>
+
+              <View className="w-full mb-4">
+                <Text className="text-base mb-1">Network</Text>
+                <TextInput
+                  className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
+                  value={plan.network}
+                  onChangeText={(text) => setPlan({ ...plan, network: text })}
+                  placeholder="Enter network (e.g., 4G, 5G)"
                 />
               </View>
 
@@ -100,55 +146,16 @@ const PlanFormScreen: React.FC = () => {
                 />
               </View>
 
-              <View className="w-full mb-4">
-                <Text className="text-base mb-1">Voicemail</Text>
-                {Platform.OS === 'android' ? (
-                  <View className="border border-gray-300 rounded-lg overflow-hidden">
-                    <Picker
-                      selectedValue={plan.voicemail}
-                      onValueChange={(value) => setPlan({ ...plan, voicemail: value })}
-                    >
-                      <Picker.Item label="Select Yes or No" value="" />
-                      <Picker.Item label="Yes" value={true} />
-                      <Picker.Item label="No" value={false} />
-                    </Picker>
-                  </View>
-                ) : (
-                  <>
-                    <TouchableOpacity
-                      className="h-10 border border-gray-300 rounded-lg justify-center px-3 bg-white"
-                      onPress={() => setPickerVisible(true)}
-                    >
-                      <Text className="text-black">
-                        {plan.voicemail
-                          ? 'Yes'
-                          : !plan.voicemail
-                          ? 'No'
-                          : 'Select Yes or No'}
-                      </Text>
-                    </TouchableOpacity>
-
-                    <Modal
-                      isVisible={isPickerVisible}
-                      onBackdropPress={() => setPickerVisible(false)}
-                      style={{ justifyContent: 'flex-end', margin: 0 }}
-                    >
-                      <View className="bg-white pt-4 pb-8 px-4 rounded-t-xl min-h-[180px]">
-                        <Picker
-                          selectedValue={plan.voicemail}
-                          onValueChange={(value) => {
-                            setPlan({ ...plan, voicemail: value });
-                            setPickerVisible(false);
-                          }}
-                        >
-                          <Picker.Item label="Yes" value={true} />
-                          <Picker.Item label="No" value={false} />
-                        </Picker>
-                      </View>
-                    </Modal>
-                  </>
-                )}
-              </View>
+              {/* 功能特性 */}
+              <Text className="text-lg font-semibold text-gray-800 mb-3 mt-4">Features</Text>
+              
+              {renderBooleanPicker('voicemail', 'Voicemail', plan.voicemail)}
+              {renderBooleanPicker('call_display', 'Call Display', plan.call_display)}
+              {renderBooleanPicker('call_waiting', 'Call Waiting', plan.call_waiting)}
+              {renderBooleanPicker('suspicious_call_detection', 'Suspicious Call Detection', plan.suspicious_call_detection)}
+              {renderBooleanPicker('hotspot', 'Hotspot', plan.hotspot)}
+              {renderBooleanPicker('conference_call', 'Conference Call', plan.conference_call)}
+              {renderBooleanPicker('video_call', 'Video Call', plan.video_call)}
 
               <View className="flex-row justify-between w-full gap-4 mt-6">
                 <TouchableOpacity
@@ -168,6 +175,28 @@ const PlanFormScreen: React.FC = () => {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* iOS Modal for boolean pickers */}
+      {Platform.OS === 'ios' && (
+        <Modal
+          isVisible={isPickerVisible}
+          onBackdropPress={() => setPickerVisible(false)}
+          style={{ justifyContent: 'flex-end', margin: 0 }}
+        >
+          <View className="bg-white pt-4 pb-8 px-4 rounded-t-xl min-h-[180px]">
+            <Picker
+              selectedValue={plan[pickerField as keyof typeof plan]}
+              onValueChange={(value) => {
+                setPlan({ ...plan, [pickerField]: value });
+                setPickerVisible(false);
+              }}
+            >
+              <Picker.Item label="Yes" value={true} />
+              <Picker.Item label="No" value={false} />
+            </Picker>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 };
