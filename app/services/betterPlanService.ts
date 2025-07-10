@@ -9,8 +9,6 @@ export const fetchBetterPlans = async () => {
             console.error('Error fetching better plans:', error);
             return null;
         }
-        console.log('Raw data from get_better_plans:', data);
-        console.log('First item keys:', data && data.length > 0 ? Object.keys(data[0]) : 'No data');
         
         const userPlans: UserPlan[] = data.map((item: any) => ({
             provider: item.provider,

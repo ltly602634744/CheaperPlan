@@ -3,11 +3,11 @@ import { useUserProfile } from "@/app/hooks/useUserProfile";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const ProfileScreen: React.FC = () => {
@@ -84,7 +84,6 @@ const ProfileScreen: React.FC = () => {
             
             {/* 功能特性 */}
             <View className="mt-3 pt-3 border-t border-gray-200">
-              <Text className="text-base font-semibold text-gray-800 mb-2">Features:</Text>
               <Text className="text-base text-gray-700 mb-1">
                 <Text className="font-semibold">Voicemail: </Text>
                 {userPlan.voicemail ? "Yes" : "No"}
