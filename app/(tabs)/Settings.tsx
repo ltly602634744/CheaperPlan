@@ -1,6 +1,8 @@
+import InfoModal from "@/app/components/InfoModal";
 import Cell from "@/app/components/SettingCell";
 import { useAuthContext } from "@/app/context/AuthContext";
 import { useAuth } from "@/app/hooks/useAuth";
+import { ModalContentKey, modalContents } from "@/app/terms_policies/modalContents";
 import * as Notifications from 'expo-notifications';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -22,6 +24,21 @@ export default function SettingsScreen() {
     const { signOut } = useAuth();
     const { session } = useAuthContext();
     const [notificationEnabled, setNotificationEnabled] = useState<string>("...");
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalContent, setModalContent] = useState("");
+
+    // 显示modal的函数
+    const showModal = (title: ModalContentKey) => {
+        setModalTitle(title);
+        setModalContent(modalContents[title]);
+        setModalVisible(true);
+    };
+
+    // 关闭modal的函数
+    const closeModal = () => {
+        setModalVisible(false);
+    };
 
     // 检查通知权限
     const checkNotificationPermission = async () => {
@@ -76,6 +93,8 @@ export default function SettingsScreen() {
             <Cell label="Email" value={session?.user?.email || 'Not set'} onPress={() => router.push('../screens/EmailSettingScreen')} />
             <View className="h-[0.5px] bg-gray-100 mx-4" />
             <Cell label="Phone" value={getPhoneDisplay()} onPress={() => router.push('../screens/PhoneSettingScreen')} />
+            <View className="h-[0.5px] bg-gray-100 mx-4" />
+            <Cell label="Password" value="********" onPress={() => router.push('../screens/PasswordSettingScreen')} />
         </View>
 
         {/* 第二组：账户信息 */}
@@ -89,21 +108,29 @@ export default function SettingsScreen() {
             <Cell label="Language" value="English" onPress={() => router.push('../screens/LanguageSettingScreen')} />
         </View>
 
-        {/* 第二组：展示内容 */}
+        {/* 第三组：展示内容 */}
         <View className="mt-3 bg-white">
-            <Cell label="Terms of Use" onPress={() => router.push('../screens/NotificationSettingScreen')} />
+            <Cell label="Terms of Use" onPress={() => showModal("Terms of Use")} />
             <View className="h-[0.5px] bg-gray-100 mx-4" />
-            <Cell label="Privacy Policy" onPress={() => router.push('../screens/NotificationSettingScreen')} />
+            <Cell label="Privacy Policy" onPress={() => showModal("Privacy Policy")} />
             <View className="h-[0.5px] bg-gray-100 mx-4" />
-            <Cell label="About" onPress={() => router.push('../screens/SubscriptionSettingScreen')} />
+            <Cell label="About" onPress={() => showModal("About")} />
             <View className="h-[0.5px] bg-gray-100 mx-4" />
-            <Cell label="Help Center" onPress={() => router.push('../screens/LanguageSettingScreen')} />
+            <Cell label="Help Center" onPress={() => showModal("Help Center")} />
         </View>
 
         <TouchableOpacity style={styles.button} onPress={handleLogOut}>
             <Text style={styles.buttonText}>Logout</Text>
         </TouchableOpacity>
         </ScrollView>
+
+        {/* InfoModal */}
+        <InfoModal
+            visible={modalVisible}
+            onClose={closeModal}
+            title={modalTitle}
+            content={modalContent}
+        />
     </SafeAreaView>
     );
 }

@@ -12,6 +12,7 @@ interface InputSettingFieldProps {
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   autoCorrect?: boolean;
   editable?: boolean;
+  secureTextEntry?: boolean;
 }
 
 export default function InputSettingField({
@@ -25,6 +26,7 @@ export default function InputSettingField({
   autoCapitalize = 'sentences',
   autoCorrect = true,
   editable = true,
+  secureTextEntry = false,
 }: InputSettingFieldProps) {
   const handleChangeText = (text: string) => {
     console.log(`InputSettingField (${label}) onChangeText:`, text);
@@ -49,6 +51,7 @@ export default function InputSettingField({
         autoCapitalize={autoCapitalize}
         autoCorrect={autoCorrect}
         editable={editable}
+        secureTextEntry={secureTextEntry}
       />
     </View>
   );

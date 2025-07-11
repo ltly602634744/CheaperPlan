@@ -75,7 +75,7 @@ export default function NotificationSettingScreen() {
         label="Notification"
         value={isEnabled}
         onValueChange={handleSwitchToggle}
-        description="开启通知以接收重要消息和更新提醒。点击开关将跳转到系统设置页面。"
+        description="Enable notifications to receive important messages and updates. Tapping the switch will take you to the system settings page."
         disabled={isLoading}
       />
     </SettingPageTemplate>

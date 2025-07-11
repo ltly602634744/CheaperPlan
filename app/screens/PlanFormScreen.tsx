@@ -4,17 +4,17 @@ import { Picker } from '@react-native-picker/picker';
 import { useRouter } from "expo-router";
 import React, { useState } from 'react';
 import {
-    Alert,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -110,7 +110,7 @@ const PlanFormScreen: React.FC = () => {
                   className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
                   value={plan.network}
                   onChangeText={(text) => setPlan({ ...plan, network: text })}
-                  placeholder="Enter network (e.g., 4G, 5G)"
+                  placeholder="Enter network (e.g., LTE, 5G)"
                 />
               </View>
 

@@ -64,14 +64,14 @@ export const PushNotificationPermissionModal: React.FC = () => {
     >
       <View style={styles.overlay}>
         <View style={styles.box}>
-          <Text style={styles.title}>需要通知权限</Text>
+          <Text style={styles.title}>Notification permission required</Text>
           <Text style={styles.desc}>
-            请在系统设置中开启通知权限，然后返回应用。
+            Please enable notification permissions in the system settings, then return to the app.
           </Text>
           <View style={styles.row}>
-            <Button title="取消" onPress={handleCancel} />
+            <Button title="Cancel" onPress={handleCancel} />
             <View style={styles.spacer} />
-            <Button title="去设置" onPress={handleGoSettings} />
+            <Button title="Go to Settings" onPress={handleGoSettings} />
           </View>
         </View>
       </View>

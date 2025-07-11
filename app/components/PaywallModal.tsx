@@ -103,7 +103,7 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
             ) : !pkg ? (
               <View className="flex-1 justify-center items-center">
                 <Text className="text-center text-gray-600">
-                  没有拿到套餐，请检查 RevenueCat Offering 配置
+                  Sorry there's an error on our side. Please contact customer service.
                 </Text>
               </View>
             ) : (
@@ -122,15 +122,15 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
                   <View className="space-y-3">
                     <View className="flex-row items-center">
                       <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                      <Text className="ml-3 text-gray-700">查看所有运营商信息</Text>
+                      <Text className="ml-3 text-gray-700">View carrier information</Text>
                     </View>
                     <View className="flex-row items-center">
                       <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                      <Text className="ml-3 text-gray-700">解锁高级功能</Text>
+                      <Text className="ml-3 text-gray-700">Unlock premium features</Text>
                     </View>
                     <View className="flex-row items-center">
                       <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                      <Text className="ml-3 text-gray-700">优先客服支持</Text>
+                      <Text className="ml-3 text-gray-700">Get priority customer support</Text>
                     </View>
                   </View>
                 </View>
@@ -144,7 +144,7 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
                   {purchasing ? (
                     <View className="flex-row justify-center items-center">
                       <ActivityIndicator size="small" color="white" />
-                      <Text className="text-white font-semibold ml-2">处理中...</Text>
+                      <Text className="text-white font-semibold ml-2">Processing...</Text>
                     </View>
                   ) : (
                     <Text className="text-white text-center font-semibold text-lg">
@@ -155,7 +155,7 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
 
                 {/* Terms */}
                 <Text className="text-center text-gray-500 text-xs mt-4 px-4">
-                  订阅将按月自动续费，可随时取消。订阅即表示同意我们的服务条款和隐私政策。
+                  The subscription will automatically renew monthly and can be canceled at any time. By subscribing, you agree to our Terms of Service and Privacy Policy.
                 </Text>
               </View>
             )}
