@@ -22,15 +22,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="PaywallScreen"
-        options={{
-          title: 'Subscription',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="card-outline" size={size} color={color} />
-          ),
-        }}
-      />
+
       <Tabs.Screen
         name="Settings"
         options={{

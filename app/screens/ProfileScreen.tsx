@@ -1,19 +1,21 @@
 import { useRecommendPlans } from "@/app/hooks/useRecommendPlans";
 import { useUserProfile } from "@/app/hooks/useUserProfile";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
+import PaywallModal from "../components/PaywallModal";
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
   const { user, plan: userPlan, loading } = useUserProfile();
   const { betterPlans } = useRecommendPlans();
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // 计算节省金额
   let maxSavings = 0;
@@ -123,10 +125,17 @@ const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="bg-green-500 py-3 rounded-lg items-center"
+            className="bg-green-500 py-3 rounded-lg items-center mb-3"
             onPress={handleBetterPlan}
           >
             <Text className="text-white font-semibold">Better Plan</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-purple-500 py-3 rounded-lg items-center"
+            onPress={() => setShowPaywall(true)}
+          >
+            <Text className="text-white font-semibold">Upgrade to Pro</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -139,6 +148,16 @@ const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Paywall Modal */}
+      <PaywallModal
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        onSubscriptionSuccess={() => {
+          setShowPaywall(false);
+          // 可以在这里添加其他成功后的逻辑
+        }}
+      />
     </ScrollView>
   );
 };

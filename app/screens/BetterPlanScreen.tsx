@@ -2,6 +2,7 @@ import { useRecommendPlans } from "@/app/hooks/useRecommendPlans";
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import PaywallModal from "../components/PaywallModal";
 import { useAuthContext } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
 
@@ -12,6 +13,7 @@ const BetterPlanScreen: React.FC = () => {
   const { session } = useAuthContext();
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showPaywall, setShowPaywall] = useState(false);
   // 保存展开的卡片index，-1表示全部折叠
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
@@ -62,6 +64,11 @@ const BetterPlanScreen: React.FC = () => {
           <Text className="text-yellow-700 text-center text-sm">
             🔒 Subscribe to Pro to see provider details
           </Text>
+          <TouchableOpacity onPress={() => setShowPaywall(true)}>
+            <Text className="text-blue-600 text-center text-sm font-semibold mt-2">
+              Click here to subscribe
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -147,6 +154,17 @@ const BetterPlanScreen: React.FC = () => {
           No better plans available
         </Text>
       )}
+
+      {/* Paywall Modal */}
+      <PaywallModal
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        onSubscriptionSuccess={() => {
+          setShowPaywall(false);
+          // 重新检查 premium 状态
+          checkPremiumStatus();
+        }}
+      />
     </View>
   );
 };
