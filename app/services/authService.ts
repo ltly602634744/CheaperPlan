@@ -1,5 +1,5 @@
-import {supabase} from "@/app/services/supabase";
-import {registerForPushNotificationsAsync} from "@/app/services/pushNotificationService";
+import { registerForPushNotificationsAsync } from "@/app/services/pushNotificationService";
+import { supabase } from "@/app/services/supabase";
 
 export const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({ email: email, password: password });
@@ -48,4 +48,3 @@ export const savePushToken = async (userId: string, pushToken: string) => {
         });
     return { error };
 }
-

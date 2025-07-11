@@ -1,13 +1,50 @@
 import { useRecommendPlans } from "@/app/hooks/useRecommendPlans";
-import React, { useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useAuthContext } from "../context/AuthContext";
+import { getUserProfile } from "../services/userService";
 
 
 console.log("BetterPlanScreen loaded")
 const BetterPlanScreen: React.FC = () => {
   const { betterPlans } = useRecommendPlans();
+  const { session } = useAuthContext();
+  const [isPremium, setIsPremium] = useState(false);
+  const [loading, setLoading] = useState(true);
   // 保存展开的卡片index，-1表示全部折叠
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  // 检查用户 premium 状态的函数
+  const checkPremiumStatus = useCallback(async () => {
+    if (!session?.user?.id) {
+      setIsPremium(false);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await getUserProfile(session.user.id);
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        setIsPremium(false);
+      } else {
+        setIsPremium(data?.premium === 'paid');
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setIsPremium(false);
+    } finally {
+      setLoading(false);
+    }
+  }, [session?.user?.id]);
+
+  // 使用 useFocusEffect 替代 useEffect，每次页面获得焦点时都会执行
+  useFocusEffect(
+    useCallback(() => {
+      checkPremiumStatus();
+    }, [checkPremiumStatus])
+  );
 
   const handleToggle = (index: number) => {
     setExpandedIndex(prev => (prev === index ? null : index));
@@ -18,6 +55,15 @@ const BetterPlanScreen: React.FC = () => {
       <Text className="text-2xl font-bold text-center text-blue-600 mb-4">
         Better Plans
       </Text>
+      
+      {/* Premium 提示 */}
+      {!isPremium && !loading && (
+        <View className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 mx-2">
+          <Text className="text-yellow-700 text-center text-sm">
+            🔒 Subscribe to Pro to see provider details
+          </Text>
+        </View>
+      )}
 
       {betterPlans.length > 0 ? (
         <ScrollView>
@@ -34,7 +80,7 @@ const BetterPlanScreen: React.FC = () => {
                 {/* 基本信息 */}
                 <Text className="text-base text-gray-800 mb-1">
                   <Text className="font-semibold">Provider:</Text>{" "}
-                  {plan.provider || "N/A"}
+                  {isPremium ? (plan.provider || "N/A") : "***"}
                 </Text>
                 <Text className="text-base text-gray-800 mb-1">
                   <Text className="font-semibold">Network:</Text>{" "}

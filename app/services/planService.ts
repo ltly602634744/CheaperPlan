@@ -19,20 +19,20 @@ export const deleteUserPlan = async (userId: string) => {
 }
 
 export const createUserPlan = async (userId: string,
-                                     userPlan: Partial<{ 
-                                         provider: string; 
-                                         data: number | null; 
-                                         coverage: string; 
-                                         voicemail: boolean; 
-                                         price: number;
-                                         network: string;
-                                         call_display: boolean;
-                                         call_waiting: boolean;
-                                         suspicious_call_detection: boolean;
-                                         hotspot: boolean;
-                                         conference_call: boolean;
-                                         video_call: boolean;
-                                     }>) =>{
+    userPlan: Partial<{
+        provider: string;
+        data: number | null;
+        coverage: string;
+        voicemail: boolean;
+        price: number;
+        network: string;
+        call_display: boolean;
+        call_waiting: boolean;
+        suspicious_call_detection: boolean;
+        hotspot: boolean;
+        conference_call: boolean;
+        video_call: boolean;
+    }>) => {
     const { data, error } = await supabase
         .from('user_mobile_plans')
         .insert({
@@ -56,20 +56,20 @@ export const createUserPlan = async (userId: string,
 
 
 export const updateUserPlan = async (userId: string,
-                                     updates: Partial<{ 
-                                         provider: string; 
-                                         data: number | null; 
-                                         coverage: string; 
-                                         voicemail: boolean; 
-                                         price: number;
-                                         network: string;
-                                         call_display: boolean;
-                                         call_waiting: boolean;
-                                         suspicious_call_detection: boolean;
-                                         hotspot: boolean;
-                                         conference_call: boolean;
-                                         video_call: boolean;
-                                     }>) =>{
+    updates: Partial<{
+        provider: string;
+        data: number | null;
+        coverage: string;
+        voicemail: boolean;
+        price: number;
+        network: string;
+        call_display: boolean;
+        call_waiting: boolean;
+        suspicious_call_detection: boolean;
+        hotspot: boolean;
+        conference_call: boolean;
+        video_call: boolean;
+    }>) => {
     const { data, error } = await supabase
         .from('user_mobile_plans')
         .update(updates)

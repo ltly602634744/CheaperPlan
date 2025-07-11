@@ -1,11 +1,14 @@
 // app/screens/PaywallScreen.tsx
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Button, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Button, Text, View } from 'react-native';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
+import { useAuthContext } from '../context/AuthContext';
+import { updateUserPremiumStatus } from '../services/userService';
 
 export default function PaywallScreen() {
   const [pkg, setPkg] = useState<PurchasesPackage | null>(null);
   const [loading, setLoading] = useState(true);
+  const { session } = useAuthContext();
 
   useEffect(() => {
     (async () => {
@@ -36,14 +39,26 @@ export default function PaywallScreen() {
   }, []);
 
   const buy = async () => {
-    if (!pkg) return;
+    if (!pkg || !session?.user?.id) return;
+    
     try {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
+      
       if (customerInfo.entitlements.active['Pro']) {
-        alert('订阅成功，Pro 已解锁！');
+        // 付款成功，更新用户的 premium 状态
+        const { error } = await updateUserPremiumStatus(session.user.id, 'paid');
+        
+        if (error) {
+          console.error('Failed to update premium status:', error);
+          Alert.alert('Warning', '订阅成功，但更新用户状态失败，请联系客服');
+        } else {
+          Alert.alert('Success', '订阅成功，Pro 已解锁！');
+        }
       }
     } catch (e: any) {
-      if (!e.userCancelled) alert(`购买失败: ${e.message}`);
+      if (!e.userCancelled) {
+        Alert.alert('Error', `购买失败: ${e.message}`);
+      }
     }
   };
 
@@ -54,8 +69,7 @@ export default function PaywallScreen() {
     <View style={{ flex:1, justifyContent:'center', alignItems:'center' }}>
       <Text style={{ fontSize:20, marginBottom:12 }}>{pkg.product.title}</Text>
       <Text style={{ marginBottom:24 }}>{pkg.product.priceString} / 月</Text>
-      <Button title="\subscrip now\" onPress={buy} />
-      <Text>wait for tax number</Text>
+      <Button title="subscript now" onPress={buy} />
     </View>
   );
 }
