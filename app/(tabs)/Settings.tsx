@@ -85,10 +85,10 @@ export default function SettingsScreen() {
     };
 
     return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView className="flex-1 bg-white">
         <ScrollView className="flex-1">
         {/* 第一组：基本信息 */}
-        <View className="mt-2 bg-white">
+        <View className="mt-2 bg-white shadow-sm overflow-hidden">
             <View className="h-[0.5px] bg-gray-100 mx-4" />
             <Cell label="Email" value={session?.user?.email || 'Not set'} onPress={() => router.push('../screens/EmailSettingScreen')} />
             <View className="h-[0.5px] bg-gray-100 mx-4" />
@@ -98,7 +98,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* 第二组：账户信息 */}
-        <View className="mt-3 bg-white">
+        <View className="mt-3 bg-white shadow-sm overflow-hidden">
             <Cell label="UID" value="310959127" hasArrow={false} />
             <View className="h-[0.5px] bg-gray-100 mx-4" />
             <Cell label="Notification" value={notificationEnabled} onPress={() => router.push('../screens/NotificationSettingScreen')} />
@@ -109,7 +109,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* 第三组：展示内容 */}
-        <View className="mt-3 bg-white">
+        <View className="mt-3 bg-white shadow-sm overflow-hidden">
             <Cell label="Terms of Use" onPress={() => showModal("Terms of Use")} />
             <View className="h-[0.5px] bg-gray-100 mx-4" />
             <Cell label="Privacy Policy" onPress={() => showModal("Privacy Policy")} />

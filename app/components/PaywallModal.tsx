@@ -115,7 +115,7 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
                   </Text>
                   <Text className="text-4xl font-bold text-center text-blue-600 mb-4">
                     {pkg.product.priceString}
-                    <Text className="text-lg text-gray-600">/月</Text>
+                    <Text className="text-lg text-gray-600">/Month</Text>
                   </Text>
                   
                   {/* Features */}

@@ -1,13 +1,14 @@
 import { useRecommendPlans } from "@/app/hooks/useRecommendPlans";
 import { useUserProfile } from "@/app/hooks/useUserProfile";
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import PaywallModal from "../components/PaywallModal";
 
@@ -45,8 +46,7 @@ const ProfileScreen: React.FC = () => {
     );
 
   return (
-    <ScrollView className="flex-1 px-4 pt-8 bg-gray-50">
-      <Text className="text-xl font-bold text-center mb-4">Your Plan</Text>
+    <ScrollView className="flex-1 px-4 pt-8 bg-white">
 
       {/* 新增：节省信息 */}
       {userPlan && betterPlans.length > 0 && (
@@ -54,15 +54,29 @@ const ProfileScreen: React.FC = () => {
           <Text className="text-green-700 text-base font-semibold mb-1">
             🎉 Good news! We found {betterPlans.length} cheaper plans for you
           </Text>
-          <Text className="text-green-700 text-base">
+          <Text className="text-green-700 text-base mb-3">
             Save up to <Text className="font-bold">${maxSavings}</Text> every month! 
           </Text>
+          <TouchableOpacity
+            className="bg-green-600 py-2 px-4 rounded-lg self-start"
+            onPress={handleBetterPlan}
+          >
+            <Text className="text-white font-semibold">View Now</Text>
+          </TouchableOpacity>
         </View>
       )}
 
       {userPlan ? (
         <View className="space-y-4">
-          <View className="bg-white p-4 rounded-lg shadow-sm mb-4">
+          <View className="bg-[#F7F8FA] p-4 rounded-lg shadow-sm mb-4 relative">
+            {/* 编辑图标 */}
+            <TouchableOpacity
+              onPress={handleAddPlan}
+              className="absolute top-3 right-3 z-10"
+            >
+              <FontAwesome6 name="pencil" size={20} color="#3B82F6" />
+            </TouchableOpacity>
+            
             {/* 基本信息 */}
             <Text className="text-base text-gray-700 mb-1">
               <Text className="font-semibold">Provider: </Text>
@@ -118,20 +132,6 @@ const ProfileScreen: React.FC = () => {
           </View>
 
           <TouchableOpacity
-            className="bg-blue-500 py-3 rounded-lg items-center mb-3"
-            onPress={handleAddPlan}
-          >
-            <Text className="text-white font-semibold">Update Your Plan</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="bg-green-500 py-3 rounded-lg items-center mb-3"
-            onPress={handleBetterPlan}
-          >
-            <Text className="text-white font-semibold">Better Plan</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
             className="bg-purple-500 py-3 rounded-lg items-center"
             onPress={() => setShowPaywall(true)}
           >
@@ -144,7 +144,7 @@ const ProfileScreen: React.FC = () => {
             className="bg-blue-500 py-3 rounded-lg items-center mt-4"
             onPress={handleAddPlan}
           >
-            <Text className="text-white font-semibold">Add Current Plan</Text>
+            <Text className="text-white font-semibold">Add your current plan to start</Text>
           </TouchableOpacity>
         </View>
       )}

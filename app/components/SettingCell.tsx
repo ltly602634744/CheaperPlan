@@ -11,7 +11,7 @@ export default function Cell({ label, value, onPress, hasArrow = true }: {
     <TouchableOpacity
       activeOpacity={onPress ? 0.6 : 1}
       onPress={onPress}
-      className="flex-row items-center justify-between px-4 h-14 bg-white"
+      className="flex-row items-center justify-between px-4 h-14 bg-gray-50 w-full"
     >
       <Text className="text-base text-gray-900">{label}</Text>
       <View className="flex-row items-center">
