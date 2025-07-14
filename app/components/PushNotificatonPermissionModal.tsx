@@ -10,6 +10,7 @@ import {
   NativeEventSubscription,
   StyleSheet,
   Text,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 
@@ -62,19 +63,23 @@ export const PushNotificationPermissionModal: React.FC = () => {
       animationType="fade"
       onRequestClose={handleCancel}
     >
-      <View style={styles.overlay}>
-        <View style={styles.box}>
-          <Text style={styles.title}>Notification permission required</Text>
-          <Text style={styles.desc}>
-            Please enable notification permissions in the system settings, then return to the app.
-          </Text>
-          <View style={styles.row}>
-            <Button title="Cancel" onPress={handleCancel} />
-            <View style={styles.spacer} />
-            <Button title="Go to Settings" onPress={handleGoSettings} />
-          </View>
+      <TouchableWithoutFeedback onPress={handleCancel}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback onPress={() => { }}>
+            <View style={styles.box}>
+              <Text style={styles.title}>Notification permission required</Text>
+              <Text style={styles.desc}>
+                Please enable notification permissions in the system settings, then return to the app.
+              </Text>
+              <View style={styles.row}>
+                <Button title="Cancel" onPress={handleCancel} />
+                <View style={styles.spacer} />
+                <Button title="Go to Settings" onPress={handleGoSettings} />
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

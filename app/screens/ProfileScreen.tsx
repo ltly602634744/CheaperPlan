@@ -1,8 +1,9 @@
 import { useRecommendPlans } from "@/app/hooks/useRecommendPlans";
 import { useUserProfile } from "@/app/hooks/useUserProfile";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -14,9 +15,22 @@ import PaywallModal from "../components/PaywallModal";
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
-  const { user, plan: userPlan, loading } = useUserProfile();
+  const params = useLocalSearchParams();
+  const { user, plan: userPlan, loading, refetch } = useUserProfile();
   const { betterPlans } = useRecommendPlans();
   const [showPaywall, setShowPaywall] = useState(false);
+
+  // 只在从编辑页面返回时刷新数据
+  useFocusEffect(
+    useCallback(() => {
+      // 如果有refresh参数，说明是从编辑页面返回
+      if (params.refresh === 'true') {
+        refetch();
+        // 清除参数，避免重复刷新
+        router.setParams({ refresh: undefined });
+      }
+    }, [params.refresh, refetch])
+  );
 
   // 计算节省金额
   let maxSavings = 0;
@@ -29,7 +43,7 @@ const ProfileScreen: React.FC = () => {
 
   const handleAddPlan = () => {
     if (!user?.id) return;
-    router.replace("/screens/PlanFormScreen");
+    router.push("/screens/PlanFormScreen");
   };
 
   const handleBetterPlan = () => {

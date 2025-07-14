@@ -105,7 +105,7 @@ function AppLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="screens/AuthScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
       <Stack.Screen name="screens/RegisterScreen" options={{ title: 'Register' }} />
-      <Stack.Screen name="screens/PlanFormScreen" options={{ headerTransparent: true, title: '' }} />
+      <Stack.Screen name="screens/PlanFormScreen" options={{ title: 'Edit Plan' }} />
       
       {/* 设置页面 */}
       <Stack.Screen name="screens/EmailSettingScreen" options={{ title: 'Email' }} />

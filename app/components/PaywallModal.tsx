@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { useAuthContext } from '../context/AuthContext';
 import { updateUserPremiumStatus } from '../services/userService';
@@ -83,85 +83,89 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
       transparent={true}
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-black/50 justify-end">
-        <View className="bg-white rounded-t-3xl min-h-[60%] max-h-[80%]">
-          {/* Header */}
-          <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
-            <Text className="text-2xl font-bold text-gray-800">Upgrade to Pro</Text>
-            <TouchableOpacity onPress={onClose} className="p-2">
-              <Ionicons name="close" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Content */}
-          <View className="flex-1 p-6">
-            {loading ? (
-              <View className="flex-1 justify-center items-center">
-                <ActivityIndicator size="large" color="#007AFF" />
-                <Text className="mt-4 text-gray-600">Loading subscription options...</Text>
-              </View>
-            ) : !pkg ? (
-              <View className="flex-1 justify-center items-center">
-                <Text className="text-center text-gray-600">
-                  Sorry there's an error on our side. Please contact customer service.
-                </Text>
-              </View>
-            ) : (
-              <View className="flex-1">
-                {/* Package Info */}
-                <View className="bg-blue-50 rounded-2xl p-6 mb-6">
-                  <Text className="text-2xl font-bold text-center text-blue-600 mb-2">
-                    {pkg.product.title}
-                  </Text>
-                  <Text className="text-4xl font-bold text-center text-blue-600 mb-4">
-                    {pkg.product.priceString}
-                    <Text className="text-lg text-gray-600">/Month</Text>
-                  </Text>
-                  
-                  {/* Features */}
-                  <View className="space-y-3">
-                    <View className="flex-row items-center">
-                      <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                      <Text className="ml-3 text-gray-700">View carrier information</Text>
-                    </View>
-                    <View className="flex-row items-center">
-                      <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                      <Text className="ml-3 text-gray-700">Unlock premium features</Text>
-                    </View>
-                    <View className="flex-row items-center">
-                      <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                      <Text className="ml-3 text-gray-700">Get priority customer support</Text>
-                    </View>
-                  </View>
-                </View>
-
-                {/* Subscribe Button */}
-                <TouchableOpacity
-                  onPress={buy}
-                  disabled={purchasing}
-                  className={`py-4 rounded-2xl ${purchasing ? 'bg-gray-400' : 'bg-blue-600'}`}
-                >
-                  {purchasing ? (
-                    <View className="flex-row justify-center items-center">
-                      <ActivityIndicator size="small" color="white" />
-                      <Text className="text-white font-semibold ml-2">Processing...</Text>
-                    </View>
-                  ) : (
-                    <Text className="text-white text-center font-semibold text-lg">
-                      Subscribe Now
-                    </Text>
-                  )}
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View className="flex-1 bg-black/50 justify-end">
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View className="bg-white rounded-t-3xl min-h-[60%] max-h-[80%]">
+              {/* Header */}
+              <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
+                <Text className="text-2xl font-bold text-gray-800">Upgrade to Pro</Text>
+                <TouchableOpacity onPress={onClose} className="p-2">
+                  <Ionicons name="close" size={24} color="#666" />
                 </TouchableOpacity>
-
-                {/* Terms */}
-                <Text className="text-center text-gray-500 text-xs mt-4 px-4">
-                  The subscription will automatically renew monthly and can be canceled at any time. By subscribing, you agree to our Terms of Service and Privacy Policy.
-                </Text>
               </View>
-            )}
-          </View>
+
+              {/* Content */}
+              <View className="flex-1 p-6">
+                {loading ? (
+                  <View className="flex-1 justify-center items-center">
+                    <ActivityIndicator size="large" color="#007AFF" />
+                    <Text className="mt-4 text-gray-600">Loading subscription options...</Text>
+                  </View>
+                ) : !pkg ? (
+                  <View className="flex-1 justify-center items-center">
+                    <Text className="text-center text-gray-600">
+                      Sorry there's an error on our side. Please contact customer service.
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="flex-1">
+                    {/* Package Info */}
+                    <View className="bg-blue-50 rounded-2xl p-6 mb-6">
+                      <Text className="text-2xl font-bold text-center text-blue-600 mb-2">
+                        {pkg.product.title}
+                      </Text>
+                      <Text className="text-4xl font-bold text-center text-blue-600 mb-4">
+                        {pkg.product.priceString}
+                        <Text className="text-lg text-gray-600">/Month</Text>
+                      </Text>
+                      
+                      {/* Features */}
+                      <View className="space-y-3">
+                        <View className="flex-row items-center">
+                          <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                          <Text className="ml-3 text-gray-700">View carrier information</Text>
+                        </View>
+                        <View className="flex-row items-center">
+                          <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                          <Text className="ml-3 text-gray-700">Unlock premium features</Text>
+                        </View>
+                        <View className="flex-row items-center">
+                          <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                          <Text className="ml-3 text-gray-700">Get priority customer support</Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    {/* Subscribe Button */}
+                    <TouchableOpacity
+                      onPress={buy}
+                      disabled={purchasing}
+                      className={`py-4 rounded-2xl ${purchasing ? 'bg-gray-400' : 'bg-blue-600'}`}
+                    >
+                      {purchasing ? (
+                        <View className="flex-row justify-center items-center">
+                          <ActivityIndicator size="small" color="white" />
+                          <Text className="text-white font-semibold ml-2">Processing...</Text>
+                        </View>
+                      ) : (
+                        <Text className="text-white text-center font-semibold text-lg">
+                          Subscribe Now
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+
+                    {/* Terms */}
+                    <Text className="text-center text-gray-500 text-xs mt-4 px-4">
+                      The subscription will automatically renew monthly and can be canceled at any time. By subscribing, you agree to our Terms of Service and Privacy Policy.
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 } 

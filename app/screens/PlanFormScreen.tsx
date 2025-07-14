@@ -4,17 +4,17 @@ import { Picker } from '@react-native-picker/picker';
 import { useRouter } from "expo-router";
 import React, { useState } from 'react';
 import {
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -36,13 +36,17 @@ const PlanFormScreen: React.FC = () => {
       Alert.alert('Error', error.message);
     } else {
       Alert.alert('Success', `${isUpdating ? 'Plan updated' : 'Plan added'} successfully!`);
-      router.replace("/(tabs)/ProfileScreen");
+      router.back();
+      // 延迟设置参数，确保返回后再刷新
+      setTimeout(() => {
+        router.setParams({ refresh: 'true' });
+      }, 100);
     }
   };
 
   const handleCancel = async () => {
     if (!session?.user.id) return;
-    router.replace("/(tabs)/ProfileScreen");
+    router.back();
   };
 
   const renderBooleanPicker = (field: string, label: string, value: boolean) => {

@@ -1,8 +1,8 @@
 import InfoModal from "@/app/components/InfoModal";
 import Cell from "@/app/components/SettingCell";
 import { useAuthContext } from "@/app/context/AuthContext";
+import { ModalContentKey, modalContents } from "@/app/data";
 import { useAuth } from "@/app/hooks/useAuth";
-import { ModalContentKey, modalContents } from "@/app/terms_policies/modalContents";
 import * as Notifications from 'expo-notifications';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
