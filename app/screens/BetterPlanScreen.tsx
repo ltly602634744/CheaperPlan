@@ -172,7 +172,7 @@ const BetterPlanScreen: React.FC = () => {
     <View className="flex-1 bg-white">
       {/* Premium 提示 */}
       {!isPremium && !loading && (
-        <View className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 mx-4">
+        <View className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2 mx-4 mt-4">
           <Text className="text-yellow-700 text-center text-sm">
             🔒 Subscribe to Pro to see provider details
           </Text>
@@ -185,7 +185,7 @@ const BetterPlanScreen: React.FC = () => {
       )}
 
       {/* 排序和筛选栏 */}
-      <View className="flex-row justify-between px-4 mb-4 pt-6">
+      <View className="flex-row justify-between px-4 mb-4 pt-2">
         <TouchableOpacity
           onPress={() => setShowSortModal(true)}
           className="flex-row items-center bg-white border border-gray-200 px-3 py-2 rounded-lg flex-1 mr-2"

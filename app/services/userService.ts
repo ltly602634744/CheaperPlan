@@ -1,3 +1,4 @@
+import { UserProfile } from "../types/database";
 import { supabase } from "./supabase";
 
 // Update user premium status
@@ -12,12 +13,12 @@ export const updateUserPremiumStatus = async (userId: string, premiumStatus: str
 };
 
 // Get user profile
-export const getUserProfile = async (userId: string) => {
+export const getUserProfile = async (userId: string, columns: string = "*"): Promise<{ data: Partial<UserProfile> | null; error: any }> => {
     const { data, error } = await supabase
         .from('user_profile')
-        .select('*')
+        .select(columns)
         .eq('user_id', userId)
-        .single();
+        .single<Partial<UserProfile>>();
     return { data, error };
 };
 

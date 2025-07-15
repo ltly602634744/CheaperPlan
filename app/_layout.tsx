@@ -111,7 +111,7 @@ function AppLayout() {
       <Stack.Screen name="screens/EmailSettingScreen" options={{ title: 'Email' }} />
       <Stack.Screen name="screens/PhoneSettingScreen" options={{ title: 'Phone' }} />
       <Stack.Screen name="screens/NotificationSettingScreen" options={{ title: 'Notification' }} />
-      <Stack.Screen name="screens/SubscriptionSettingScreen" options={{ title: 'Subscription' }} />
+      <Stack.Screen name="screens/CoinPurchaseScreen" options={{ title: 'My Coins' }} />
       <Stack.Screen name="screens/LanguageSettingScreen" options={{ title: 'Language' }} />
     </Stack>
   );
