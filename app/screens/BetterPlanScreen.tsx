@@ -4,13 +4,17 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import BetterPlanCard from "../components/BetterPlanCard";
 import BottomSheetModal from "../components/BottomSheetModal";
+import CoinUnlockModal from "../components/CoinUnlockModal";
 import PaywallModal from "../components/PaywallModal";
 import { useAuthContext } from "../context/AuthContext";
 import { getProviderUrl, hasProviderUrl } from "../data";
-import { getUserProfile } from "../services/userService";
+import { useUserProfile } from "../hooks/useUserProfile";
+import { getUserProfile, updateUserProfile } from "../services/userService";
 
 console.log("BetterPlanScreen loaded")
 
@@ -34,12 +38,15 @@ const FILTER_OPTIONS = [
 ];
 
 const BetterPlanScreen: React.FC = () => {
-  const { betterPlans } = useRecommendPlans();
+  const { betterPlans, refetch: refetchRecommendPlans } = useRecommendPlans();
+  const { user, loading: profileLoading, refetch } = useUserProfile();
   const { session } = useAuthContext();
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showCoinUnlockModal, setShowCoinUnlockModal] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const router = useRouter();
 
   // 排序和筛选状态
   const [selectedSort, setSelectedSort] = useState('price-asc');
@@ -56,7 +63,7 @@ const BetterPlanScreen: React.FC = () => {
     }
 
     try {
-      const { data, error } = await getUserProfile(session.user.id);
+      const { data, error } = await getUserProfile(session.user.id, "premium");
       if (error) {
         console.error('Error fetching user profile:', error);
         setIsPremium(false);
@@ -71,23 +78,63 @@ const BetterPlanScreen: React.FC = () => {
     }
   }, [session?.user?.id]);
 
+  // 权限判断函数
+  const canViewPlan = (plan: any) => isPremium || plan.unlocked === true;
+
   // 使用 useFocusEffect 替代 useEffect，每次页面获得焦点时都会执行
   useFocusEffect(
     useCallback(() => {
       checkPremiumStatus();
+      console.log('Focus effect triggered');
     }, [checkPremiumStatus])
   );
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [])
+  );
 
-  const handleToggle = (index: number) => {
-    setExpandedIndex(prev => (prev === index ? null : index));
+  //点击卡片函数
+  const handlePress = (index: number, canView: boolean) => {
+    if (canView) {
+      setExpandedIndex(prev => (prev === index ? null : index));
+    } else {
+      setShowCoinUnlockModal(true);
+    }
+  }
+  //消耗金币解锁
+  const handleUnlock = async () => {
+    if (!user || profileLoading) return;
+    setLoading(true);
+    try {
+      // 1. 扣除金币并更新 authorized_util
+      const updates = {
+        coins: user.coins - 10,
+        authorized_until: new Date().toISOString(), 
+      };
+      const { error: updateErr } = await updateUserProfile(user.id, updates);
+      if (updateErr) throw updateErr;
+      await refetch();
+      await refetchRecommendPlans();
+      setShowCoinUnlockModal(false);
+      Alert.alert('Unlock successful', 'You have successfully unlocked the plan card!');
+    } catch (e: any) {
+      Alert.alert('Unlock failed', e.message || 'Please try again');
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleGoPurchase = () => {
+    setShowCoinUnlockModal(false);
+    router.push('/screens/CoinPurchaseScreen');
   };
 
   // 处理跳转到运营商官网
   const handleVisitWebsite = (provider: string) => {
-    if (!isPremium) {
-      setShowPaywall(true);
-      return;
-    }
+    // if (!isPremium) {
+    //   setShowPaywall(true);
+    //   return;
+    // }
 
     const url = getProviderUrl(provider);
     if (url) {
@@ -208,17 +255,18 @@ const BetterPlanScreen: React.FC = () => {
       {filteredAndSortedPlans.length > 0 ? (
         <ScrollView className="px-4">
           {filteredAndSortedPlans.map((plan, index) => (
-            <TouchableOpacity
+            <BetterPlanCard
               key={index}
+              isBlurred={!canViewPlan(plan)}
               activeOpacity={0.9}
-              onPress={() => handleToggle(index)}
+              onPress={() => handlePress(index, canViewPlan(plan))}
               className={index !== filteredAndSortedPlans.length - 1 ? 'mb-4' : ''}
             >
               <View
                 className="bg-[#F0F7FF] p-4 rounded-2xl shadow-lg shadow-black/10 border border-gray-200 relative"
               >
                 {/* 运营商官网按钮 */}
-                {isPremium && plan.provider && hasProviderUrl(plan.provider) && (
+                {plan.provider && hasProviderUrl(plan.provider) && (
                   <TouchableOpacity
                     onPress={() => handleVisitWebsite(plan.provider)}
                     className="absolute top-3 right-3 z-10 bg-blue-500 px-3 py-1 rounded-full flex-row items-center"
@@ -231,7 +279,7 @@ const BetterPlanScreen: React.FC = () => {
                 {/* 基本信息 */}
                 <Text className="text-base text-gray-800 mb-1">
                   <Text className="font-semibold">Provider:</Text>{" "}
-                  {isPremium ? (plan.provider || "N/A") : "***"}
+                  {plan.provider || "N/A"}
                 </Text>
                 <Text className="text-base text-gray-800 mb-1">
                   <Text className="font-semibold">Network:</Text>{" "}
@@ -290,7 +338,7 @@ const BetterPlanScreen: React.FC = () => {
                   <Text className="text-center text-blue-400 mt-3">Click to expand and view more details</Text>
                 )}
               </View>
-            </TouchableOpacity>
+            </BetterPlanCard>
           ))}
         </ScrollView>
       ) : (
@@ -396,6 +444,20 @@ const BetterPlanScreen: React.FC = () => {
           // 重新检查 premium 状态
           checkPremiumStatus();
         }}
+      />
+
+      {/* Coin Unlock Modal */}
+      <CoinUnlockModal
+        visible={showCoinUnlockModal}
+        onClose={() => setShowCoinUnlockModal(false)}
+        openSubscribe={() => {
+          setShowPaywall(true);
+          setShowCoinUnlockModal(false);
+        }}
+        onUnlock={handleUnlock}
+        onGoPurchase={handleGoPurchase}
+        user={user}
+        profileLoading={profileLoading}
       />
     </View>
   );

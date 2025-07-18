@@ -1,5 +1,5 @@
 import { supabase } from "@/app/services/supabase";
-import { UserPlan } from "@/app/types/userPlan";
+import { RecommendedPlan } from "@/app/types/userPlan";
 
 
 export const fetchBetterPlans = async () => {
@@ -10,7 +10,8 @@ export const fetchBetterPlans = async () => {
             return null;
         }
         
-        const userPlans: UserPlan[] = data.map((item: any) => ({
+        const recommendedPlans: RecommendedPlan[] = data.map((item: any) => ({
+            unlocked: item.unlocked,
             provider: item.provider,
             data: item.data || null,
             coverage: item.coverage,
@@ -24,7 +25,7 @@ export const fetchBetterPlans = async () => {
             conference_call: item.conference_call,
             video_call: item.video_call,
         }));
-        return userPlans; // 返回查询结果
+        return recommendedPlans; // 返回查询结果
     } catch (err) {
         console.error('Unexpected error:', err);
         return [];
