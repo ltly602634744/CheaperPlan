@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { useAuthContext } from '../context/AuthContext';
-import { updateUserPremiumStatus } from '../services/userService';
+import { updateUserProfile } from '../services/userService';
 
 interface PaywallModalProps {
   visible: boolean;
@@ -29,16 +29,16 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
       console.log('RevenueCat Offerings Debug:');
       console.log('Current offering:', current);
       console.log('All offerings:', all);
-      
+
       if (current) {
         console.log('Available packages:', current.availablePackages);
         console.log('Package identifiers:', current.availablePackages.map(p => p.identifier));
       }
-      
+
       // 通过包标识符查找
       const foundPackage = current?.availablePackages.find(p => p.identifier === '$rc_monthly');
       console.log('Found package:', foundPackage);
-      
+
       setPkg(foundPackage ?? null);
     } catch (error) {
       console.error('Error getting offerings:', error);
@@ -49,27 +49,31 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
 
   const buy = async () => {
     if (!pkg || !session?.user?.id) return;
-    
+
     setPurchasing(true);
     try {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
-      
+
       if (customerInfo.entitlements.active['Pro']) {
         // 付款成功，更新用户的 premium 状态
-        const { error } = await updateUserPremiumStatus(session.user.id, 'paid');
-        
+        const entitlement = customerInfo.entitlements.active["Pro"];
+        const { error } = await updateUserProfile(session.user.id, {
+          premium: 'paid', premium_expiration_date: entitlement.expirationDate
+            ? new Date(entitlement.expirationDate)
+            : null,
+        })
         if (error) {
           console.error('Failed to update premium status:', error);
-          Alert.alert('Warning', '订阅成功，但更新用户状态失败，请联系客服');
+          Alert.alert('Warning', 'Subscription successful, but failed to update user status. Please contact customer support.');
         } else {
-          Alert.alert('Success', '订阅成功，Pro 已解锁！');
+          Alert.alert('Success', 'You are all set! All plans are now unlocked.');
           onSubscriptionSuccess?.();
           onClose();
         }
       }
     } catch (e: any) {
       if (!e.userCancelled) {
-        Alert.alert('Error', `购买失败: ${e.message}`);
+        Alert.alert('Error', `Purchase failed: ${e.message}`);
       }
     } finally {
       setPurchasing(false);
@@ -85,7 +89,7 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
     >
       <TouchableWithoutFeedback onPress={onClose}>
         <View className="flex-1 bg-black/50 justify-end">
-          <TouchableWithoutFeedback onPress={() => {}}>
+          <TouchableWithoutFeedback onPress={() => { }}>
             <View className="bg-white rounded-t-3xl min-h-[60%] max-h-[80%]">
               {/* Header */}
               <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
@@ -119,7 +123,7 @@ export default function PaywallModal({ visible, onClose, onSubscriptionSuccess }
                         {pkg.product.priceString}
                         <Text className="text-lg text-gray-600">/Month</Text>
                       </Text>
-                      
+
                       {/* Features */}
                       <View className="space-y-3">
                         <View className="flex-row items-center">

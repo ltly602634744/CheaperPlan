@@ -18,7 +18,7 @@ export const useUserProfile = () => {
         try {
             setLoading(true);
             const { data: profile, error: profileErr } = await getUserProfile(
-                session!.user!.id, "premium,coins"
+                session!.user!.id, "premium,coins,premium_expiration_date"
             );
             if (profileErr || !profile)
                 throw profileErr ?? new Error("profile not found");
@@ -26,9 +26,10 @@ export const useUserProfile = () => {
             const currentUser: User = {
                 id: session?.user?.id || '',
                 email: session?.user?.email || '',
-                cratedAt: session?.user?.created_at || '',
+                createdAt: session?.user?.created_at || '',
                 premium: profile.premium || '',
                 coins: profile.coins || 0,
+                premium_expiration_date: profile.premium_expiration_date ? new Date(profile.premium_expiration_date) : null
             };
             setUser(currentUser);
 

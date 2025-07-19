@@ -10,17 +10,14 @@ export default function PasswordSettingScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleNewPasswordChange = (text: string) => {
-    console.log('New password input changed');
     setNewPassword(text);
   };
 
   const handleConfirmPasswordChange = (text: string) => {
-    console.log('Confirm password input changed');
     setConfirmPassword(text);
   };
 
   const handleSave = useCallback(async () => {
-    console.log('Saving password');
     
     if (!newPassword.trim()) {
       Alert.alert('Error', 'Please enter a new password');
@@ -43,7 +40,6 @@ export default function PasswordSettingScreen() {
         password: newPassword 
       });
       
-      console.log("password update result:", { data, error });
       
       if (error) {
         Alert.alert('Error', error.message || 'Failed to update password');

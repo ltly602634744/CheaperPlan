@@ -11,12 +11,10 @@ export default function EmailSettingScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleEmailChange = (text: string) => {
-    console.log('Email input changed:', text);
     setEmail(text);
   };
 
   const handleSave = useCallback(async () => {
-    console.log('Saving email:', email);
     
     if (!email.trim()) {
       Alert.alert('Error', 'Please enter a valid email address');
@@ -26,8 +24,6 @@ export default function EmailSettingScreen() {
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.updateUser({ email: email.trim() });
-      console.log("new email is:", email);
-      console.log("update result:", { data, error });
       
       if (error) {
         Alert.alert('Error', error.message || 'Failed to update email');

@@ -15,8 +15,8 @@ import { useAuthContext } from "../context/AuthContext";
 import { getProviderUrl, hasProviderUrl } from "../data";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { getUserProfile, updateUserProfile } from "../services/userService";
+import eventBus from '../utils/eventBus';
 
-console.log("BetterPlanScreen loaded")
 
 // 排序选项
 const SORT_OPTIONS = [
@@ -63,12 +63,14 @@ const BetterPlanScreen: React.FC = () => {
     }
 
     try {
-      const { data, error } = await getUserProfile(session.user.id, "premium");
-      if (error) {
+      const { data, error } = await getUserProfile(session.user.id, "premium,premium_expiration_date");
+      if (error || data?.premium === 'Free') {
         console.error('Error fetching user profile:', error);
         setIsPremium(false);
       } else {
-        setIsPremium(data?.premium === 'paid');
+        setIsPremium(data?.premium_expiration_date
+          ? new Date(data.premium_expiration_date) > new Date()
+          : false);
       }
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -110,10 +112,11 @@ const BetterPlanScreen: React.FC = () => {
       // 1. 扣除金币并更新 authorized_util
       const updates = {
         coins: user.coins - 10,
-        authorized_until: new Date().toISOString(), 
+        authorized_until: new Date().toISOString(),
       };
       const { error: updateErr } = await updateUserProfile(user.id, updates);
       if (updateErr) throw updateErr;
+      eventBus.emit('userCoinsUpdated');
       await refetch();
       await refetchRecommendPlans();
       setShowCoinUnlockModal(false);
