@@ -3,6 +3,5 @@ export interface User {
     email: string;
     createdAt: string;
     premium: string;
-    coins: number;
     premium_expiration_date: Date | null;
 }

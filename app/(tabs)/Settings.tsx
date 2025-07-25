@@ -20,6 +20,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import Purchases from 'react-native-purchases';
+import { updateUserProfile } from '../services/userService';
 
 export default function SettingsScreen() {
     const router = useRouter();
@@ -71,11 +73,6 @@ export default function SettingsScreen() {
         checkNotificationPermission();
     }, []);
 
-    // 监听金币更新事件，自动刷新
-    React.useEffect(() => {
-        eventBus.on('userCoinsUpdated', refetch);
-        return () => { eventBus.off('userCoinsUpdated', refetch); };
-    }, [refetch]);
 
     const handleLogOut = async () => {
         const { error } = await signOut();
@@ -91,6 +88,32 @@ export default function SettingsScreen() {
     const getPhoneDisplay = () => {
         const phone = session?.user?.phone;
         return phone || 'Not set';
+    };
+    const handleRestore = async () => {
+        if (!session?.user?.id) return;
+        try {
+            const customerInfo = await Purchases.restorePurchases();
+            const entitlement = customerInfo.entitlements.active["Pro"];
+
+            if (entitlement) {
+                const expiration = entitlement.expirationDate;
+                // ✅ 调用后端接口更新数据库状态
+                await updateUserProfile(session.user.id, {
+                    premium: 'paid',
+                    premium_expiration_date: expiration ? new Date(expiration) : null,
+                });
+
+                Alert.alert('✅ Restoration successful', 'Your subscription has been restored');
+            } else {
+                Alert.alert('Notice', 'No restorable purchases were found on your account.');
+            }
+        } catch (e) {
+            if (e instanceof Error) {
+                Alert.alert('Restoration failed', e.message || 'Please contact support');
+            } else {
+                Alert.alert('Restoration failed', 'Please contact support');
+            }
+        }
     };
 
     return (
@@ -108,16 +131,15 @@ export default function SettingsScreen() {
 
                 {/* 第二组：账户信息 */}
                 <View className="mt-3 bg-white shadow-sm overflow-hidden">
-                    <Cell label="UID" value="310959127" hasArrow={false} />
-                    <View className="h-[0.5px] bg-gray-100 mx-4" />
                     <Cell label="Notification" value={notificationEnabled} onPress={() => router.push('../screens/NotificationSettingScreen')} />
                     <View className="h-[0.5px] bg-gray-100 mx-4" />
-                    <Cell label="My coins"
-                        value={profileLoading ? '...' : String(user?.coins ?? 0)}
-                        onPress={() => router.push('../screens/CoinPurchaseScreen')}
+                    <Cell label="My subscription" 
+                        value={profileLoading ? '...' : (user?.premium === 'paid' ? 'Premium' : 'Free')}
+                        onPress={() => router.push('../screens/SubscriptionScreen')}
                     />
                     <View className="h-[0.5px] bg-gray-100 mx-4" />
-                    <Cell label="Language" value="English" onPress={() => router.push('../screens/LanguageSettingScreen')} />
+                    {/* <Cell label="Language" value="English" onPress={() => router.push('../screens/LanguageSettingScreen')} /> */}
+                    <Cell label="Restore Purchase" value="" onPress={handleRestore} />
                 </View>
 
                 {/* 第三组：展示内容 */}

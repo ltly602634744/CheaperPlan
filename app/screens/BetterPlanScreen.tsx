@@ -9,8 +9,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import BetterPlanCard from "../components/BetterPlanCard";
 import BottomSheetModal from "../components/BottomSheetModal";
-import CoinUnlockModal from "../components/CoinUnlockModal";
-import PaywallModal from "../components/PaywallModal";
+import SubscriptionModal from "../components/SubscriptionModal";
 import { useAuthContext } from "../context/AuthContext";
 import { getProviderUrl, hasProviderUrl } from "../data";
 import { useUserProfile } from "../hooks/useUserProfile";
@@ -43,8 +42,7 @@ const BetterPlanScreen: React.FC = () => {
   const { session } = useAuthContext();
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showPaywall, setShowPaywall] = useState(false);
-  const [showCoinUnlockModal, setShowCoinUnlockModal] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const router = useRouter();
 
@@ -65,7 +63,6 @@ const BetterPlanScreen: React.FC = () => {
     try {
       const { data, error } = await getUserProfile(session.user.id, "premium,premium_expiration_date");
       if (error || data?.premium === 'Free') {
-        console.error('Error fetching user profile:', error);
         setIsPremium(false);
       } else {
         setIsPremium(data?.premium_expiration_date
@@ -78,7 +75,7 @@ const BetterPlanScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id]);
+  }, []);
 
   // 权限判断函数
   const canViewPlan = (plan: any) => isPremium || plan.unlocked === true;
@@ -87,12 +84,24 @@ const BetterPlanScreen: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       checkPremiumStatus();
+      // refetch();
+      refetchRecommendPlans(); // 确保推荐套餐也会刷新
       console.log('Focus effect triggered');
-    }, [checkPremiumStatus])
+    }, [])
   );
+
+  // 监听用户套餐更新事件
   useFocusEffect(
     useCallback(() => {
-      refetch();
+      const handlePlanUpdate = () => {
+        console.log('Plan updated, refreshing better plans');
+        refetchRecommendPlans();
+      };
+
+      eventBus.on('userPlanUpdated', handlePlanUpdate);
+      return () => {
+        eventBus.off('userPlanUpdated', handlePlanUpdate);
+      };
     }, [])
   );
 
@@ -101,44 +110,12 @@ const BetterPlanScreen: React.FC = () => {
     if (canView) {
       setExpandedIndex(prev => (prev === index ? null : index));
     } else {
-      setShowCoinUnlockModal(true);
+      setShowSubscriptionModal(true);
     }
   }
-  //消耗金币解锁
-  const handleUnlock = async () => {
-    if (!user || profileLoading) return;
-    setLoading(true);
-    try {
-      // 1. 扣除金币并更新 authorized_util
-      const updates = {
-        coins: user.coins - 10,
-        authorized_until: new Date().toISOString(),
-      };
-      const { error: updateErr } = await updateUserProfile(user.id, updates);
-      if (updateErr) throw updateErr;
-      eventBus.emit('userCoinsUpdated');
-      await refetch();
-      await refetchRecommendPlans();
-      setShowCoinUnlockModal(false);
-      Alert.alert('Unlock successful', 'You have successfully unlocked the plan card!');
-    } catch (e: any) {
-      Alert.alert('Unlock failed', e.message || 'Please try again');
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleGoPurchase = () => {
-    setShowCoinUnlockModal(false);
-    router.push('/screens/CoinPurchaseScreen');
-  };
 
   // 处理跳转到运营商官网
   const handleVisitWebsite = (provider: string) => {
-    // if (!isPremium) {
-    //   setShowPaywall(true);
-    //   return;
-    // }
-
     const url = getProviderUrl(provider);
     if (url) {
       Linking.openURL(url).catch(() => {
@@ -220,19 +197,6 @@ const BetterPlanScreen: React.FC = () => {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Premium 提示 */}
-      {!isPremium && !loading && (
-        <View className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2 mx-4 mt-4">
-          <Text className="text-yellow-700 text-center text-sm">
-            🔒 Subscribe to Pro to see provider details
-          </Text>
-          <TouchableOpacity onPress={() => setShowPaywall(true)}>
-            <Text className="text-blue-600 text-center text-sm font-semibold mt-2">
-              Click here to subscribe
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
 
       {/* 排序和筛选栏 */}
       <View className="flex-row justify-between px-4 mb-4 pt-2">
@@ -438,29 +402,15 @@ const BetterPlanScreen: React.FC = () => {
         ))}
       </BottomSheetModal>
 
-      {/* Paywall Modal */}
-      <PaywallModal
-        visible={showPaywall}
-        onClose={() => setShowPaywall(false)}
+      {/* Subscription Modal */}
+      <SubscriptionModal
+        visible={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
         onSubscriptionSuccess={() => {
-          setShowPaywall(false);
+          setShowSubscriptionModal(false);
           // 重新检查 premium 状态
           checkPremiumStatus();
         }}
-      />
-
-      {/* Coin Unlock Modal */}
-      <CoinUnlockModal
-        visible={showCoinUnlockModal}
-        onClose={() => setShowCoinUnlockModal(false)}
-        openSubscribe={() => {
-          setShowPaywall(true);
-          setShowCoinUnlockModal(false);
-        }}
-        onUnlock={handleUnlock}
-        onGoPurchase={handleGoPurchase}
-        user={user}
-        profileLoading={profileLoading}
       />
     </View>
   );

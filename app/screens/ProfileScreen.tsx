@@ -1,5 +1,6 @@
 import { useRecommendPlans } from "@/app/hooks/useRecommendPlans";
 import { useUserProfile } from "@/app/hooks/useUserProfile";
+import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -11,14 +12,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import PaywallModal from "../components/PaywallModal";
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { user, plan: userPlan, loading, refetch } = useUserProfile();
   const { betterPlans } = useRecommendPlans();
-  const [showPaywall, setShowPaywall] = useState(false);
+  const [showSavingsNotification, setShowSavingsNotification] = useState(true);
 
   // 只在从编辑页面返回时刷新数据
   useFocusEffect(
@@ -39,6 +39,8 @@ const ProfileScreen: React.FC = () => {
       ...betterPlans.map(plan => userPlan.price - plan.price)
     );
     if (maxSavings < 0) maxSavings = 0;
+    // 修复浮点数精度问题，保留2位小数
+    maxSavings = Math.round(maxSavings * 100) / 100;
   }
 
   const handleAddPlan = () => {
@@ -63,13 +65,21 @@ const ProfileScreen: React.FC = () => {
     <ScrollView className="flex-1 px-4 pt-8 bg-white">
 
       {/* 新增：节省信息 */}
-      {userPlan && betterPlans.length > 0 && (
-        <View className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+      {userPlan && betterPlans.length > 0 && maxSavings > 0 && showSavingsNotification && (
+        <View className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 relative">
+          {/* 关闭按钮 */}
+          <TouchableOpacity
+            onPress={() => setShowSavingsNotification(false)}
+            className="absolute top-1 right-1 p-1"
+          >
+            <AntDesign name="closecircle" size={20} color="#059669" />
+          </TouchableOpacity>
+          
           <Text className="text-green-700 text-base font-semibold mb-1">
-            🎉 Good news! We found {betterPlans.length} cheaper plans for you
+            🎉 We found {betterPlans.filter(plan => userPlan.price > plan.price).length} cheaper plans for you！
           </Text>
           <Text className="text-green-700 text-base mb-3">
-            Save up to <Text className="font-bold">${maxSavings}</Text> every month! 
+            Save up to <Text className="font-bold">${maxSavings.toFixed(2)}</Text> every month, <Text className="font-bold">${(maxSavings * 12).toFixed(2)}</Text> a year 
           </Text>
           <TouchableOpacity
             className="bg-green-600 py-2 px-4 rounded-lg self-start"
@@ -144,13 +154,6 @@ const ProfileScreen: React.FC = () => {
               </Text>
             </View>
           </View>
-
-          <TouchableOpacity
-            className="bg-purple-500 py-3 rounded-lg items-center"
-            onPress={() => setShowPaywall(true)}
-          >
-            <Text className="text-white font-semibold">Upgrade to Pro</Text>
-          </TouchableOpacity>
         </View>
       ) : (
         <View>
@@ -163,15 +166,6 @@ const ProfileScreen: React.FC = () => {
         </View>
       )}
 
-      {/* Paywall Modal */}
-      <PaywallModal
-        visible={showPaywall}
-        onClose={() => setShowPaywall(false)}
-        onSubscriptionSuccess={() => {
-          setShowPaywall(false);
-          // 可以在这里添加其他成功后的逻辑
-        }}
-      />
     </ScrollView>
   );
 };

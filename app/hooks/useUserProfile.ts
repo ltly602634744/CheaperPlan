@@ -3,7 +3,7 @@ import { fetchUserPlan } from "@/app/services/planService";
 import { getUserProfile } from "@/app/services/userService";
 import { User } from "@/app/types/user";
 import { UserPlan } from "@/app/types/userPlan";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export const useUserProfile = () => {
     const { session } = useAuthContext();
@@ -14,21 +14,25 @@ export const useUserProfile = () => {
     const [error, setError] = useState<string | null>(null);
 
     /** 重新拉取 profile + plan */
-    const refetch = async () => {
+    const refetch = useCallback(async () => {
+        if (!session?.user?.id) {
+            setLoading(false);
+            return;
+        }
+        
         try {
             setLoading(true);
             const { data: profile, error: profileErr } = await getUserProfile(
-                session!.user!.id, "premium,coins,premium_expiration_date"
+                session.user.id, "premium,premium_expiration_date"
             );
             if (profileErr || !profile)
                 throw profileErr ?? new Error("profile not found");
 
             const currentUser: User = {
-                id: session?.user?.id || '',
-                email: session?.user?.email || '',
-                createdAt: session?.user?.created_at || '',
+                id: session.user.id,
+                email: session.user.email || '',
+                createdAt: session.user.created_at || '',
                 premium: profile.premium || '',
-                coins: profile.coins || 0,
                 premium_expiration_date: profile.premium_expiration_date ? new Date(profile.premium_expiration_date) : null
             };
             setUser(currentUser);
@@ -44,7 +48,7 @@ export const useUserProfile = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [session?.user?.id]);
 
     /** 首次 & session 变化时执行 */
     useEffect(() => {

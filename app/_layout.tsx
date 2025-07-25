@@ -104,15 +104,16 @@ function AppLayout() {
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="screens/AuthScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
-      <Stack.Screen name="screens/RegisterScreen" options={{ title: 'Register' }} />
-      <Stack.Screen name="screens/PlanFormScreen" options={{ title: 'Edit Plan' }} />
+      <Stack.Screen name="screens/RegisterScreen" options={{ title: 'Register', headerBackTitle: 'Back' }} />
+      <Stack.Screen name="screens/PlanFormScreen" options={{ title: 'Edit Plan', headerBackTitle: 'Back' }} />
       
       {/* 设置页面 */}
-      <Stack.Screen name="screens/EmailSettingScreen" options={{ title: 'Email' }} />
-      <Stack.Screen name="screens/PhoneSettingScreen" options={{ title: 'Phone' }} />
-      <Stack.Screen name="screens/NotificationSettingScreen" options={{ title: 'Notification' }} />
-      <Stack.Screen name="screens/CoinPurchaseScreen" options={{ title: 'My Coins' }} />
-      <Stack.Screen name="screens/LanguageSettingScreen" options={{ title: 'Language' }} />
+      <Stack.Screen name="screens/EmailSettingScreen" options={{ title: 'Email', headerBackTitle: 'Back' }} />
+      <Stack.Screen name="screens/PhoneSettingScreen" options={{ title: 'Phone', headerBackTitle: 'Back' }} />
+      <Stack.Screen name="screens/PasswordSettingScreen" options={{ title: 'Password', headerBackTitle: 'Back' }} />
+      <Stack.Screen name="screens/NotificationSettingScreen" options={{ title: 'Notification', headerBackTitle: 'Back' }} />
+      <Stack.Screen name="screens/SubscriptionScreen" options={{ title: 'My Subscription', headerBackTitle: 'Back' }} />
+      <Stack.Screen name="screens/LanguageSettingScreen" options={{ title: 'Language', headerBackTitle: 'Back' }} />
     </Stack>
   );
 }
