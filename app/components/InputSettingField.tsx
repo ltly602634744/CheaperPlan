@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
 interface InputSettingFieldProps {
   label: string;
@@ -34,13 +34,10 @@ export default function InputSettingField({
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+    <View className="mb-5">
+      <Text className="text-base font-semibold text-gray-800 mb-2">{label}</Text>
       <TextInput
-        style={[
-          styles.input,
-          multiline && styles.multilineInput
-        ]}
+        className={`bg-white border border-gray-300 rounded-lg p-3 text-base ${multiline ? 'min-h-[100px]' : ''}`}
         value={value}
         onChangeText={handleChangeText}
         placeholder={placeholder}
@@ -57,25 +54,4 @@ export default function InputSettingField({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-  },
-  multilineInput: {
-    minHeight: 100,
-  },
-}); 
+ 

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Platform, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { useAuthContext } from '../context/AuthContext';
 import { updateUserProfile } from '../services/userService';
@@ -64,6 +64,23 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
 
       console.log('Found monthly package:', monthlyPackage);
       console.log('Found yearly package:', yearlyPackage);
+      
+      // 详细价格调试信息
+      if (monthlyPackage) {
+        console.log('Monthly package details:');
+        console.log('- Price:', monthlyPackage.product.price);
+        console.log('- Price string:', monthlyPackage.product.priceString);
+        console.log('- Currency code:', monthlyPackage.product.currencyCode);
+        console.log('- Product identifier:', monthlyPackage.product.identifier);
+      }
+      
+      if (yearlyPackage) {
+        console.log('Yearly package details:');
+        console.log('- Price:', yearlyPackage.product.price);
+        console.log('- Price string:', yearlyPackage.product.priceString);
+        console.log('- Currency code:', yearlyPackage.product.currencyCode);
+        console.log('- Product identifier:', yearlyPackage.product.identifier);
+      }
 
       setMonthlyPkg(monthlyPackage ?? null);
       setYearlyPkg(yearlyPackage ?? null);
@@ -110,83 +127,92 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
     }
   };
 
+  // 清理价格字符串，移除地区前缀（如"US"）
+  const cleanPriceString = (priceString: string) => {
+    return priceString.replace(/^US\$/, '$').replace(/^US /, '');
+  };
+
   const hasValidPackages = monthlyPkg || yearlyPkg;
   const currentPackage = selectedPlanRef.current === 'monthly' ? monthlyPkg : yearlyPkg;
+
+  const handleBackdropPress = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  const handleContentPress = useCallback(() => {
+    // Prevent backdrop close when touching content
+  }, []);
 
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       onRequestClose={onClose}
+      statusBarTranslucent
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View className="flex-1 bg-black/50 justify-end">
-          <TouchableWithoutFeedback onPress={() => { }}>
-            <View style={{ backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, minHeight: '60%' }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#374151' }}>Get Premium Access</Text>
-                <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
-                  <Ionicons name="close" size={24} color="#666" />
-                </TouchableOpacity>
-              </View>
+      <View className="flex-1 bg-black/50 justify-end">
+        <TouchableOpacity 
+          activeOpacity={1} 
+          className="flex-1 justify-end" 
+          onPress={handleBackdropPress}
+        >
+          <TouchableOpacity 
+            activeOpacity={1} 
+            style={styles.modalContent} 
+            onPress={handleContentPress}
+          >
+            <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
+              <Text className="text-2xl font-bold text-gray-700">Get Premium Access</Text>
+              <TouchableOpacity onPress={onClose} className="p-2">
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
 
-              <View style={{ flex: 1, padding: 24 }}>
+            <View className="flex-1 p-6">
                 {loading ? (
-                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                  <View className="flex-1 justify-center items-center">
                     <ActivityIndicator size="large" color="#007AFF" />
-                    <Text style={{ marginTop: 16, color: '#6b7280' }}>Loading subscription options...</Text>
+                    <Text className="mt-4 text-gray-500">Loading subscription options...</Text>
                   </View>
                 ) : !hasValidPackages ? (
-                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ textAlign: 'center', color: '#6b7280' }}>
+                  <View className="flex-1 justify-center items-center">
+                    <Text className="text-center text-gray-500">
                       Sorry there's an error on our side. Please contact customer service.
                     </Text>
                   </View>
                 ) : (
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: 'row', marginBottom: 24, backgroundColor: '#f3f4f6', borderRadius: 16, padding: 4 }}>
+                  <View className="flex-1">
+                    <View className="flex-row mb-6 bg-gray-100 rounded-2xl p-1">
                       {monthlyPkg && (
                         <TouchableOpacity
                           onPress={() => updateSelectedPlan('monthly')}
-                          style={{
-                            flex: 1,
-                            paddingVertical: 12,
-                            borderRadius: 12,
-                            backgroundColor: selectedPlanRef.current === 'monthly' ? 'white' : 'transparent',
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                          }}
+                          style={[
+                            styles.planOption,
+                            selectedPlanRef.current === 'monthly' && styles.planOptionSelected
+                          ]}
                         >
-                          <Text style={{
-                            textAlign: 'center',
-                            fontWeight: '600',
-                            fontSize: 16,
-                            color: selectedPlanRef.current === 'monthly' ? '#2563eb' : '#6b7280'
-                          }}>30 Days</Text>
+                          <Text style={[
+                            styles.planOptionText,
+                            selectedPlanRef.current === 'monthly' && styles.planOptionTextSelected
+                          ]}>30 Days</Text>
                         </TouchableOpacity>
                       )}
 
                       {yearlyPkg && (
                         <TouchableOpacity
                           onPress={() => updateSelectedPlan('yearly')}
-                          style={{
-                            flex: 1,
-                            paddingVertical: 12,
-                            borderRadius: 12,
-                            backgroundColor: selectedPlanRef.current === 'yearly' ? 'white' : 'transparent',
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                          }}
+                          style={[
+                            styles.planOption,
+                            selectedPlanRef.current === 'yearly' && styles.planOptionSelected
+                          ]}
                         >
-                          <Text style={{
-                            textAlign: 'center',
-                            fontWeight: '600',
-                            fontSize: 16,
-                            color: selectedPlanRef.current === 'yearly' ? '#2563eb' : '#6b7280'
-                          }}>365 Days</Text>
+                          <Text style={[
+                            styles.planOptionText,
+                            selectedPlanRef.current === 'yearly' && styles.planOptionTextSelected
+                          ]}>365 Days</Text>
                           {yearlyPkg && monthlyPkg && (
-                            <Text style={{ textAlign: 'center', fontSize: 10, color: '#10b981', fontWeight: '500', marginTop: 2 }}>
+                            <Text style={styles.bestValueText}>
                               Best Value
                             </Text>
                           )}
@@ -196,36 +222,34 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
 
                     {/* Selected Package Info */}
                     {currentPackage && (
-                      <View style={{ backgroundColor: '#eff6ff', borderRadius: 16, padding: 20, marginBottom: 20 }}>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: '#2563eb', marginBottom: 6 }}>
-                          Premium Pass
-                        </Text>
-                        <Text style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center', color: '#2563eb', marginBottom: 12 }}>
-                          {currentPackage.product.priceString}
-                          <Text style={{ fontSize: 16, color: '#6b7280' }}>
+                      <View style={styles.packageInfo}>
+                        <Text style={styles.packageTitle}>Premium Pass</Text>
+                        <Text style={styles.packagePrice}>
+                          {cleanPriceString(currentPackage.product.priceString)}
+                          <Text style={styles.packageDuration}>
                             {selectedPlanRef.current === 'monthly' ? ' for 30 days' : ' for 365 days'}
                           </Text>
                         </Text>
 
                         {/* Features */}
-                        <View style={{ gap: 8 }}>
-                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#10b981', alignItems: 'center', justifyContent: 'center' }}>
-                              <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>✓</Text>
+                        <View className="space-y-2">
+                          <View className="flex-row items-center">
+                            <View style={styles.featureIcon}>
+                              <Text style={styles.featureIconText}>✓</Text>
                             </View>
-                            <Text style={{ marginLeft: 12, color: '#374151', fontSize: 14 }}>Access all carrier information</Text>
+                            <Text className="ml-3 text-gray-700 text-sm">Access all carrier information</Text>
                           </View>
-                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#10b981', alignItems: 'center', justifyContent: 'center' }}>
-                              <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>✓</Text>
+                          <View className="flex-row items-center">
+                            <View style={styles.featureIcon}>
+                              <Text style={styles.featureIconText}>✓</Text>
                             </View>
-                            <Text style={{ marginLeft: 12, color: '#374151', fontSize: 14 }}>Unlock all hidden plan details</Text>
+                            <Text className="ml-3 text-gray-700 text-sm">Unlock all hidden plan details</Text>
                           </View>
-                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#10b981', alignItems: 'center', justifyContent: 'center' }}>
-                              <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>✓</Text>
+                          <View className="flex-row items-center">
+                            <View style={styles.featureIcon}>
+                              <Text style={styles.featureIconText}>✓</Text>
                             </View>
-                            <Text style={{ marginLeft: 12, color: '#374151', fontSize: 14 }}>Get priority customer support</Text>
+                            <Text className="ml-3 text-gray-700 text-sm">Get priority customer support</Text>
                           </View>
                         </View>
                       </View>
@@ -234,30 +258,124 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
                     <TouchableOpacity
                       onPress={buy}
                       disabled={purchasing || !currentPackage}
-                      style={{
-                        paddingVertical: 16,
-                        borderRadius: 16,
-                        backgroundColor: purchasing || !currentPackage ? '#9ca3af' : '#2563eb'
-                      }}
+                      style={[
+                        styles.buyButton,
+                        (purchasing || !currentPackage) && styles.buyButtonDisabled
+                      ]}
                     >
                       {purchasing ? (
-                        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                        <View style={styles.purchasingContainer}>
                           <ActivityIndicator size="small" color="white" />
-                          <Text style={{ color: 'white', marginLeft: 8, fontSize: 16, fontWeight: '600' }}>Processing...</Text>
+                          <Text style={styles.purchasingText}>Processing...</Text>
                         </View>
                       ) : (
-                        <Text style={{ color: 'white', textAlign: 'center', fontSize: 18, fontWeight: '600' }}>
-                          Buy Pass
-                        </Text>
+                        <Text style={styles.buyButtonText}>Buy Pass</Text>
                       )}
                     </TouchableOpacity>
                   </View>
                 )}
               </View>
-            </View>
-          </TouchableWithoutFeedback>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </View>
-      </TouchableWithoutFeedback>
-    </Modal>
-  );
+      </Modal>
+    );
 }
+
+const styles = StyleSheet.create({
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    minHeight: '60%',
+    maxHeight: '90%',
+  },
+  planOption: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  planOptionSelected: {
+    backgroundColor: 'white',
+  },
+  planOptionText: {
+    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  planOptionTextSelected: {
+    color: '#2563eb',
+  },
+  bestValueText: {
+    textAlign: 'center',
+    fontSize: 10,
+    color: '#10b981',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  packageInfo: {
+    backgroundColor: '#eff6ff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  packageTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#2563eb',
+    marginBottom: 6,
+  },
+  packagePrice: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#2563eb',
+    marginBottom: 12,
+  },
+  packageDuration: {
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  featureIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#10b981',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  featureIconText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  buyButton: {
+    paddingVertical: 16,
+    borderRadius: 16,
+    backgroundColor: '#2563eb',
+  },
+  buyButtonDisabled: {
+    backgroundColor: '#9ca3af',
+  },
+  buyButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  purchasingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  purchasingText: {
+    color: 'white',
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

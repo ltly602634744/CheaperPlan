@@ -4,7 +4,7 @@ import { Href, Stack, useRouter } from 'expo-router';
 // 1. 导入你的 AuthProvider
 import * as Notifications from 'expo-notifications';
 import React, { useEffect } from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Platform, Text, TextInput, View } from 'react-native';
 import Purchases from 'react-native-purchases';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth'; // 确保路径正确
@@ -19,6 +19,12 @@ const rc_api_key_ios: string = Constants.expoConfig?.extra?.rc_api_key_ios;
 const rc_api_key_android: string = Constants.expoConfig?.extra?.rc_api_key_android;
 
 // -----------------------------------------------------------
+
+// 禁用字体缩放
+(Text as any).defaultProps = (Text as any).defaultProps || {};
+(Text as any).defaultProps.allowFontScaling = false;
+(TextInput as any).defaultProps = (TextInput as any).defaultProps || {};
+(TextInput as any).defaultProps.allowFontScaling = false;
 
 // 设置全局通知处理程序
 Notifications.setNotificationHandler({

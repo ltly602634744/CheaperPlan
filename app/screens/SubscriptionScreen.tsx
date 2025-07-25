@@ -184,6 +184,15 @@ export default function SubscriptionScreen() {
                     </TouchableOpacity>
                 )}
 
+                {getMembershipStatus() === 'expired' && (
+                    <TouchableOpacity
+                        className="bg-blue-500 rounded-xl py-4 items-center shadow-sm"
+                        onPress={() => setShowSubscriptionModal(true)}
+                    >
+                        <Text className="text-white text-lg font-semibold">Renew Premium</Text>
+                    </TouchableOpacity>
+                )}
+
                 {/* 错误显示 */}
                 {error && (
                     <View className="bg-red-50 border border-red-200 rounded-xl p-4 mt-4">

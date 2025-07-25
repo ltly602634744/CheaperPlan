@@ -98,6 +98,15 @@ export default function SettingsScreen() {
         }
     };
 
+    // 获取会员状态 (与SubscriptionScreen保持一致)
+    const getMembershipStatus = () => {
+        if (!user || !user.premium_expiration_date) return 'Free';
+        const expirationDate = new Date(user.premium_expiration_date);
+        const currentDate = new Date();
+        if (expirationDate > currentDate) return 'Premium';
+        return 'Expired';
+    };
+
     return (
         <SafeAreaView className="flex-1 bg-white">
             <ScrollView className="flex-1">
@@ -110,7 +119,7 @@ export default function SettingsScreen() {
                     <Cell label="Notification" value={notificationEnabled} onPress={() => router.push('../screens/NotificationSettingScreen')} />
                     <View className="h-[0.5px] bg-gray-100 mx-4" />
                     <Cell label="My subscription"
-                        value={profileLoading ? '...' : (user?.premium === 'paid' ? 'Premium' : 'Free')}
+                        value={profileLoading ? '...' : getMembershipStatus()}
                         onPress={() => router.push('../screens/SubscriptionScreen')}
                     />
                     <View className="h-[0.5px] bg-gray-100 mx-4" />

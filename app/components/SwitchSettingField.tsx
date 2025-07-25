@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { Switch, Text, View } from 'react-native';
 
 interface SwitchSettingFieldProps {
   label: string;
@@ -17,9 +17,9 @@ export default function SwitchSettingField({
   disabled = false,
 }: SwitchSettingFieldProps) {
   return (
-    <View style={styles.container}>
-      <View style={styles.settingRow}>
-        <Text style={[styles.label, disabled && styles.disabledText]}>{label}</Text>
+    <View className="mb-5">
+      <View className="flex-row justify-between items-center bg-white p-4 rounded-lg mb-3">
+        <Text className={`text-base font-semibold text-gray-800 ${disabled ? 'opacity-50' : ''}`}>{label}</Text>
         <Switch
           trackColor={{ false: '#767577', true: '#81b0ff' }}
           thumbColor={value ? '#f5dd4b' : '#f4f3f4'}
@@ -30,36 +30,10 @@ export default function SwitchSettingField({
         />
       </View>
       {description && (
-        <Text style={[styles.description, disabled && styles.disabledText]}>{description}</Text>
+        <Text className={`text-sm text-gray-600 leading-5 ${disabled ? 'opacity-50' : ''}`}>{description}</Text>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-  },
-  settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  description: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-  },
-  disabledText: {
-    opacity: 0.5,
-  },
-}); 
+ 

@@ -4,7 +4,6 @@ import React from 'react';
 import {
   StyleSheet,
   Text,
-  TextStyle,
   TouchableOpacity,
   TouchableOpacityProps,
   View,
@@ -55,9 +54,9 @@ const BetterPlanCard: React.FC<BetterPlanCard> = ({
             />
             
             {/* 可选的锁定提示 */}
-            <View style={styles.lockContainer}>
+            <View className="absolute inset-0 justify-center items-center z-[101]">
               <View style={styles.lockBadge}>
-                <Text style={styles.lockText}>{lockMessage}</Text>
+                <Text className="text-base font-semibold text-gray-700">{lockMessage}</Text>
               </View>
             </View>
           </>
@@ -68,16 +67,6 @@ const BetterPlanCard: React.FC<BetterPlanCard> = ({
 };
 
 const styles = StyleSheet.create({
-  lockContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 101,
-  } as ViewStyle,
   lockBadge: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     paddingHorizontal: 24,
@@ -89,11 +78,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   } as ViewStyle,
-  lockText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-  } as TextStyle
 });
 
 export default BetterPlanCard;
