@@ -1,23 +1,23 @@
 import { usePlanActions } from "@/app/hooks/usePlanActions";
 import { createUserPlan, updateUserPlan } from '@/app/services/planService';
 import { Picker } from '@react-native-picker/picker';
-import { useRouter, useNavigation } from "expo-router";
-import React, { useState, useRef, useLayoutEffect } from 'react';
-import eventBus from '../utils/eventBus';
+import { useNavigation, useRouter } from "expo-router";
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import {
-    Alert,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import Modal from 'react-native-modal';
+import eventBus from '../utils/eventBus';
 
 const PlanFormScreen: React.FC = () => {
   const router = useRouter();
@@ -25,15 +25,19 @@ const PlanFormScreen: React.FC = () => {
   const { plan, setPlan, isUpdating, session } = usePlanActions();
   const [isPickerVisible, setPickerVisible] = useState(false);
   const [pickerField, setPickerField] = useState<string>('');
+  const [tempPickerValue, setTempPickerValue] = useState<boolean | null>(null);
   const [focusedField, setFocusedField] = useState<string>('');
+  const [activePicker, setActivePicker] = useState<string>('');
+  const [pickerLabel, setPickerLabel] = useState<string>('');
+  const [tempStringPickerValue, setTempStringPickerValue] = useState<string>('');
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   
   // Input refs for navigation
   const providerRef = useRef<TextInput>(null);
-  const networkRef = useRef<TextInput>(null);
   const dataRef = useRef<TextInput>(null);
   const coverageRef = useRef<TextInput>(null);
   const priceRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   
   // Validation function
   const validateForm = () => {
@@ -192,6 +196,49 @@ const PlanFormScreen: React.FC = () => {
     );
   };
 
+  const renderStringPicker = (field: string, label: string, value: string, options: {label: string, value: string}[]) => {
+    return (
+      <View className="w-full mb-4">
+        <Text className="text-base mb-1 text-gray-700 font-medium">{label}</Text>
+        {Platform.OS === 'android' ? (
+          <View className="border border-gray-300 rounded-lg overflow-hidden">
+            <Picker
+              selectedValue={value}
+              onValueChange={(newValue) => setPlan({ ...plan, [field]: newValue })}
+            >
+              <Picker.Item label={`Select ${label}`} value="" />
+              {options.map((option) => (
+                <Picker.Item key={option.value} label={option.label} value={option.value} />
+              ))}
+            </Picker>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity
+              className={`border rounded-lg justify-center px-3 bg-white ${
+                activePicker === field ? 'border-blue-400' : 'border-gray-300'
+              }`}
+              style={{ height: 48 }}
+              onPress={() => {
+                setPickerField(field);
+                setTempStringPickerValue(value);
+                setActivePicker(field);
+                setPickerLabel(label);
+                setPickerVisible(true);
+              }}
+            >
+              <Text className={`text-base ${
+                !value ? 'text-gray-400' : 'text-gray-800'
+              }`}>
+                {!value ? `Select ${label}` : value}
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    );
+  };
+
   const renderBooleanPicker = (field: string, label: string, value: boolean) => {
     return (
       <View className="w-full mb-4">
@@ -211,11 +258,14 @@ const PlanFormScreen: React.FC = () => {
           <>
             <TouchableOpacity
               className={`border rounded-lg justify-center px-3 bg-white ${
-                value === null || value === undefined ? 'border-gray-300' : 'border-blue-400'
+                activePicker === field ? 'border-blue-400' : 'border-gray-300'
               }`}
               style={{ height: 48 }}
               onPress={() => {
                 setPickerField(field);
+                setTempPickerValue(value);
+                setActivePicker(field);
+                setPickerLabel(label);
                 setPickerVisible(true);
               }}
             >
@@ -239,7 +289,11 @@ const PlanFormScreen: React.FC = () => {
         className="flex-1"
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+          <ScrollView 
+            ref={scrollViewRef}
+            contentContainerStyle={{ flexGrow: 1 }} 
+            keyboardShouldPersistTaps="handled"
+          >
             <View className="flex-1 items-center justify-start px-6 py-4 pb-8">
               <Text className="text-xl font-bold text-center mb-6 pt-4">
                 {isUpdating ? "Update Plan" : "Add Plan"}
@@ -253,20 +307,14 @@ const PlanFormScreen: React.FC = () => {
                 placeholder: 'e.g., Verizon, AT&T, Rogers',
                 autoCapitalize: 'words',
                 ref: providerRef,
-                onSubmitEditing: () => networkRef.current?.focus(),
-                returnKeyType: 'next'
-              })}
-
-              {renderEnhancedInput({
-                field: 'network',
-                label: 'Network Type',
-                value: plan.network,
-                placeholder: 'e.g., LTE, 5G, 4G',
-                autoCapitalize: 'characters',
-                ref: networkRef,
                 onSubmitEditing: () => dataRef.current?.focus(),
                 returnKeyType: 'next'
               })}
+
+              {renderStringPicker('network', 'Network Type', plan.network, [
+                { label: '5G', value: '5G' },
+                { label: 'LTE', value: 'LTE' }
+              ])}
 
               {renderEnhancedInput({
                 field: 'data',
@@ -340,11 +388,6 @@ const PlanFormScreen: React.FC = () => {
                   return isNaN(num) ? null : num;
                 }
               })}
-
-              {/* 功能特性 */}
-              <View className="w-full border-t border-gray-200 pt-6 mt-2">
-                <Text className="text-lg font-semibold text-gray-800 mb-4">Plan Features</Text>
-              </View>
               
               {renderBooleanPicker('voicemail', 'Voicemail', plan.voicemail)}
               {renderBooleanPicker('call_display', 'Call Display', plan.call_display)}
@@ -362,7 +405,12 @@ const PlanFormScreen: React.FC = () => {
       {Platform.OS === 'ios' && (
         <Modal
           isVisible={isPickerVisible}
-          onBackdropPress={() => setPickerVisible(false)}
+          onBackdropPress={() => {
+            setActivePicker('');
+            setPickerLabel('');
+            setTempStringPickerValue('');
+            setPickerVisible(false);
+          }}
           style={{ justifyContent: 'flex-end', margin: 0 }}
           useNativeDriver={true}
           hideModalContentWhileAnimating={true}
@@ -371,14 +419,33 @@ const PlanFormScreen: React.FC = () => {
             {/* Modal Header */}
             <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-200">
               <TouchableOpacity
-                onPress={() => setPickerVisible(false)}
+                onPress={() => {
+                  setActivePicker('');
+                  setPickerLabel('');
+                  setTempStringPickerValue('');
+                  setPickerVisible(false);
+                }}
                 className="py-1"
               >
                 <Text className="text-blue-500 text-base">Cancel</Text>
               </TouchableOpacity>
-              <Text className="text-lg font-semibold">Select Option</Text>
+              <Text className="text-lg font-semibold">{pickerLabel}</Text>
               <TouchableOpacity
-                onPress={() => setPickerVisible(false)}
+                onPress={() => {
+                  if (pickerField === 'network') {
+                    if (tempStringPickerValue) {
+                      setPlan({ ...plan, [pickerField]: tempStringPickerValue });
+                    }
+                  } else {
+                    if (tempPickerValue !== null) {
+                      setPlan({ ...plan, [pickerField]: tempPickerValue });
+                    }
+                  }
+                  setActivePicker('');
+                  setPickerLabel('');
+                  setTempStringPickerValue('');
+                  setPickerVisible(false);
+                }}
                 className="py-1"
               >
                 <Text className="text-blue-500 text-base font-semibold">Done</Text>
@@ -387,16 +454,29 @@ const PlanFormScreen: React.FC = () => {
             
             {/* Picker */}
             <View style={{ height: 180 }}>
-              <Picker
-                selectedValue={plan[pickerField as keyof typeof plan] ?? false}
-                onValueChange={(value) => {
-                  setPlan({ ...plan, [pickerField]: value });
-                }}
-                style={{ height: 180 }}
-              >
-                <Picker.Item label="No" value={false} />
-                <Picker.Item label="Yes" value={true} />
-              </Picker>
+              {pickerField === 'network' ? (
+                <Picker
+                  selectedValue={tempStringPickerValue}
+                  onValueChange={(value: string) => {
+                    setTempStringPickerValue(value);
+                  }}
+                  style={{ height: 180 }}
+                >
+                  <Picker.Item label="5G" value="5G" />
+                  <Picker.Item label="LTE" value="LTE" />
+                </Picker>
+              ) : (
+                <Picker
+                  selectedValue={tempPickerValue ?? false}
+                  onValueChange={(value: boolean) => {
+                    setTempPickerValue(value);
+                  }}
+                  style={{ height: 180 }}
+                >
+                  <Picker.Item label="No" value={false} />
+                  <Picker.Item label="Yes" value={true} />
+                </Picker>
+              )}
             </View>
           </View>
         </Modal>

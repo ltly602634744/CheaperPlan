@@ -109,11 +109,11 @@ function AppLayout() {
       
       {/* 设置页面 */}
       <Stack.Screen name="screens/EmailSettingScreen" options={{ title: 'Email', headerBackTitle: 'Back' }} />
-      <Stack.Screen name="screens/PhoneSettingScreen" options={{ title: 'Phone', headerBackTitle: 'Back' }} />
       <Stack.Screen name="screens/PasswordSettingScreen" options={{ title: 'Password', headerBackTitle: 'Back' }} />
       <Stack.Screen name="screens/NotificationSettingScreen" options={{ title: 'Notification', headerBackTitle: 'Back' }} />
       <Stack.Screen name="screens/SubscriptionScreen" options={{ title: 'My Subscription', headerBackTitle: 'Back' }} />
       <Stack.Screen name="screens/LanguageSettingScreen" options={{ title: 'Language', headerBackTitle: 'Back' }} />
+      <Stack.Screen name="screens/ContentDisplayScreen" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import SubscriptionModal from '../components/SubscriptionModal';
 import { useAuthContext } from '../context/AuthContext';
 import { getUserProfile } from '../services/userService';
-import { useFocusEffect } from '@react-navigation/native';
 import { UserProfile } from '../types/database';
 
 export default function SubscriptionScreen() {
     const router = useRouter();
     const { session } = useAuthContext();
-    const [canceling, setCanceling] = useState(false);
     const [userProfile, setUserProfile] = useState<Partial<UserProfile> | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
     // 获取用户会员信息
     const fetchSubscriptionInfo = async () => {
@@ -108,46 +109,6 @@ export default function SubscriptionScreen() {
         return false;
     };
 
-    // 取消订阅（取消自动续费）
-    const handleCancelSubscription = async () => {
-        Alert.alert(
-            'Cancel Subscription',
-            'Are you sure you want to cancel your subscription? You will continue to have access until the current billing period ends.',
-            [
-                {
-                    text: 'Keep Subscription',
-                    style: 'cancel'
-                },
-                {
-                    text: 'Cancel Subscription',
-                    style: 'destructive',
-                    onPress: async () => {
-                        setCanceling(true);
-                        try {
-                            // 刷新用户信息
-                            await fetchSubscriptionInfo();
-                            const status = getMembershipStatus();
-                            
-                            if (status === 'active') {
-                                // Non-renewing subscription，引导用户联系客服
-                                Alert.alert(
-                                    'Contact Support',
-                                    'Your current subscription is non-renewing and will expire automatically. If you need assistance, please contact our customer support.',
-                                    [{ text: 'OK' }]
-                                );
-                            } else {
-                                Alert.alert('No Active Subscription', 'You don\'t have any active subscriptions.');
-                            }
-                        } catch (error) {
-                            Alert.alert('Error', 'Failed to process request. Please try again.');
-                        } finally {
-                            setCanceling(false);
-                        }
-                    }
-                }
-            ]
-        );
-    };
 
     return (
         <SafeAreaView className="flex-1 bg-white">
@@ -180,68 +141,44 @@ export default function SubscriptionScreen() {
                                     {loading ? '...' : formatExpirationDate(getExpirationDate())}
                                 </Text>
                             </View>
-                            
-                            <View className="flex-row justify-between items-center">
-                                <Text className="text-gray-600">Auto-Renew:</Text>
-                                <Text className="font-semibold text-red-600">
-                                    {loading ? '...' : 'Disabled (Non-renewing)'}
-                                </Text>
-                            </View>
                         </>
                     )}
                 </View>
 
                 {/* 功能列表 */}
                 <View className="bg-white rounded-xl shadow-sm mb-6">
-                    <Text className="text-lg font-semibold text-gray-800 px-6 pt-6 pb-4">Premium Features</Text>
+                    <Text className="text-lg font-semibold text-gray-800 px-6 pt-6 pb-4">
+                        {getMembershipStatus() === 'active' ? 'Premium Features' : 'Get Premium to Unlock'}
+                    </Text>
                     
                     <View className="px-6 pb-6">
                         <View className="flex-row items-center mb-3">
                             <Text className="text-green-500 mr-3">✓</Text>
-                            <Text className="text-gray-600 flex-1">Unlimited plan creation</Text>
+                            <Text className="text-gray-600 flex-1">Unlimited plan searches</Text>
                         </View>
                         
                         <View className="flex-row items-center mb-3">
                             <Text className="text-green-500 mr-3">✓</Text>
-                            <Text className="text-gray-600 flex-1">Advanced AI features</Text>
+                            <Text className="text-gray-600 flex-1">Find perfect matches with smart filters</Text>
                         </View>
                         
                         <View className="flex-row items-center mb-3">
                             <Text className="text-green-500 mr-3">✓</Text>
-                            <Text className="text-gray-600 flex-1">Priority customer support</Text>
+                            <Text className="text-gray-600 flex-1">Be the first to know when better plans drop</Text>
                         </View>
                         
                         <View className="flex-row items-center">
                             <Text className="text-green-500 mr-3">✓</Text>
-                            <Text className="text-gray-600 flex-1">Export plans to multiple formats</Text>
+                            <Text className="text-gray-600 flex-1">Pay only when you need it, No auto-renewals</Text>
                         </View>
                     </View>
                 </View>
 
-                {/* 操作按钮 */}
-                {getMembershipStatus() === 'active' && (
-                    <TouchableOpacity
-                        className="bg-red-500 rounded-xl py-4 items-center shadow-sm"
-                        onPress={handleCancelSubscription}
-                        disabled={canceling}
-                    >
-                        {canceling ? (
-                            <View className="flex-row items-center">
-                                <ActivityIndicator size="small" color="white" />
-                                <Text className="text-white text-lg font-semibold ml-2">Processing...</Text>
-                            </View>
-                        ) : (
-                            <Text className="text-white text-lg font-semibold">Cancel Subscription</Text>
-                        )}
-                    </TouchableOpacity>
-                )}
 
                 {getMembershipStatus() === 'free' && (
                     <TouchableOpacity
                         className="bg-blue-500 rounded-xl py-4 items-center shadow-sm"
-                        onPress={() => {
-                            Alert.alert('Upgrade', 'Navigate to subscription purchase');
-                        }}
+                        onPress={() => setShowSubscriptionModal(true)}
                     >
                         <Text className="text-white text-lg font-semibold">Upgrade to Premium</Text>
                     </TouchableOpacity>
@@ -260,6 +197,17 @@ export default function SubscriptionScreen() {
                     </View>
                 )}
             </ScrollView>
+
+            {/* SubscriptionModal */}
+            <SubscriptionModal
+                visible={showSubscriptionModal}
+                onClose={() => setShowSubscriptionModal(false)}
+                onSubscriptionSuccess={() => {
+                    setShowSubscriptionModal(false);
+                    // 刷新用户信息以更新订阅状态
+                    fetchSubscriptionInfo();
+                }}
+            />
         </SafeAreaView>
     );
 }

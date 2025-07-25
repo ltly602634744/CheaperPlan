@@ -10,10 +10,23 @@ const RegisterScreen: React.FC = () => {
     const { signUp } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     // const navigation = useNavigation<HomeScreenNavigationProp>();
 
     const handleRegister = async () => {
+        // 验证密码是否一致
+        if (password !== confirmPassword) {
+            Alert.alert('Error', 'Passwords do not match. Please check both password fields.');
+            return;
+        }
+
+        // 检查密码长度
+        if (password.length < 6) {
+            Alert.alert('Error', 'Password must be at least 6 characters long.');
+            return;
+        }
+
         setLoading(true);
         const { data, error } = await signUp(email, password);
 
@@ -56,6 +69,20 @@ const RegisterScreen: React.FC = () => {
                         value={password}
                         secureTextEntry={true}
                         placeholder="Password"
+                        autoCapitalize="none"
+                    />
+                </View>
+            </View>
+            <View style={styles.verticallySpaced}>
+                <Text style={styles.label}>Confirm Password</Text>
+                <View style={styles.inputContainer}>
+                    <Text style={styles.icon}>🔒</Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={(text) => setConfirmPassword(text)}
+                        value={confirmPassword}
+                        secureTextEntry={true}
+                        placeholder="Confirm Password"
                         autoCapitalize="none"
                     />
                 </View>
