@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import Purchases from 'react-native-purchases';
 import { updateUserProfile } from '../services/userService';
+import eventBus from '../utils/eventBus';
 
 export default function SettingsScreen() {
     const router = useRouter();
@@ -60,6 +61,25 @@ export default function SettingsScreen() {
         checkNotificationPermission();
     }, []);
 
+    // 监听订阅状态更新事件
+    useEffect(() => {
+        const handleSubscriptionUpdate = (subscriptionData: {
+            premium: string;
+            premium_expiration_date: Date;
+            subscriptionType: string;
+        }) => {
+            console.log('Settings: Received subscription update:', subscriptionData);
+            // 刷新用户配置文件数据
+            refetch();
+        };
+
+        eventBus.on('subscriptionUpdated', handleSubscriptionUpdate);
+
+        return () => {
+            eventBus.off('subscriptionUpdated', handleSubscriptionUpdate);
+        };
+    }, [refetch]);
+
 
     const handleLogOut = async () => {
         const { error } = await signOut();
@@ -79,10 +99,18 @@ export default function SettingsScreen() {
 
             if (entitlement) {
                 const expiration = entitlement.expirationDate;
+                const expirationDate = expiration ? new Date(expiration) : null;
                 // ✅ 调用后端接口更新数据库状态
                 await updateUserProfile(session.user.id, {
                     premium: 'paid',
-                    premium_expiration_date: expiration ? new Date(expiration) : null,
+                    premium_expiration_date: expirationDate,
+                });
+
+                // 触发会员状态更新事件
+                eventBus.emit('subscriptionUpdated', {
+                    premium: 'paid',
+                    premium_expiration_date: expirationDate,
+                    subscriptionType: 'restored'
                 });
 
                 Alert.alert('✅ Restoration successful', 'Your subscription has been restored');

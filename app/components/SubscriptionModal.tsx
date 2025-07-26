@@ -4,6 +4,7 @@ import { ActivityIndicator, Alert, Modal, Platform, StyleSheet, Text, TouchableO
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { useAuthContext } from '../context/AuthContext';
 import { updateUserProfile } from '../services/userService';
+import eventBus from '../utils/eventBus';
 
 interface SubscriptionModalProps {
   visible: boolean;
@@ -115,6 +116,14 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
         Alert.alert('Warning', 'Purchase successful, but failed to update user status. Please contact customer support.');
       } else {
         Alert.alert('Success', 'Premium pass activated! You now have full access to all plan details.');
+        // 触发会员状态更新事件
+        const eventData = {
+          premium: 'paid',
+          premium_expiration_date: expirationDate,
+          subscriptionType: selectedPlanRef.current
+        };
+        console.log('SubscriptionModal: Emitting subscriptionUpdated event:', eventData);
+        eventBus.emit('subscriptionUpdated', eventData);
         onSubscriptionSuccess?.();
         onClose();
       }

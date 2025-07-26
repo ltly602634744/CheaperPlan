@@ -17,6 +17,10 @@ import {
   View,
 } from 'react-native';
 import Modal from 'react-native-modal';
+import { BooleanPicker } from '../components/BooleanPicker';
+import { EnhancedInput } from '../components/EnhancedInput';
+import { StringPicker } from '../components/StringPicker';
+import { responsive } from '../utils/dimensions';
 import eventBus from '../utils/eventBus';
 
 const PlanFormScreen: React.FC = () => {
@@ -117,168 +121,39 @@ const PlanFormScreen: React.FC = () => {
     });
   }, [navigation, handleSavePlan, handleCancel]);
 
-  // Enhanced input component
-  const renderEnhancedInput = ({
-    field,
-    label,
-    value,
-    placeholder,
-    keyboardType = 'default',
-    autoCapitalize = 'sentences',
-    autoCorrect = true,
-    maxLength,
-    ref,
-    onSubmitEditing,
-    returnKeyType = 'next',
-    multiline = false,
-    formatValue,
-    parseValue
-  }: {
-    field: string;
-    label: string;
-    value: string | number | null;
-    placeholder: string;
-    keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad' | 'decimal-pad';
-    autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-    autoCorrect?: boolean;
-    maxLength?: number;
-    ref?: React.RefObject<TextInput | null>;
-    onSubmitEditing?: () => void;
-    returnKeyType?: 'done' | 'go' | 'next' | 'search' | 'send';
-    multiline?: boolean;
-    formatValue?: (val: string | number | null) => string;
-    parseValue?: (val: string) => string | number | null;
-  }) => {
-    const isFocused = focusedField === field;
-    const hasError = errors[field];
-    const displayValue = formatValue ? formatValue(value) : (value?.toString() || '');
-    
-    return (
-      <View className="w-full mb-4">
-        <Text className="text-base mb-1 text-gray-700 font-medium">{label}</Text>
-        <TextInput
-          ref={ref}
-          className={`border rounded-lg px-3 bg-white text-base ${
-            hasError ? 'border-red-400' : isFocused ? 'border-blue-400' : 'border-gray-300'
-          }`}
-          style={{ 
-            height: 48,
-            paddingVertical: 0,
-            textAlignVertical: 'center',
-            includeFontPadding: false,
-            lineHeight: Platform.OS === 'android' ? 20 : undefined
-          }}
-          value={displayValue}
-          onChangeText={(text) => {
-            const parsedValue = parseValue ? parseValue(text) : text;
-            setPlan({ ...plan, [field]: parsedValue });
-            // Clear error when user starts typing
-            if (errors[field]) {
-              setErrors({ ...errors, [field]: '' });
-            }
-          }}
-          onFocus={() => setFocusedField(field)}
-          onBlur={() => setFocusedField('')}
-          placeholder={placeholder}
-          keyboardType={keyboardType}
-          autoCapitalize={autoCapitalize}
-          autoCorrect={autoCorrect}
-          maxLength={maxLength}
-          onSubmitEditing={onSubmitEditing}
-          returnKeyType={returnKeyType}
-          multiline={multiline}
-          placeholderTextColor="#9CA3AF"
-        />
-        {hasError && (
-          <Text className="text-red-500 text-sm mt-1">{hasError}</Text>
-        )}
-      </View>
-    );
+  // Helper functions for picker handling
+  const handleStringPickerPress = (field: string, label: string, value: string) => {
+    console.log(`Opening picker for field: ${field}, label: ${label}, value: ${value}`);
+    setPickerField(field);
+    setTempStringPickerValue(value);
+    setActivePicker(field);
+    setPickerLabel(label);
+    setPickerVisible(true);
   };
 
-  const renderStringPicker = (field: string, label: string, value: string, options: {label: string, value: string}[]) => {
-    return (
-      <View className="w-full mb-4">
-        <Text className="text-base mb-1 text-gray-700 font-medium">{label}</Text>
-        {Platform.OS === 'android' ? (
-          <View className="border border-gray-300 rounded-lg overflow-hidden">
-            <Picker
-              selectedValue={value}
-              onValueChange={(newValue) => setPlan({ ...plan, [field]: newValue })}
-            >
-              <Picker.Item label={`Select ${label}`} value="" />
-              {options.map((option) => (
-                <Picker.Item key={option.value} label={option.label} value={option.value} />
-              ))}
-            </Picker>
-          </View>
-        ) : (
-          <>
-            <TouchableOpacity
-              className={`border rounded-lg justify-center px-3 bg-white ${
-                activePicker === field ? 'border-blue-400' : 'border-gray-300'
-              }`}
-              style={{ height: 48 }}
-              onPress={() => {
-                setPickerField(field);
-                setTempStringPickerValue(value);
-                setActivePicker(field);
-                setPickerLabel(label);
-                setPickerVisible(true);
-              }}
-            >
-              <Text className={`text-base ${
-                !value ? 'text-gray-400' : 'text-gray-800'
-              }`}>
-                {!value ? `Select ${label}` : value}
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-    );
+  const handleBooleanPickerPress = (field: string, label: string, value: boolean) => {
+    console.log(`Opening boolean picker for field: ${field}, label: ${label}, value: ${value}`);
+    setPickerField(field);
+    setTempPickerValue(value);
+    setActivePicker(field);
+    setPickerLabel(label);
+    setPickerVisible(true);
   };
 
-  const renderBooleanPicker = (field: string, label: string, value: boolean) => {
-    return (
-      <View className="w-full mb-4">
-        <Text className="text-base mb-1 text-gray-700 font-medium">{label}</Text>
-        {Platform.OS === 'android' ? (
-          <View className="border border-gray-300 rounded-lg overflow-hidden">
-            <Picker
-              selectedValue={value}
-              onValueChange={(newValue) => setPlan({ ...plan, [field]: newValue })}
-            >
-              <Picker.Item label="Select Yes or No" value="" />
-              <Picker.Item label="Yes" value={true} />
-              <Picker.Item label="No" value={false} />
-            </Picker>
-          </View>
-        ) : (
-          <>
-            <TouchableOpacity
-              className={`border rounded-lg justify-center px-3 bg-white ${
-                activePicker === field ? 'border-blue-400' : 'border-gray-300'
-              }`}
-              style={{ height: 48 }}
-              onPress={() => {
-                setPickerField(field);
-                setTempPickerValue(value);
-                setActivePicker(field);
-                setPickerLabel(label);
-                setPickerVisible(true);
-              }}
-            >
-              <Text className={`text-base ${
-                value === null || value === undefined ? 'text-gray-400' : 'text-gray-800'
-              }`}>
-                {value === null || value === undefined ? 'Select Yes or No' : (value ? 'Yes' : 'No')}
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-    );
+  const handleValueChange = (field: string, value: string | number | null) => {
+    setPlan({ ...plan, [field]: value });
+  };
+
+  const handleBooleanValueChange = (field: string, value: boolean) => {
+    setPlan({ ...plan, [field]: value });
+  };
+
+  const handleStringValueChange = (field: string, value: string) => {
+    setPlan({ ...plan, [field]: value });
+  };
+
+  const handleErrorClear = (field: string) => {
+    setErrors({ ...errors, [field]: '' });
   };
 
   return (
@@ -300,102 +175,173 @@ const PlanFormScreen: React.FC = () => {
               </Text>
 
               {/* 基本信息 */}
-              {renderEnhancedInput({
-                field: 'provider',
-                label: 'Provider',
-                value: plan.provider,
-                placeholder: 'e.g., Verizon, AT&T, Rogers',
-                autoCapitalize: 'words',
-                ref: providerRef,
-                onSubmitEditing: () => dataRef.current?.focus(),
-                returnKeyType: 'next'
-              })}
+              <EnhancedInput
+                field="provider"
+                label="Provider"
+                value={plan.provider}
+                placeholder="e.g., Verizon, AT&T, Rogers"
+                autoCapitalize="words"
+                ref={providerRef}
+                onSubmitEditing={() => dataRef.current?.focus()}
+                returnKeyType="next"
+                onValueChange={handleValueChange}
+                focusedField={focusedField}
+                onFocus={setFocusedField}
+                onBlur={() => setFocusedField('')}
+                errors={errors}
+                onErrorClear={handleErrorClear}
+              />
 
-              {renderStringPicker('network', 'Network Type', plan.network, [
-                { label: '5G', value: '5G' },
-                { label: 'LTE', value: 'LTE' }
-              ])}
+              <StringPicker
+                field="network"
+                label="Network Type"
+                value={plan.network}
+                options={[
+                  { label: '5G', value: '5G' },
+                  { label: 'LTE', value: 'LTE' }
+                ]}
+                onValueChange={handleStringValueChange}
+                onPickerPress={handleStringPickerPress}
+                activePicker={activePicker}
+              />
 
-              {renderEnhancedInput({
-                field: 'data',
-                label: 'Data (GB)',
-                value: plan.data,
-                placeholder: 'e.g., 10, 25, unlimited',
-                keyboardType: 'numeric',
-                ref: dataRef,
-                onSubmitEditing: () => coverageRef.current?.focus(),
-                returnKeyType: 'next',
-                formatValue: (val) => {
+              <EnhancedInput
+                field="data"
+                label="Data (GB)"
+                value={plan.data}
+                placeholder="e.g., 10, 25, unlimited"
+                keyboardType="numeric"
+                ref={dataRef}
+                onSubmitEditing={() => coverageRef.current?.focus()}
+                returnKeyType="next"
+                formatValue={(val) => {
                   if (val === null || val === undefined) return '';
                   const num = Number(val);
                   return isNaN(num) ? val.toString() : num.toString();
-                },
-                parseValue: (text) => {
+                }}
+                parseValue={(text) => {
                   if (text.toLowerCase() === 'unlimited') return 999999;
                   const num = parseFloat(text.replace(/[^0-9.]/g, ''));
                   return isNaN(num) ? null : num;
-                }
-              })}
+                }}
+                onValueChange={handleValueChange}
+                focusedField={focusedField}
+                onFocus={setFocusedField}
+                onBlur={() => setFocusedField('')}
+                errors={errors}
+                onErrorClear={handleErrorClear}
+              />
 
-              {renderEnhancedInput({
-                field: 'coverage',
-                label: 'Coverage Area',
-                value: plan.coverage,
-                placeholder: 'e.g., National, Regional, Local',
-                autoCapitalize: 'words',
-                ref: coverageRef,
-                onSubmitEditing: () => priceRef.current?.focus(),
-                returnKeyType: 'next'
-              })}
+              <EnhancedInput
+                field="coverage"
+                label="Coverage Area"
+                value={plan.coverage}
+                placeholder="e.g., National, Regional, Local"
+                autoCapitalize="words"
+                ref={coverageRef}
+                onSubmitEditing={() => priceRef.current?.focus()}
+                returnKeyType="next"
+                onValueChange={handleValueChange}
+                focusedField={focusedField}
+                onFocus={setFocusedField}
+                onBlur={() => setFocusedField('')}
+                errors={errors}
+                onErrorClear={handleErrorClear}
+              />
 
-              {renderEnhancedInput({
-                field: 'price',
-                label: 'Monthly Price ($)',
-                value: plan.price,
-                placeholder: '29.99',
-                keyboardType: 'decimal-pad',
-                ref: priceRef,
-                onSubmitEditing: () => Keyboard.dismiss(),
-                returnKeyType: 'done',
-                formatValue: (val) => {
+              <EnhancedInput
+                field="price"
+                label="Monthly Price ($)"
+                value={plan.price}
+                placeholder="29.99"
+                keyboardType="decimal-pad"
+                ref={priceRef}
+                onSubmitEditing={() => Keyboard.dismiss()}
+                returnKeyType="done"
+                formatValue={(val) => {
                   if (val === null || val === undefined) return '';
-                  // Handle the case where user is typing a decimal point
                   if (typeof val === 'string' && (val === '.' || val.endsWith('.'))) {
                     return val;
                   }
                   return val.toString();
-                },
-                parseValue: (text) => {
-                  // Allow decimal point and numbers only
+                }}
+                parseValue={(text) => {
                   const cleanText = text.replace(/[^0-9.]/g, '');
-                  
-                  // Prevent multiple decimal points
                   const parts = cleanText.split('.');
                   if (parts.length > 2) {
-                    return plan.price; // Return current value if multiple decimal points
+                    return plan.price;
                   }
-                  
                   if (cleanText === '') return null;
-                  
-                  // If text ends with decimal point or is just a decimal point, 
-                  // we need to store it as a string temporarily
                   if (cleanText === '.' || cleanText.endsWith('.')) {
-                    // Store as a special marker that formatValue can handle
                     return cleanText as any;
                   }
-                  
                   const num = parseFloat(cleanText);
                   return isNaN(num) ? null : num;
-                }
-              })}
+                }}
+                onValueChange={handleValueChange}
+                focusedField={focusedField}
+                onFocus={setFocusedField}
+                onBlur={() => setFocusedField('')}
+                errors={errors}
+                onErrorClear={handleErrorClear}
+              />
               
-              {renderBooleanPicker('voicemail', 'Voicemail', plan.voicemail)}
-              {renderBooleanPicker('call_display', 'Call Display', plan.call_display)}
-              {renderBooleanPicker('call_waiting', 'Call Waiting', plan.call_waiting)}
-              {renderBooleanPicker('suspicious_call_detection', 'Suspicious Call Detection', plan.suspicious_call_detection)}
-              {renderBooleanPicker('hotspot', 'Hotspot', plan.hotspot)}
-              {renderBooleanPicker('conference_call', 'Conference Call', plan.conference_call)}
-              {renderBooleanPicker('video_call', 'Video Call', plan.video_call)}
+              <BooleanPicker
+                field="voicemail"
+                label="Voicemail"
+                value={plan.voicemail}
+                onValueChange={handleBooleanValueChange}
+                onPickerPress={handleBooleanPickerPress}
+                activePicker={activePicker}
+              />
+              <BooleanPicker
+                field="call_display"
+                label="Call Display"
+                value={plan.call_display}
+                onValueChange={handleBooleanValueChange}
+                onPickerPress={handleBooleanPickerPress}
+                activePicker={activePicker}
+              />
+              <BooleanPicker
+                field="call_waiting"
+                label="Call Waiting"
+                value={plan.call_waiting}
+                onValueChange={handleBooleanValueChange}
+                onPickerPress={handleBooleanPickerPress}
+                activePicker={activePicker}
+              />
+              <BooleanPicker
+                field="suspicious_call_detection"
+                label="Suspicious Call Detection"
+                value={plan.suspicious_call_detection}
+                onValueChange={handleBooleanValueChange}
+                onPickerPress={handleBooleanPickerPress}
+                activePicker={activePicker}
+              />
+              <BooleanPicker
+                field="hotspot"
+                label="Hotspot"
+                value={plan.hotspot}
+                onValueChange={handleBooleanValueChange}
+                onPickerPress={handleBooleanPickerPress}
+                activePicker={activePicker}
+              />
+              <BooleanPicker
+                field="conference_call"
+                label="Conference Call"
+                value={plan.conference_call}
+                onValueChange={handleBooleanValueChange}
+                onPickerPress={handleBooleanPickerPress}
+                activePicker={activePicker}
+              />
+              <BooleanPicker
+                field="video_call"
+                label="Video Call"
+                value={plan.video_call}
+                onValueChange={handleBooleanValueChange}
+                onPickerPress={handleBooleanPickerPress}
+                activePicker={activePicker}
+              />
             </View>
           </ScrollView>
         </TouchableWithoutFeedback>
@@ -406,6 +352,7 @@ const PlanFormScreen: React.FC = () => {
         <Modal
           isVisible={isPickerVisible}
           onBackdropPress={() => {
+            console.log('Modal backdrop pressed, closing picker');
             setActivePicker('');
             setPickerLabel('');
             setTempStringPickerValue('');
@@ -414,8 +361,13 @@ const PlanFormScreen: React.FC = () => {
           style={{ justifyContent: 'flex-end', margin: 0 }}
           useNativeDriver={true}
           hideModalContentWhileAnimating={true}
+          avoidKeyboard={true}
+          backdropOpacity={0.5}
         >
-          <View className="bg-white rounded-t-xl" style={{ minHeight: 220, paddingBottom: 34 }}>
+          <View className="bg-white rounded-t-xl" style={{ 
+            minHeight: responsive.hp(27), 
+            paddingBottom: responsive.hp(4) 
+          }}>
             {/* Modal Header */}
             <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-200">
               <TouchableOpacity
@@ -453,14 +405,16 @@ const PlanFormScreen: React.FC = () => {
             </View>
             
             {/* Picker */}
-            <View style={{ height: 180 }}>
+            <View style={{ height: responsive.hp(22) }}>
               {pickerField === 'network' ? (
                 <Picker
                   selectedValue={tempStringPickerValue}
                   onValueChange={(value: string) => {
+                    console.log(`Network picker value changed to: ${value}`);
                     setTempStringPickerValue(value);
                   }}
-                  style={{ height: 180 }}
+                  style={{ height: responsive.hp(22), width:responsive.wp(100)}}
+                  itemStyle={{ height: responsive.hp(22), width:responsive.wp(100),color:"black" }}
                 >
                   <Picker.Item label="5G" value="5G" />
                   <Picker.Item label="LTE" value="LTE" />
@@ -469,9 +423,11 @@ const PlanFormScreen: React.FC = () => {
                 <Picker
                   selectedValue={tempPickerValue ?? false}
                   onValueChange={(value: boolean) => {
+                    console.log(`Boolean picker value changed to: ${value}`);
                     setTempPickerValue(value);
                   }}
-                  style={{ height: 180 }}
+                  style={{ height: responsive.hp(22), width:responsive.wp(100) }}
+                  itemStyle={{ height: responsive.hp(22), width:responsive.wp(100), color:"black" }}
                 >
                   <Picker.Item label="No" value={false} />
                   <Picker.Item label="Yes" value={true} />
