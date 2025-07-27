@@ -3,13 +3,7 @@ import { supabase } from "@/app/services/supabase";
 
 export const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({ email: email, password: password });
-    // if (!error && data.user) {
-    //     // 自动创建 profiles 记录
-    //     await supabase
-    //         .from('profiles')
-    //         .insert({ id: data.user.id, email });
-    // }
-    // console.log(data);
+    console.log('SignUp result:', { data, error });
     return { data, error };
 };
 

@@ -77,8 +77,6 @@ const BetterPlanScreen: React.FC = () => {
     }
   }, []);
 
-  // 权限判断函数
-  const canViewPlan = (plan: any) => isPremium || plan.unlocked === true;
 
   // 使用 useFocusEffect 替代 useEffect，每次页面获得焦点时都会执行
   useFocusEffect(
@@ -224,9 +222,9 @@ const BetterPlanScreen: React.FC = () => {
           {filteredAndSortedPlans.map((plan, index) => (
             <BetterPlanCard
               key={index}
-              isBlurred={!canViewPlan(plan)}
+              isBlurred={!isPremium}
               activeOpacity={0.9}
-              onPress={() => handlePress(index, canViewPlan(plan))}
+              onPress={() => handlePress(index, isPremium)}
               className={index !== filteredAndSortedPlans.length - 1 ? 'mb-4' : ''}
             >
               <View

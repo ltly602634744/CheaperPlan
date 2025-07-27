@@ -11,7 +11,6 @@ export const fetchBetterPlans = async () => {
         }
         
         const recommendedPlans: RecommendedPlan[] = data.map((item: any) => ({
-            unlocked: item.unlocked,
             provider: item.provider,
             data: item.data || null,
             coverage: item.coverage,
