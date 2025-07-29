@@ -1,33 +1,46 @@
-import { useAuthContext } from "@/app/context/AuthContext";
 import { useRouter } from 'expo-router';
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { resetPassword } from '@/app/services/authService';
 
-
-const AuthScreen: React.FC = () => {
+const ForgotPasswordScreen: React.FC = () => {
     const router = useRouter();
-    const { signIn } = useAuthContext();
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleLogin = async () => {
-        const {data, error } = await signIn(email, password);
+    const handleResetPassword = async () => {
+        if (!email.trim()) {
+            Alert.alert('Error', 'Please enter your email address.');
+            return;
+        }
+
+        setLoading(true);
+        const { error } = await resetPassword(email);
+
         if (error) {
             Alert.alert('Error', error.message);
-        }else if (data.session){
-            router.replace("/");
+        } else {
+            Alert.alert(
+                'Check your email', 
+                'We have sent you a password reset link. Please check your email and follow the instructions.',
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => router.back()
+                    }
+                ]
+            );
         }
         setLoading(false);
     };
 
-    const handleRegister= async () => {
-        router.push("/screens/RegisterScreen");
-    }
-
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Log in</Text>
+            <Text style={styles.title}>Reset Password</Text>
+            <Text style={styles.description}>
+                Enter your email address and we'll send you a link to reset your password.
+            </Text>
+            
             <View style={[styles.verticallySpaced, styles.mt20]}>
                 <Text style={styles.label}>Email</Text>
                 <View style={styles.inputContainer}>
@@ -42,41 +55,22 @@ const AuthScreen: React.FC = () => {
                     />
                 </View>
             </View>
-            <View style={styles.verticallySpaced}>
-                <Text style={styles.label}>Password</Text>
-                <View style={styles.inputContainer}>
-                    <Text style={styles.icon}>🔒</Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={(text) => setPassword(text)}
-                        value={password}
-                        secureTextEntry={true}
-                        placeholder="Password"
-                        autoCapitalize="none"
-                    />
-                </View>
-            </View>
+
             <View style={[styles.verticallySpaced, styles.mt20]}>
                 <TouchableOpacity
                     style={[styles.button, loading && styles.buttonDisabled]}
                     disabled={loading}
-                    onPress={() => handleLogin()}
+                    onPress={handleResetPassword}
                 >
-                    <Text style={styles.buttonText}>Sign in</Text>
+                    <Text style={styles.buttonText}>Send Reset Link</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.verticallySpaced}>
-                <Text style={styles.forgotPasswordText}>
-                    <Text style={styles.forgotPasswordLink} onPress={() => router.push('/screens/ForgotPasswordScreen')}>
-                        Forgot your password?
-                    </Text>
-                </Text>
-            </View>
+
             <View style={[styles.verticallySpaced, styles.mt20]}>
-                <Text style={styles.signUpText}>
-                    Don't have an account?{' '}
-                    <Text style={styles.signUpLink} onPress={handleRegister}>
-                        Sign up
+                <Text style={styles.backToSignInText}>
+                    Remember your password?{' '}
+                    <Text style={styles.backToSignInLink} onPress={() => router.back()}>
+                        Back to Sign in
                     </Text>
                 </Text>
             </View>
@@ -84,7 +78,6 @@ const AuthScreen: React.FC = () => {
     );
 };
 
-export default AuthScreen;
 const styles = StyleSheet.create({
     container: {
         marginTop: 40,
@@ -97,6 +90,19 @@ const styles = StyleSheet.create({
     },
     mt20: {
         marginTop: 20,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    description: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 20,
+        lineHeight: 22,
     },
     label: {
         fontSize: 16,
@@ -137,30 +143,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    signUpText: {
+    backToSignInText: {
         fontSize: 16,
         color: '#666',
         textAlign: 'center',
     },
-    signUpLink: {
-        color: '#007AFF',
-        fontWeight: '500',
-        textDecorationLine: 'underline',
-    },
-    forgotPasswordText: {
-        fontSize: 16,
-        color: '#666',
-        textAlign: 'center',
-    },
-    forgotPasswordLink: {
+    backToSignInLink: {
         color: '#007AFF',
         fontWeight: '500',
         textDecorationLine: 'underline',
     },
 });
+
+export default ForgotPasswordScreen;

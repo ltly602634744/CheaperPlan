@@ -1,67 +1,69 @@
-import { useAuthContext } from "@/app/context/AuthContext";
-import { useRouter } from "expo-router"; // 导入类型定义
-import React, { useState } from "react";
+import { useRouter } from 'expo-router';
+import React, { useState, useEffect } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { updatePassword, isPasswordResetSession, setPasswordResetMode } from '@/app/services/authService';
+import { useAuthContext } from '@/app/context/AuthContext';
 
-// type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
-
-const RegisterScreen: React.FC = () => {
-    const router = useRouter()
-    const { signUp } = useAuthContext();
-    const [email, setEmail] = useState('');
+const ResetPasswordScreen: React.FC = () => {
+    const router = useRouter();
+    const { session } = useAuthContext();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    // const navigation = useNavigation<HomeScreenNavigationProp>();
 
-    const handleRegister = async () => {
-        // 验证密码是否一致
-        if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match. Please check both password fields.');
+    const handleUpdatePassword = async () => {
+        // 检查是否为有效的密码重置会话
+        if (!session || !(await isPasswordResetSession())) {
+            Alert.alert('Error', 'Invalid password reset session. Please use the reset link from your email again.');
             return;
         }
 
-        // 检查密码长度
+        if (!password.trim()) {
+            Alert.alert('Error', 'Please enter a new password.');
+            return;
+        }
+
         if (password.length < 6) {
             Alert.alert('Error', 'Password must be at least 6 characters long.');
             return;
         }
 
-        setLoading(true);
-        const { data, error } = await signUp(email, password);
+        if (password !== confirmPassword) {
+            Alert.alert('Error', 'Passwords do not match. Please check both password fields.');
+            return;
+        }
 
-        if (error){
+        setLoading(true);
+        const { error } = await updatePassword(password);
+
+        if (error) {
             Alert.alert('Error', error.message);
-        } else if (!data.session){
-            Alert.alert('Please check your inbox for email verification!');
-            router.push('/screens/AuthScreen');
-        }else{
-            // Alert.alert('Success', 'Registration successful!');
-            // TODO: Handle the email is existing
-            router.push('/screens/AuthScreen');
+        } else {
+            // 密码更新成功，重置密码重置模式
+            setPasswordResetMode(false);
+            Alert.alert(
+                'Success', 
+                'Your password has been updated successfully. You can now sign in with your new password.',
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => router.replace('/screens/AuthScreen')
+                    }
+                ]
+            );
         }
         setLoading(false);
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Sign up</Text>
+            <Text style={styles.title}>Set New Password</Text>
+            <Text style={styles.description}>
+                Enter your new password below.
+            </Text>
+            
             <View style={[styles.verticallySpaced, styles.mt20]}>
-                <Text style={styles.label}>Email</Text>
-                <View style={styles.inputContainer}>
-                    <Text style={styles.icon}>✉️</Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={(text) => setEmail(text)}
-                        value={email}
-                        placeholder="email@address.com"
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                    />
-                </View>
-            </View>
-            <View style={styles.verticallySpaced}>
-                <Text style={styles.label}>Password</Text>
+                <Text style={styles.label}>New Password</Text>
                 <View style={styles.inputContainer}>
                     <Text style={styles.icon}>🔒</Text>
                     <TextInput
@@ -69,13 +71,14 @@ const RegisterScreen: React.FC = () => {
                         onChangeText={(text) => setPassword(text)}
                         value={password}
                         secureTextEntry={true}
-                        placeholder="Password"
+                        placeholder="Enter new password"
                         autoCapitalize="none"
                     />
                 </View>
             </View>
+
             <View style={styles.verticallySpaced}>
-                <Text style={styles.label}>Confirm Password</Text>
+                <Text style={styles.label}>Confirm New Password</Text>
                 <View style={styles.inputContainer}>
                     <Text style={styles.icon}>🔒</Text>
                     <TextInput
@@ -83,33 +86,25 @@ const RegisterScreen: React.FC = () => {
                         onChangeText={(text) => setConfirmPassword(text)}
                         value={confirmPassword}
                         secureTextEntry={true}
-                        placeholder="Confirm Password"
+                        placeholder="Confirm new password"
                         autoCapitalize="none"
                     />
                 </View>
             </View>
+
             <View style={[styles.verticallySpaced, styles.mt20]}>
                 <TouchableOpacity
                     style={[styles.button, loading && styles.buttonDisabled]}
                     disabled={loading}
-                    onPress={handleRegister}
+                    onPress={handleUpdatePassword}
                 >
-                    <Text style={styles.buttonText}>Sign up</Text>
+                    <Text style={styles.buttonText}>Update Password</Text>
                 </TouchableOpacity>
-            </View>
-            <View style={[styles.verticallySpaced, styles.mt20]}>
-                <Text style={styles.signInText}>
-                    Already have an account?{' '}
-                    <Text style={styles.signInLink} onPress={() => router.back()}>
-                        Sign in
-                    </Text>
-                </Text>
             </View>
         </View>
     );
 };
 
-export default RegisterScreen;
 const styles = StyleSheet.create({
     container: {
         marginTop: 40,
@@ -122,6 +117,19 @@ const styles = StyleSheet.create({
     },
     mt20: {
         marginTop: 20,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    description: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 20,
+        lineHeight: 22,
     },
     label: {
         fontSize: 16,
@@ -162,20 +170,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
-    signInText: {
-        fontSize: 16,
-        color: '#666',
-        textAlign: 'center',
-    },
-    signInLink: {
-        color: '#007AFF',
-        fontWeight: '500',
-        textDecorationLine: 'underline',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
 });
+
+export default ResetPasswordScreen;

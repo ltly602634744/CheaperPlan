@@ -3,11 +3,13 @@
 import { Href, Stack, useRouter } from 'expo-router';
 // 1. 导入你的 AuthProvider
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
 import React, { useEffect } from 'react';
 import { Platform, Text, TextInput, View } from 'react-native';
 import Purchases from 'react-native-purchases';
-import { AuthProvider } from './context/AuthContext';
-import { useAuth } from './hooks/useAuth'; // 确保路径正确
+import { AuthProvider, useAuthContext } from './context/AuthContext';
+import { supabase } from './services/supabase';
+import { setPasswordResetMode } from './services/authService';
 
 // 导入 NativeWind 样式
 import '../global.css';
@@ -39,7 +41,7 @@ Notifications.setNotificationHandler({
 
 // 你可能还需要一个内部组件来处理重定向，因为它现在可以安全地使用 useAuth 了
 function AppLayout() {
-  const { session, loading } = useAuth();
+  const { session, loading } = useAuthContext();
   const router = useRouter();
 
   // ① 初始化 RevenueCat Purchases SDK，只执行一次
@@ -88,12 +90,80 @@ function AppLayout() {
     return () => subscription.remove();
   }, []);
 
+  // ③ Deep link处理 - 用于密码重置
+  useEffect(() => {
+    const createSessionFromUrl = async (url: string) => {
+      try {
+        // 解析URL参数
+        const transformedUrl = url.replace('#', '?');
+        const parsedUrl = Linking.parse(transformedUrl);
+        
+        const access_token = parsedUrl.queryParams?.access_token;
+        const refresh_token = parsedUrl.queryParams?.refresh_token;
+        const type = parsedUrl.queryParams?.type;
+        
+        if (typeof access_token === 'string' && typeof refresh_token === 'string') {
+          console.log('Creating session from URL tokens');
+          
+          const { data, error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
+          
+          if (error) {
+            console.error('Error setting session:', error);
+            throw error;
+          }
+          
+          if (type === 'recovery') {
+            console.log('Recovery session established, setting password reset mode');
+            setPasswordResetMode(true);
+          }
+          
+          return data.session;
+        }
+      } catch (err) {
+        console.error('Exception creating session from URL:', err);
+        throw err;
+      }
+    };
+
+    const handleDeepLink = async (url: string) => {
+      console.log('Deep link received:', url);
+      if (url.includes('reset-password') && url.includes('type=recovery')) {
+        console.log('Password reset deep link detected');
+        
+        try {
+          await createSessionFromUrl(url);
+        } catch (err) {
+          console.error('Failed to create session from URL:', err);
+        }
+        
+        router.push('/screens/ResetPasswordScreen');
+      }
+    };
+
+    // 处理应用已启动时的deep link
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    // 处理应用冷启动时的deep link
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink(url);
+      }
+    });
+
+    return () => subscription?.remove();
+  }, []);
+
   // ③ 登录状态变化时的重定向逻辑（保持原逻辑不变）
   useEffect(() => {
     if (loading) return;
 
     if (!session) {
-      router.replace('/screens/AuthScreen');
+      router.replace('/screens/WelcomeScreen');
     }
   }, [session, loading]);
 
@@ -109,8 +179,11 @@ function AppLayout() {
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="screens/WelcomeScreen" options={{ headerShown: false }} />
       <Stack.Screen name="screens/AuthScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
-      <Stack.Screen name="screens/RegisterScreen" options={{ title: 'Register', headerBackTitle: 'Back' }} />
+      <Stack.Screen name="screens/RegisterScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
+      <Stack.Screen name="screens/ForgotPasswordScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
+      <Stack.Screen name="screens/ResetPasswordScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
       <Stack.Screen name="screens/PlanFormScreen" options={{ title: 'Edit Plan', headerBackTitle: 'Back' }} />
       
       {/* 设置页面 */}

@@ -1,7 +1,6 @@
 import Cell from "@/app/components/SettingCell";
 import { useAuthContext } from "@/app/context/AuthContext";
 import { ModalContentKey } from "@/app/data";
-import { useAuth } from "@/app/hooks/useAuth";
 import { useUserProfile } from "@/app/hooks/useUserProfile";
 import * as Notifications from 'expo-notifications';
 import { useRouter } from "expo-router";
@@ -23,8 +22,7 @@ import eventBus from '../utils/eventBus';
 
 export default function SettingsScreen() {
     const router = useRouter();
-    const { signOut } = useAuth();
-    const { session } = useAuthContext();
+    const { session, signOut } = useAuthContext();
     const { user, loading: profileLoading, refetch } = useUserProfile();
     const [notificationEnabled, setNotificationEnabled] = useState<string>("...");
 

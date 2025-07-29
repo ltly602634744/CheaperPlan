@@ -1,4 +1,5 @@
 import { supabase } from "@/app/services/supabase";
+import { registerForPushNotificationsAsync } from '@/app/services/pushNotificationService';
 
 export const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({ email: email, password: password });
@@ -8,6 +9,16 @@ export const signUp = async (email: string, password: string) => {
 
 export const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email: email, password: password });
+    
+    // 登录成功后异步保存 push token
+    if (!error && data.session?.user?.id) {
+        console.log('登录成功，异步保存 push token');
+        // 使用 setTimeout 让 push token 保存在下一个事件循环中执行，避免阻塞UI
+        setTimeout(() => {
+            registerAndSavePushToken(data.session.user.id);
+        }, 0);
+    }
+    
     return { data, error };
 };
 
@@ -15,6 +26,80 @@ export const signOut = async () => {
     const { error } = await supabase.auth.signOut();
 
     return { error };
+};
+
+export const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'cheaperplan://reset-password',
+    });
+    return { error };
+};
+
+export const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    return { error };
+};
+
+// 全局标记，用于记录密码重置状态
+let isPasswordResetMode = false;
+
+// 设置密码重置模式
+export const setPasswordResetMode = (value: boolean) => {
+    isPasswordResetMode = value;
+    console.log('Password reset mode set to:', value);
+};
+
+// 通用的 push token 注册和保存函数
+const registerAndSavePushToken = async (userId: string) => {
+    try {
+        console.log('开始为用户注册并保存 push token:', userId);
+        
+        // 添加超时保护，防止长时间阻塞
+        const timeoutPromise = new Promise<string | null>((_, reject) => {
+            setTimeout(() => reject(new Error('Push token 获取超时')), 10000); // 10秒超时
+        });
+        
+        const token = await Promise.race([
+            registerForPushNotificationsAsync(),
+            timeoutPromise
+        ]);
+        
+        if (!token) {
+            console.log('未获取到 push token，跳过保存');
+            return;
+        }
+
+        const { error } = await savePushToken(userId, token);
+        if (error) console.error('保存推送 token 失败：', error.message);
+        else console.log('Push token 保存成功');
+    } catch (e) {
+        console.error('保存推送 token 发生异常：', e);
+    }
+};
+
+// 检测当前是否为密码重置会话
+export const isPasswordResetSession = async () => {
+    try {
+        // 检查全局标记
+        if (isPasswordResetMode) {
+            console.log('Password reset session detected via global flag');
+            return true;
+        }
+        
+        // 备用检测：检查当前 session 是否存在且有效
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+            console.error('Error getting session:', error);
+            return false;
+        }
+        
+        // 如果有 session 且是在重置模式下，则认为有效
+        return session !== null && isPasswordResetMode;
+    } catch (err) {
+        console.error('Error in isPasswordResetSession:', err);
+        return false;
+    }
 };
 
 // Save token to supabase
