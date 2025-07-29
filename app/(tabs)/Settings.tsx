@@ -93,11 +93,39 @@ export default function SettingsScreen() {
         if (!session?.user?.id) return;
         try {
             const customerInfo = await Purchases.restorePurchases();
-            const entitlement = customerInfo.entitlements.active["Pro"];
+            
+            // 检查两个可能的entitlements
+            const monthlyEntitlement = customerInfo.entitlements.active["one_month_access"];
+            const yearlyEntitlement = customerInfo.entitlements.active["one_year_access"];
+            
+            // 选择有效的entitlement（优先选择到期时间更晚的）
+            let activeEntitlement = null;
+            let subscriptionType = '';
+            
+            if (monthlyEntitlement && yearlyEntitlement) {
+                // 两个都存在时，选择到期时间更晚的
+                const monthlyExpiry = monthlyEntitlement.expirationDate ? new Date(monthlyEntitlement.expirationDate) : new Date(0);
+                const yearlyExpiry = yearlyEntitlement.expirationDate ? new Date(yearlyEntitlement.expirationDate) : new Date(0);
+                
+                if (yearlyExpiry >= monthlyExpiry) {
+                    activeEntitlement = yearlyEntitlement;
+                    subscriptionType = 'yearly';
+                } else {
+                    activeEntitlement = monthlyEntitlement;
+                    subscriptionType = 'monthly';
+                }
+            } else if (yearlyEntitlement) {
+                activeEntitlement = yearlyEntitlement;
+                subscriptionType = 'yearly';
+            } else if (monthlyEntitlement) {
+                activeEntitlement = monthlyEntitlement;
+                subscriptionType = 'monthly';
+            }
 
-            if (entitlement) {
-                const expiration = entitlement.expirationDate;
+            if (activeEntitlement) {
+                const expiration = activeEntitlement.expirationDate;
                 const expirationDate = expiration ? new Date(expiration) : null;
+                
                 // ✅ 调用后端接口更新数据库状态
                 await updateUserProfile(session.user.id, {
                     premium: 'paid',
@@ -108,10 +136,10 @@ export default function SettingsScreen() {
                 eventBus.emit('subscriptionUpdated', {
                     premium: 'paid',
                     premium_expiration_date: expirationDate,
-                    subscriptionType: 'restored'
+                    subscriptionType: `restored_${subscriptionType}`
                 });
 
-                Alert.alert('✅ Restoration successful', 'Your subscription has been restored');
+                Alert.alert('✅ Restoration successful', `Your ${subscriptionType === 'yearly' ? 'one Year' : 'one month'} access pass has been restored`);
             } else {
                 Alert.alert('Notice', 'No restorable purchases were found on your account.');
             }
