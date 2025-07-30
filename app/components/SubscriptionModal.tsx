@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { useAuthContext } from '../context/AuthContext';
 import { updateUserProfile } from '../services/userService';
@@ -44,23 +44,12 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
         console.log('Package identifiers:', current.availablePackages.map(p => p.identifier));
         console.log('Product identifiers:', current.availablePackages.map(p => p.product.identifier));
       }
-      const identifiers = {
-        ios: {
-          one_month_pass: 'one_month_pass_ios',
-          one_year_pass: 'one_year_pass_ios'
-        },
-        android: {
-          one_month_pass: 'one_month_pass_android',
-          one_year_pass: 'one_year_pass_android'
-        }
-      };
-
-      const platform = Platform.OS as 'ios' | 'android';
+      // 使用RevenueCat标准package identifiers
       const monthlyPackage = current?.availablePackages.find(p =>
-        p.identifier === identifiers[platform]?.['one_month_pass']
+        p.identifier === '$rc_monthly'
       );
       const yearlyPackage = current?.availablePackages.find(p =>
-        p.identifier === identifiers[platform]?.['one_year_pass']
+        p.identifier === '$rc_annual'
       );
 
       console.log('Found monthly package:', monthlyPackage);
@@ -101,14 +90,48 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
     try {
       await Purchases.purchasePackage(selectedPackage);
 
-      // Calculate expiration date based on subscription type
-      const currentDate = new Date();
-      const daysToAdd = selectedPlanRef.current === 'monthly' ? 30 : 365;
-      const expirationDate = new Date(currentDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
+      // Get real subscription info from RevenueCat
+      const customerInfo = await Purchases.getCustomerInfo();
+      
+      // Find the correct entitlement based on purchased package
+      let entitlement = null;
+      if (selectedPlanRef.current === 'monthly') {
+        entitlement = customerInfo.entitlements.active["one_month_access"];
+      } else {
+        entitlement = customerInfo.entitlements.active["one_year_access"];
+      }
+      
+      // Fallback: try to find any active entitlement
+      if (!entitlement) {
+        const activeEntitlements = Object.values(customerInfo.entitlements.active);
+        entitlement = activeEntitlements.length > 0 ? activeEntitlements[0] : null;
+      }
+
+      let expirationDate: Date;
+      let autoRenewEnabled = true;
+
+      if (entitlement && entitlement.expirationDate) {
+        // Use real expiration date from RevenueCat
+        expirationDate = new Date(entitlement.expirationDate);
+        autoRenewEnabled = entitlement.willRenew;
+        console.log('SubscriptionModal: Using RevenueCat data:', {
+          expirationDate,
+          autoRenewEnabled,
+          entitlementId: entitlement.identifier
+        });
+      } else {
+        // Fallback to calculated date if RevenueCat data not available
+        console.warn('SubscriptionModal: No entitlement found, using fallback calculation');
+        const currentDate = new Date();
+        const daysToAdd = selectedPlanRef.current === 'monthly' ? 30 : 365;
+        expirationDate = new Date(currentDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
+        autoRenewEnabled = true; // Default for auto-renewing subscriptions
+      }
 
       const { error } = await updateUserProfile(session.user.id, {
-        premium: 'paid',
+        premium: selectedPlanRef.current, // 'monthly' or 'yearly'
         premium_expiration_date: expirationDate,
+        auto_renew_enabled: autoRenewEnabled,
       });
 
       if (error) {
@@ -118,8 +141,9 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
         Alert.alert('Success', 'Premium pass activated! You now have full access to all plan details.');
         // 触发会员状态更新事件
         const eventData = {
-          premium: 'paid',
+          premium: selectedPlanRef.current, // 'monthly' or 'yearly'
           premium_expiration_date: expirationDate,
+          auto_renew_enabled: autoRenewEnabled,
           subscriptionType: selectedPlanRef.current
         };
         console.log('SubscriptionModal: Emitting subscriptionUpdated event:', eventData);

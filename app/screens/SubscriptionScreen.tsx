@@ -1,16 +1,13 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, Platform, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import SubscriptionModal from '../components/SubscriptionModal';
 import { useAuthContext } from '../context/AuthContext';
-import { getUserProfile } from '../services/userService';
-import { UserProfile } from '../types/database';
+import { getSubscriptionStatus, getMembershipStatusDisplay, SubscriptionInfo } from '../services/subscriptionService';
 
 export default function SubscriptionScreen() {
-    const router = useRouter();
     const { session } = useAuthContext();
-    const [userProfile, setUserProfile] = useState<Partial<UserProfile> | null>(null);
+    const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
@@ -24,12 +21,9 @@ export default function SubscriptionScreen() {
                 setError('User not authenticated');
                 return;
             }
-            const { data, error: profileError } = await getUserProfile(session.user.id);
-            if (profileError) {
-                setError('Failed to load subscription information');
-            } else {
-                setUserProfile(data);
-            }
+            
+            const subscriptionData = await getSubscriptionStatus(session.user.id);
+            setSubscriptionInfo(subscriptionData);
         } catch (err) {
             console.error('Error fetching subscription info:', err);
             setError('Failed to load subscription information');
@@ -47,11 +41,8 @@ export default function SubscriptionScreen() {
 
     // 获取会员状态
     const getMembershipStatus = () => {
-        if (!userProfile || !userProfile.premium_expiration_date) return 'free';
-        const expirationDate = new Date(userProfile.premium_expiration_date);
-        const currentDate = new Date();
-        if (expirationDate > currentDate) return 'active';
-        return 'expired';
+        if (!subscriptionInfo) return 'free';
+        return subscriptionInfo.status;
     };
 
     // 格式化到期日期
@@ -61,25 +52,18 @@ export default function SubscriptionScreen() {
     };
 
     // 获取订阅状态显示文本
-    const getSubscriptionStatus = () => {
+    const getSubscriptionStatusDisplay = () => {
         if (loading) return 'Loading...';
+        if (!subscriptionInfo) return 'Free';
         
-        const status = getMembershipStatus();
-        switch (status) {
-            case 'active':
-                return 'Active';
-            case 'expired':
-                return 'Expired';
-            default:
-                return 'Free';
-        }
+        return getMembershipStatusDisplay(subscriptionInfo);
     };
 
     // 获取订阅状态的颜色
     const getStatusColor = () => {
-        const status = getSubscriptionStatus();
+        const status = getSubscriptionStatusDisplay();
         switch (status) {
-            case 'Active':
+            case 'Premium':
                 return 'text-green-600';
             case 'Expired':
                 return 'text-red-600';
@@ -92,21 +76,50 @@ export default function SubscriptionScreen() {
 
     // 获取订阅类型
     const getSubscriptionType = () => {
-        const status = getMembershipStatus();
-        return status === 'active' ? 'Premium' : 'Free';
+        if (!subscriptionInfo) return 'Free';
+        return (subscriptionInfo.status === 'active_monthly' || subscriptionInfo.status === 'active_yearly') ? 'Premium' : 'Free';
     };
 
     // 获取到期日期
     const getExpirationDate = () => {
-        if (userProfile && userProfile.premium_expiration_date) {
-            return new Date(userProfile.premium_expiration_date);
-        }
-        return null;
+        return subscriptionInfo?.expirationDate || null;
     };
 
-    // Non-renewing subscription，不需要自动续费检查
+    // 获取自动续费状态
     const isAutoRenewing = () => {
-        return false;
+        return subscriptionInfo?.autoRenewEnabled || false;
+    };
+
+    // 检查是否有活跃的订阅
+    const hasActiveSubscription = () => {
+        const status = getMembershipStatus();
+        return status === 'active_monthly' || status === 'active_yearly';
+    };
+
+
+    // 处理取消订阅
+    const handleCancelSubscription = () => {
+        Alert.alert(
+            'Cancel Subscription',
+            'To cancel your subscription, you\'ll need to go to your device\'s subscription settings. Your premium access will continue until the end of your current billing period.',
+            [
+                {
+                    text: 'Not Now',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Open Subscription Settings',
+                    style: 'destructive',
+                    onPress: () => {
+                        if (Platform.OS === 'ios') {
+                            Linking.openURL('https://apps.apple.com/account/subscriptions');
+                        } else {
+                            Linking.openURL('https://play.google.com/store/account/subscriptions');
+                        }
+                    }
+                }
+            ]
+        );
     };
 
 
@@ -122,7 +135,7 @@ export default function SubscriptionScreen() {
                     <View className="flex-row justify-between items-center mb-4">
                         <Text className="text-gray-600">Status:</Text>
                         <Text className={`font-semibold ${getStatusColor()}`}>
-                            {getSubscriptionStatus()}
+                            {getSubscriptionStatusDisplay()}
                         </Text>
                     </View>
                     
@@ -136,9 +149,18 @@ export default function SubscriptionScreen() {
                     {getMembershipStatus() !== 'free' && getExpirationDate() && (
                         <>
                             <View className="flex-row justify-between items-center mb-4">
-                                <Text className="text-gray-600">Expiration Date:</Text>
+                                <Text className="text-gray-600">
+                                    {isAutoRenewing() ? 'Next Renewal:' : 'Expires On:'}
+                                </Text>
                                 <Text className="font-semibold text-gray-800">
                                     {loading ? '...' : formatExpirationDate(getExpirationDate())}
+                                </Text>
+                            </View>
+                            
+                            <View className="flex-row justify-between items-center mb-4">
+                                <Text className="text-gray-600">Auto-Renewal:</Text>
+                                <Text className={`font-semibold ${isAutoRenewing() ? 'text-green-600' : 'text-orange-600'}`}>
+                                    {loading ? '...' : (isAutoRenewing() ? 'On' : 'Off')}
                                 </Text>
                             </View>
                         </>
@@ -148,7 +170,7 @@ export default function SubscriptionScreen() {
                 {/* 功能列表 */}
                 <View className="bg-white rounded-xl shadow-sm mb-6">
                     <Text className="text-lg font-semibold text-gray-800 px-6 pt-6 pb-4">
-                        {getMembershipStatus() === 'active' ? 'Premium Features' : 'Get Premium to Unlock'}
+                        {hasActiveSubscription() ? 'Premium Features' : 'Get Premium to Unlock'}
                     </Text>
                     
                     <View className="px-6 pb-6">
@@ -169,13 +191,13 @@ export default function SubscriptionScreen() {
                         
                         <View className="flex-row items-center">
                             <Text className="text-green-500 mr-3">✓</Text>
-                            <Text className="text-gray-600 flex-1">Pay only when you need it, No auto-renewals</Text>
+                            <Text className="text-gray-600 flex-1">Flexible subscription management with full control</Text>
                         </View>
                     </View>
                 </View>
 
 
-                {getMembershipStatus() === 'free' && (
+                {!loading && getMembershipStatus() === 'free' && (
                     <TouchableOpacity
                         className="bg-blue-500 rounded-xl py-4 items-center shadow-sm"
                         onPress={() => setShowSubscriptionModal(true)}
@@ -184,13 +206,35 @@ export default function SubscriptionScreen() {
                     </TouchableOpacity>
                 )}
 
-                {getMembershipStatus() === 'expired' && (
+                {!loading && getMembershipStatus() === 'expired' && (
                     <TouchableOpacity
                         className="bg-blue-500 rounded-xl py-4 items-center shadow-sm"
                         onPress={() => setShowSubscriptionModal(true)}
                     >
                         <Text className="text-white text-lg font-semibold">Renew Premium</Text>
                     </TouchableOpacity>
+                )}
+
+                {/* 活跃订阅且自动续费开启 - 显示取消订阅选项 */}
+                {!loading && hasActiveSubscription() && isAutoRenewing() && (
+                    <TouchableOpacity
+                        className="bg-red-50 border border-red-200 rounded-xl py-3 items-center mt-4"
+                        onPress={handleCancelSubscription}
+                    >
+                        <Text className="text-red-600 font-semibold">Cancel Subscription</Text>
+                    </TouchableOpacity>
+                )}
+
+                {/* 已取消但仍有效的订阅 - 显示到期信息 */}
+                {!loading && hasActiveSubscription() && !isAutoRenewing() && (
+                    <View className="bg-orange-50 border border-orange-200 rounded-xl p-4 mt-4">
+                        <Text className="text-orange-800 text-center mb-3">
+                            Your subscription will expire on {formatExpirationDate(getExpirationDate())}
+                        </Text>
+                        <Text className="text-orange-600 text-sm text-center">
+                            To reactivate auto-renewal, go to your device's subscription settings.
+                        </Text>
+                    </View>
                 )}
 
                 {/* 错误显示 */}

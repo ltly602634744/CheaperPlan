@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import Purchases from 'react-native-purchases';
 import { updateUserProfile } from '../services/userService';
+import { getMembershipStatusDisplay, SubscriptionInfo, SubscriptionStatus } from '../services/subscriptionService';
 import eventBus from '../utils/eventBus';
 
 export default function SettingsScreen() {
@@ -64,6 +65,7 @@ export default function SettingsScreen() {
         const handleSubscriptionUpdate = (subscriptionData: {
             premium: string;
             premium_expiration_date: Date;
+            auto_renew_enabled: boolean;
             subscriptionType: string;
         }) => {
             console.log('Settings: Received subscription update:', subscriptionData);
@@ -125,17 +127,20 @@ export default function SettingsScreen() {
             if (activeEntitlement) {
                 const expiration = activeEntitlement.expirationDate;
                 const expirationDate = expiration ? new Date(expiration) : null;
+                const autoRenewEnabled = activeEntitlement.willRenew;
                 
                 // ✅ 调用后端接口更新数据库状态
                 await updateUserProfile(session.user.id, {
-                    premium: 'paid',
+                    premium: subscriptionType, // 'monthly' or 'yearly'
                     premium_expiration_date: expirationDate,
+                    auto_renew_enabled: autoRenewEnabled,
                 });
 
                 // 触发会员状态更新事件
                 eventBus.emit('subscriptionUpdated', {
-                    premium: 'paid',
+                    premium: subscriptionType, // 'monthly' or 'yearly'
                     premium_expiration_date: expirationDate,
+                    auto_renew_enabled: autoRenewEnabled,
                     subscriptionType: `restored_${subscriptionType}`
                 });
 
@@ -152,13 +157,51 @@ export default function SettingsScreen() {
         }
     };
 
-    // 获取会员状态 (与SubscriptionScreen保持一致)
+    // 获取会员状态显示文本
     const getMembershipStatus = () => {
-        if (!user || !user.premium_expiration_date) return 'Free';
-        const expirationDate = new Date(user.premium_expiration_date);
-        const currentDate = new Date();
-        if (expirationDate > currentDate) return 'Premium';
-        return 'Expired';
+        if (!user) return 'Free';
+        
+        // 检查是否是free用户（没有premium字段或premium为空/free）
+        if (!user.premium || user.premium === 'free' || user.premium === '') {
+            return 'Free';
+        }
+        
+        // 检查是否有有效的过期时间
+        if (!user.premium_expiration_date) {
+            return 'Free';
+        }
+        
+        // 构建订阅信息对象用于显示
+        let status: SubscriptionStatus;
+        if (user.premium_expiration_date && new Date(user.premium_expiration_date) > new Date()) {
+            // 根据premium字段确定具体的活跃状态
+            if (user.premium === 'monthly') {
+                status = 'active_monthly';
+            } else if (user.premium === 'yearly') {
+                status = 'active_yearly';
+            } else {
+                // 兼容旧数据，默认为monthly
+                status = 'active_monthly';
+            }
+        } else {
+            status = 'expired';
+        }
+        
+        const subscriptionInfo: SubscriptionInfo = {
+            status,
+            expirationDate: user.premium_expiration_date,
+            autoRenewEnabled: user.auto_renew_enabled,
+            subscriptionType: null
+        };
+        
+        // 为Settings页面提供更详细的状态显示
+        const baseStatus = getMembershipStatusDisplay(subscriptionInfo);
+        if (status === 'active_monthly' || status === 'active_yearly') {
+            const renewalInfo = user.auto_renew_enabled ? ' (Auto-renew)' : ' (Expires)';
+            return baseStatus + renewalInfo;
+        }
+        
+        return baseStatus;
     };
 
     return (

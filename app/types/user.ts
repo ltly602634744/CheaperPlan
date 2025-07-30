@@ -4,4 +4,5 @@ export interface User {
     createdAt: string;
     premium: string;
     premium_expiration_date: Date | null;
+    auto_renew_enabled: boolean;
 }

@@ -13,7 +13,8 @@ import SubscriptionModal from "../components/SubscriptionModal";
 import { useAuthContext } from "../context/AuthContext";
 import { getProviderUrl, hasProviderUrl } from "../data";
 import { useUserProfile } from "../hooks/useUserProfile";
-import { getUserProfile, updateUserProfile } from "../services/userService";
+import { hasActivePremium } from "../services/subscriptionService";
+import { updateUserProfile } from "../services/userService";
 import eventBus from '../utils/eventBus';
 
 
@@ -61,21 +62,15 @@ const BetterPlanScreen: React.FC = () => {
     }
 
     try {
-      const { data, error } = await getUserProfile(session.user.id, "premium,premium_expiration_date");
-      if (error || data?.premium === 'Free') {
-        setIsPremium(false);
-      } else {
-        setIsPremium(data?.premium_expiration_date
-          ? new Date(data.premium_expiration_date) > new Date()
-          : false);
-      }
+      const hasActiveSub = await hasActivePremium(session.user.id);
+      setIsPremium(hasActiveSub);
     } catch (err) {
-      console.error('Unexpected error:', err);
+      console.error('Error checking premium status:', err);
       setIsPremium(false);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [session?.user?.id]);
 
 
   // 使用 useFocusEffect 替代 useEffect，每次页面获得焦点时都会执行
