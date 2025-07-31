@@ -2,7 +2,13 @@ import { supabase } from "@/app/services/supabase";
 import { registerForPushNotificationsAsync } from '@/app/services/pushNotificationService';
 
 export const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email: email, password: password });
+    const { data, error } = await supabase.auth.signUp({ 
+        email: email, 
+        password: password,
+        options: {
+            emailRedirectTo: 'https://www.cheaperplan.net/welcome/'
+        }
+    });
     console.log('SignUp result:', { data, error });
     return { data, error };
 };
