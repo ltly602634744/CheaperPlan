@@ -34,7 +34,6 @@ export default {
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
-      runtimeVersion: '1.0.0',
     },
     web: {
       bundler: 'metro',
