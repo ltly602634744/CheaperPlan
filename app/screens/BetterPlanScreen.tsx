@@ -28,6 +28,7 @@ const SORT_OPTIONS = [
 
 // 筛选选项
 const FILTER_OPTIONS = [
+  { key: 'coverage', label: 'Coverage', icon: 'globe' },
   { key: 'voicemail', label: 'With Voicemail', icon: 'mail' },
   { key: 'call-display', label: 'With Call Display', icon: 'call' },
   { key: 'call-waiting', label: 'With Call Waiting', icon: 'call-outline' },
@@ -50,8 +51,10 @@ const BetterPlanScreen: React.FC = () => {
   // 排序和筛选状态
   const [selectedSort, setSelectedSort] = useState('price-asc');
   const [selectedFilters, setSelectedFilters] = useState<Set<string>>(new Set());
+  const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set());
   const [showSortModal, setShowSortModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [isCoverageExpanded, setIsCoverageExpanded] = useState(false);
 
   // 检查用户 premium 状态的函数
   const checkPremiumStatus = useCallback(async () => {
@@ -107,6 +110,18 @@ const BetterPlanScreen: React.FC = () => {
     }
   }
 
+  // 获取所有可用国家
+  const availableCountries = useMemo(() => {
+    const countryMap = new Map<string, string>();
+    betterPlans.forEach(plan => {
+      plan.coverage?.forEach(country => {
+        countryMap.set(country.name, country.name);
+      });
+    });
+    return Array.from(countryMap.values()).sort();
+  }, [betterPlans]);
+
+
   // 处理跳转到运营商官网
   const handleVisitWebsite = (provider: string) => {
     const url = getProviderUrl(provider);
@@ -123,7 +138,16 @@ const BetterPlanScreen: React.FC = () => {
   const filteredAndSortedPlans = useMemo(() => {
     let plans = [...betterPlans];
 
-    // 应用筛选
+    // 应用国家筛选
+    if (selectedCountries.size > 0) {
+      plans = plans.filter(plan =>
+        plan.coverage?.some(country => 
+          selectedCountries.has(country.name)
+        )
+      );
+    }
+
+    // 应用其他筛选
     const selectedFilterKeys = Array.from(selectedFilters);
     if (selectedFilterKeys.length > 0) {
       plans = plans.filter(plan =>
@@ -177,7 +201,7 @@ const BetterPlanScreen: React.FC = () => {
     }
 
     return plans;
-  }, [betterPlans, selectedSort, selectedFilters]);
+  }, [betterPlans, selectedSort, selectedFilters, selectedCountries]);
 
   // 获取当前选中的排序和筛选标签
   const getCurrentSortLabel = () => {
@@ -185,7 +209,12 @@ const BetterPlanScreen: React.FC = () => {
   };
 
   const getCurrentFilterLabel = () => {
-    return 'Filter';
+    const totalFilters = selectedFilters.size + (selectedCountries.size > 0 ? 1 : 0);
+    if (totalFilters === 0) {
+      return 'Filter';
+    }
+    
+    return `${totalFilters} Feature${totalFilters > 1 ? 's' : ''}`;
   };
 
   return (
@@ -247,7 +276,11 @@ const BetterPlanScreen: React.FC = () => {
                 </Text>
                 <Text className="text-base text-gray-800 mb-1">
                   <Text className="font-semibold">Coverage:</Text>{" "}
-                  {plan.coverage || "N/A"}
+                  {Array.isArray(plan.coverage) 
+                    ? plan.coverage.map(country => country.name).join(", ") 
+                    : typeof plan.coverage === 'string' 
+                    ? plan.coverage 
+                    : "N/A"}
                 </Text>
                 <Text className="text-base text-gray-800 mb-1">
                   <Text className="font-semibold">Data:</Text>{" "}
@@ -349,50 +382,129 @@ const BetterPlanScreen: React.FC = () => {
         <TouchableOpacity
           onPress={() => {
             setSelectedFilters(new Set());
+            setSelectedCountries(new Set());
+            setIsCoverageExpanded(false);
             setShowFilterModal(false);
           }}
-          className={`flex-row items-center p-4 rounded-lg mb-3 ${selectedFilters.size === 0 ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}
+          className={`flex-row items-center p-4 rounded-lg mb-3 ${selectedFilters.size === 0 && selectedCountries.size === 0 ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}
         >
           <Ionicons
             name="list"
             size={24}
-            color={selectedFilters.size === 0 ? '#3B82F6' : '#6B7280'}
+            color={selectedFilters.size === 0 && selectedCountries.size === 0 ? '#3B82F6' : '#6B7280'}
           />
-          <Text className={`ml-4 flex-1 text-lg ${selectedFilters.size === 0 ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}>
+          <Text className={`ml-4 flex-1 text-lg ${selectedFilters.size === 0 && selectedCountries.size === 0 ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}>
             All Plans
           </Text>
-          {selectedFilters.size === 0 && (
+          {selectedFilters.size === 0 && selectedCountries.size === 0 && (
             <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
           )}
         </TouchableOpacity>
 
-        {FILTER_OPTIONS.map((option) => (
-          <TouchableOpacity
-            key={option.key}
-            onPress={() => {
-              const newSelectedFilters = new Set(selectedFilters);
-              if (newSelectedFilters.has(option.key)) {
-                newSelectedFilters.delete(option.key);
-              } else {
-                newSelectedFilters.add(option.key);
-              }
-              setSelectedFilters(newSelectedFilters);
-            }}
-            className={`flex-row items-center p-4 rounded-lg mb-3 ${selectedFilters.has(option.key) ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}
-          >
-            <Ionicons
-              name={option.icon as any}
-              size={24}
-              color={selectedFilters.has(option.key) ? '#3B82F6' : '#6B7280'}
-            />
-            <Text className={`ml-4 flex-1 text-lg ${selectedFilters.has(option.key) ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}>
-              {option.label}
-            </Text>
-            {selectedFilters.has(option.key) && (
-              <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
-            )}
-          </TouchableOpacity>
-        ))}
+        {FILTER_OPTIONS.map((option) => {
+          if (option.key === 'coverage') {
+            return (
+              <View 
+                key={option.key} 
+                className={`mb-3 rounded-lg ${
+                  selectedCountries.size > 0 || isCoverageExpanded 
+                    ? 'bg-blue-50 border border-blue-200' 
+                    : 'bg-gray-50'
+                }`}
+              >
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsCoverageExpanded(!isCoverageExpanded);
+                  }}
+                  className="flex-row items-center p-4"
+                >
+                  <Ionicons
+                    name={option.icon as any}
+                    size={24}
+                    color={selectedCountries.size > 0 || isCoverageExpanded ? '#3B82F6' : '#6B7280'}
+                  />
+                  <Text className={`ml-4 flex-1 text-lg ${
+                    selectedCountries.size > 0 || isCoverageExpanded 
+                      ? 'text-blue-600 font-semibold' 
+                      : 'text-gray-700'
+                  }`}>
+                    {option.label}
+                  </Text>
+                  <Ionicons 
+                    name={isCoverageExpanded ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color={selectedCountries.size > 0 || isCoverageExpanded ? '#3B82F6' : '#6B7280'} 
+                  />
+                </TouchableOpacity>
+                
+                {isCoverageExpanded && (
+                  <View className="px-4 pb-4">
+                    <View className="border-t border-gray-200 pt-3">
+                      <View className="flex-row flex-wrap">
+                        {availableCountries.map((country, index) => (
+                          <TouchableOpacity
+                            key={country}
+                            onPress={() => {
+                              const newSelectedCountries = new Set(selectedCountries);
+                              if (newSelectedCountries.has(country)) {
+                                newSelectedCountries.delete(country);
+                              } else {
+                                newSelectedCountries.add(country);
+                              }
+                              setSelectedCountries(newSelectedCountries);
+                            }}
+                            className="w-1/3 flex-row items-center mb-2 pr-2"
+                          >
+                            <Text className="text-sm text-gray-700 mr-1" numberOfLines={1}>
+                              {country}
+                            </Text>
+                            <View className={`w-4 h-4 rounded border-2 items-center justify-center ${
+                              selectedCountries.has(country) 
+                                ? 'bg-blue-500 border-blue-500' 
+                                : 'border-gray-300'
+                            }`}>
+                              {selectedCountries.has(country) && (
+                                <Ionicons name="checkmark" size={10} color="white" />
+                              )}
+                            </View>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </View>
+            );
+          }
+          
+          return (
+            <TouchableOpacity
+              key={option.key}
+              onPress={() => {
+                const newSelectedFilters = new Set(selectedFilters);
+                if (newSelectedFilters.has(option.key)) {
+                  newSelectedFilters.delete(option.key);
+                } else {
+                  newSelectedFilters.add(option.key);
+                }
+                setSelectedFilters(newSelectedFilters);
+              }}
+              className={`flex-row items-center p-4 rounded-lg mb-3 ${selectedFilters.has(option.key) ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}
+            >
+              <Ionicons
+                name={option.icon as any}
+                size={24}
+                color={selectedFilters.has(option.key) ? '#3B82F6' : '#6B7280'}
+              />
+              <Text className={`ml-4 flex-1 text-lg ${selectedFilters.has(option.key) ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}>
+                {option.label}
+              </Text>
+              {selectedFilters.has(option.key) && (
+                <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </BottomSheetModal>
 
       {/* Subscription Modal */}

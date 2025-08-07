@@ -39,7 +39,7 @@ export const useUserProfile = () => {
             setUser(currentUser);
 
             // ② plan
-            const { data: planData, error: planErr } = await fetchUserPlan(currentUser.id);
+            const { data: planData, error: planErr } = await fetchUserPlan();
             if (planErr) throw planErr;
 
             setPlan(planData ?? null);

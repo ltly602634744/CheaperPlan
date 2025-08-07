@@ -1,8 +1,8 @@
 import { usePlanActions } from "@/app/hooks/usePlanActions";
 import { createUserPlan, updateUserPlan } from '@/app/services/planService';
-import { Picker } from '@react-native-picker/picker';
+import { fetchCountries, Country } from '@/app/services/countryService';
 import { useNavigation, useRouter } from "expo-router";
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import {
   Alert,
   Keyboard,
@@ -16,30 +16,48 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import Modal from 'react-native-modal';
-import { BooleanPicker } from '../components/BooleanPicker';
+import { Ionicons } from '@expo/vector-icons';
 import { EnhancedInput } from '../components/EnhancedInput';
-import { StringPicker } from '../components/StringPicker';
-import { responsive } from '../utils/dimensions';
+import { YesNoToggle } from '../components/YesNoToggle';
 import eventBus from '../utils/eventBus';
 
 const PlanFormScreen: React.FC = () => {
   const router = useRouter();
   const navigation = useNavigation();
   const { plan, setPlan, isUpdating, session } = usePlanActions();
-  const [isPickerVisible, setPickerVisible] = useState(false);
-  const [pickerField, setPickerField] = useState<string>('');
-  const [tempPickerValue, setTempPickerValue] = useState<boolean | null>(null);
   const [focusedField, setFocusedField] = useState<string>('');
-  const [activePicker, setActivePicker] = useState<string>('');
-  const [pickerLabel, setPickerLabel] = useState<string>('');
-  const [tempStringPickerValue, setTempStringPickerValue] = useState<string>('');
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isCoverageExpanded, setIsCoverageExpanded] = useState(false);
+  const [selectedCountries, setSelectedCountries] = useState<Set<number>>(new Set());
+  const [availableCountries, setAvailableCountries] = useState<Country[]>([]);
+  
+  // 获取国家数据
+  useEffect(() => {
+    const loadCountries = async () => {
+      const { data, error } = await fetchCountries();
+      if (data) {
+        setAvailableCountries(data);
+      }
+      // 错误处理已在service中完成
+    };
+    
+    loadCountries();
+  }, []);
+  
+  // 当plan.coverage变化时，更新selectedCountries
+  useEffect(() => {
+    if (plan.coverage && typeof plan.coverage === 'string' && availableCountries.length > 0) {
+      const countries = plan.coverage.split(',').map(c => c.trim()).filter(c => c.length > 0);
+      const countryIds = availableCountries
+        .filter(country => countries.includes(country.name))
+        .map(country => country.id);
+      setSelectedCountries(new Set(countryIds));
+    }
+  }, [plan.coverage, availableCountries]);
   
   // Input refs for navigation
   const providerRef = useRef<TextInput>(null);
   const dataRef = useRef<TextInput>(null);
-  const coverageRef = useRef<TextInput>(null);
   const priceRef = useRef<TextInput>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -55,9 +73,6 @@ const PlanFormScreen: React.FC = () => {
     }
     if (plan.data === null || plan.data === undefined || plan.data < 0) {
       newErrors.data = 'Valid data amount is required';
-    }
-    if (!plan.coverage.trim()) {
-      newErrors.coverage = 'Coverage is required';
     }
     if (plan.price === null || plan.price === undefined || plan.price < 0) {
       newErrors.price = 'Valid price is required';
@@ -76,9 +91,21 @@ const PlanFormScreen: React.FC = () => {
     }
 
     const userId = session.user.id;
+    
+    // 准备保存的数据，将selectedCountries转换为coverage_ids数组
+    const selectedCountryNames = availableCountries
+      .filter(country => selectedCountries.has(country.id))
+      .map(country => country.name);
+    
+    const planToSave = {
+      ...plan,
+      coverage: selectedCountryNames.join(', '), // 保持向后兼容，用于updateUserPlan
+      coverage_ids: Array.from(selectedCountries) // RPC需要的ID数组
+    };
+    
     const { error } = isUpdating
-      ? await updateUserPlan(userId, plan)
-      : await createUserPlan(userId, plan);
+      ? await updateUserPlan(planToSave)
+      : await createUserPlan(planToSave);
 
     if (error) {
       Alert.alert('Error', error.message);
@@ -102,6 +129,7 @@ const PlanFormScreen: React.FC = () => {
   // Configure navigation header
   useLayoutEffect(() => {
     navigation.setOptions({
+      title: isUpdating ? "Update Plan" : "Add Plan",
       headerLeft: () => (
         <TouchableOpacity
           onPress={handleCancel}
@@ -119,36 +147,13 @@ const PlanFormScreen: React.FC = () => {
         </TouchableOpacity>
       ),
     });
-  }, [navigation, handleSavePlan, handleCancel]);
-
-  // Helper functions for picker handling
-  const handleStringPickerPress = (field: string, label: string, value: string) => {
-    console.log(`Opening picker for field: ${field}, label: ${label}, value: ${value}`);
-    setPickerField(field);
-    setTempStringPickerValue(value);
-    setActivePicker(field);
-    setPickerLabel(label);
-    setPickerVisible(true);
-  };
-
-  const handleBooleanPickerPress = (field: string, label: string, value: boolean) => {
-    console.log(`Opening boolean picker for field: ${field}, label: ${label}, value: ${value}`);
-    setPickerField(field);
-    setTempPickerValue(value);
-    setActivePicker(field);
-    setPickerLabel(label);
-    setPickerVisible(true);
-  };
+  }, [navigation, handleSavePlan, handleCancel, isUpdating]);
 
   const handleValueChange = (field: string, value: string | number | null) => {
     setPlan({ ...plan, [field]: value });
   };
 
   const handleBooleanValueChange = (field: string, value: boolean) => {
-    setPlan({ ...plan, [field]: value });
-  };
-
-  const handleStringValueChange = (field: string, value: string) => {
     setPlan({ ...plan, [field]: value });
   };
 
@@ -170,273 +175,234 @@ const PlanFormScreen: React.FC = () => {
             keyboardShouldPersistTaps="handled"
           >
             <View className="flex-1 items-center justify-start px-6 py-4 pb-8">
-              <Text className="text-xl font-bold text-center mb-6 pt-4">
-                {isUpdating ? "Update Plan" : "Add Plan"}
-              </Text>
+              {/* 第一部分：Your Current Plan */}
+              <View className="w-full mb-4">
+                <Text className="text-lg font-bold text-gray-900 mb-2">Your Current Plan</Text>
+                <Text className="text-sm text-gray-600 mb-4">
+                  We'll only recommend plans that are cheaper and offer more data.
+                </Text>
 
-              {/* 基本信息 */}
-              <EnhancedInput
-                field="provider"
-                label="Provider"
-                value={plan.provider}
-                placeholder="e.g., Verizon, AT&T, Rogers"
-                autoCapitalize="words"
-                ref={providerRef}
-                onSubmitEditing={() => dataRef.current?.focus()}
-                returnKeyType="next"
-                onValueChange={handleValueChange}
-                focusedField={focusedField}
-                onFocus={setFocusedField}
-                onBlur={() => setFocusedField('')}
-                errors={errors}
-                onErrorClear={handleErrorClear}
-              />
+                <EnhancedInput
+                  field="provider"
+                  label="Provider"
+                  value={plan.provider}
+                  placeholder="e.g., Verizon, AT&T, Rogers"
+                  autoCapitalize="words"
+                  ref={providerRef}
+                  onSubmitEditing={() => dataRef.current?.focus()}
+                  returnKeyType="next"
+                  onValueChange={handleValueChange}
+                  focusedField={focusedField}
+                  onFocus={setFocusedField}
+                  onBlur={() => setFocusedField('')}
+                  errors={errors}
+                  onErrorClear={handleErrorClear}
+                />
 
-              <StringPicker
-                field="network"
-                label="Network Type"
-                value={plan.network}
-                options={[
-                  { label: '5G', value: '5G' },
-                  { label: 'LTE', value: 'LTE' }
-                ]}
-                onValueChange={handleStringValueChange}
-                onPickerPress={handleStringPickerPress}
-                activePicker={activePicker}
-              />
+                <EnhancedInput
+                  field="data"
+                  label="Data (GB)"
+                  value={plan.data}
+                  placeholder="e.g., 10, 25, unlimited"
+                  keyboardType="numeric"
+                  ref={dataRef}
+                  onSubmitEditing={() => priceRef.current?.focus()}
+                  returnKeyType="next"
+                  formatValue={(val) => {
+                    if (val === null || val === undefined) return '';
+                    const num = Number(val);
+                    return isNaN(num) ? val.toString() : num.toString();
+                  }}
+                  parseValue={(text) => {
+                    if (text.toLowerCase() === 'unlimited') return 999999;
+                    const num = parseFloat(text.replace(/[^0-9.]/g, ''));
+                    return isNaN(num) ? null : num;
+                  }}
+                  onValueChange={handleValueChange}
+                  focusedField={focusedField}
+                  onFocus={setFocusedField}
+                  onBlur={() => setFocusedField('')}
+                  errors={errors}
+                  onErrorClear={handleErrorClear}
+                />
 
-              <EnhancedInput
-                field="data"
-                label="Data (GB)"
-                value={plan.data}
-                placeholder="e.g., 10, 25, unlimited"
-                keyboardType="numeric"
-                ref={dataRef}
-                onSubmitEditing={() => coverageRef.current?.focus()}
-                returnKeyType="next"
-                formatValue={(val) => {
-                  if (val === null || val === undefined) return '';
-                  const num = Number(val);
-                  return isNaN(num) ? val.toString() : num.toString();
-                }}
-                parseValue={(text) => {
-                  if (text.toLowerCase() === 'unlimited') return 999999;
-                  const num = parseFloat(text.replace(/[^0-9.]/g, ''));
-                  return isNaN(num) ? null : num;
-                }}
-                onValueChange={handleValueChange}
-                focusedField={focusedField}
-                onFocus={setFocusedField}
-                onBlur={() => setFocusedField('')}
-                errors={errors}
-                onErrorClear={handleErrorClear}
-              />
+                <EnhancedInput
+                  field="price"
+                  label="Monthly Price ($)"
+                  value={plan.price}
+                  placeholder="29.99"
+                  keyboardType="decimal-pad"
+                  ref={priceRef}
+                  onSubmitEditing={() => Keyboard.dismiss()}
+                  returnKeyType="done"
+                  formatValue={(val) => {
+                    if (val === null || val === undefined) return '';
+                    if (typeof val === 'string' && (val === '.' || val.endsWith('.'))) {
+                      return val;
+                    }
+                    return val.toString();
+                  }}
+                  parseValue={(text) => {
+                    const cleanText = text.replace(/[^0-9.]/g, '');
+                    const parts = cleanText.split('.');
+                    if (parts.length > 2) {
+                      return plan.price;
+                    }
+                    if (cleanText === '') return null;
+                    if (cleanText === '.' || cleanText.endsWith('.')) {
+                      return cleanText as any;
+                    }
+                    const num = parseFloat(cleanText);
+                    return isNaN(num) ? null : num;
+                  }}
+                  onValueChange={handleValueChange}
+                  focusedField={focusedField}
+                  onFocus={setFocusedField}
+                  onBlur={() => setFocusedField('')}
+                  errors={errors}
+                  onErrorClear={handleErrorClear}
+                />
+              </View>
+              <View className="w-full h-1 bg-gray-100 my-3" />
 
-              <EnhancedInput
-                field="coverage"
-                label="Coverage Area"
-                value={plan.coverage}
-                placeholder="e.g., National, Regional, Local"
-                autoCapitalize="words"
-                ref={coverageRef}
-                onSubmitEditing={() => priceRef.current?.focus()}
-                returnKeyType="next"
-                onValueChange={handleValueChange}
-                focusedField={focusedField}
-                onFocus={setFocusedField}
-                onBlur={() => setFocusedField('')}
-                errors={errors}
-                onErrorClear={handleErrorClear}
-              />
+              {/* 第二部分：Optional Features You Need */}
+              <View className="w-full mb-6 mt-6">
+                <Text className="text-lg font-bold text-gray-900 mb-2">Optional Features You Need</Text>
+                <Text className="text-sm text-gray-600 mb-4">
+                  We'll make sure to recommend plans that match these needs.
+                </Text>
 
-              <EnhancedInput
-                field="price"
-                label="Monthly Price ($)"
-                value={plan.price}
-                placeholder="29.99"
-                keyboardType="decimal-pad"
-                ref={priceRef}
-                onSubmitEditing={() => Keyboard.dismiss()}
-                returnKeyType="done"
-                formatValue={(val) => {
-                  if (val === null || val === undefined) return '';
-                  if (typeof val === 'string' && (val === '.' || val.endsWith('.'))) {
-                    return val;
-                  }
-                  return val.toString();
-                }}
-                parseValue={(text) => {
-                  const cleanText = text.replace(/[^0-9.]/g, '');
-                  const parts = cleanText.split('.');
-                  if (parts.length > 2) {
-                    return plan.price;
-                  }
-                  if (cleanText === '') return null;
-                  if (cleanText === '.' || cleanText.endsWith('.')) {
-                    return cleanText as any;
-                  }
-                  const num = parseFloat(cleanText);
-                  return isNaN(num) ? null : num;
-                }}
-                onValueChange={handleValueChange}
-                focusedField={focusedField}
-                onFocus={setFocusedField}
-                onBlur={() => setFocusedField('')}
-                errors={errors}
-                onErrorClear={handleErrorClear}
-              />
-              
-              <BooleanPicker
-                field="voicemail"
-                label="Voicemail"
-                value={plan.voicemail}
-                onValueChange={handleBooleanValueChange}
-                onPickerPress={handleBooleanPickerPress}
-                activePicker={activePicker}
-              />
-              <BooleanPicker
-                field="call_display"
-                label="Call Display"
-                value={plan.call_display}
-                onValueChange={handleBooleanValueChange}
-                onPickerPress={handleBooleanPickerPress}
-                activePicker={activePicker}
-              />
-              <BooleanPicker
-                field="call_waiting"
-                label="Call Waiting"
-                value={plan.call_waiting}
-                onValueChange={handleBooleanValueChange}
-                onPickerPress={handleBooleanPickerPress}
-                activePicker={activePicker}
-              />
-              <BooleanPicker
-                field="suspicious_call_detection"
-                label="Suspicious Call Detection"
-                value={plan.suspicious_call_detection}
-                onValueChange={handleBooleanValueChange}
-                onPickerPress={handleBooleanPickerPress}
-                activePicker={activePicker}
-              />
-              <BooleanPicker
-                field="hotspot"
-                label="Hotspot"
-                value={plan.hotspot}
-                onValueChange={handleBooleanValueChange}
-                onPickerPress={handleBooleanPickerPress}
-                activePicker={activePicker}
-              />
-              <BooleanPicker
-                field="conference_call"
-                label="Conference Call"
-                value={plan.conference_call}
-                onValueChange={handleBooleanValueChange}
-                onPickerPress={handleBooleanPickerPress}
-                activePicker={activePicker}
-              />
-              <BooleanPicker
-                field="video_call"
-                label="Video Call"
-                value={plan.video_call}
-                onValueChange={handleBooleanValueChange}
-                onPickerPress={handleBooleanPickerPress}
-                activePicker={activePicker}
-              />
+                {/* Coverage Area Selection */}
+                <View className={`rounded-lg ${
+                  selectedCountries.size > 0 || isCoverageExpanded 
+                    ? 'bg-blue-50 border border-blue-200' 
+                    : 'bg-gray-50 border border-gray-200'
+                }`}>
+                  <TouchableOpacity
+                    onPress={() => setIsCoverageExpanded(!isCoverageExpanded)}
+                    className="flex-row items-center p-4"
+                  >
+                    <Text className={`flex-1 text-base font-medium ${
+                      selectedCountries.size > 0 || isCoverageExpanded 
+                        ? 'text-blue-600' 
+                        : 'text-gray-700'
+                    }`}>
+                      International Coverage
+                    </Text>
+                    <Ionicons 
+                      name={isCoverageExpanded ? "chevron-up" : "chevron-down"} 
+                      size={20} 
+                      color={selectedCountries.size > 0 || isCoverageExpanded ? '#3B82F6' : '#6B7280'} 
+                    />
+                  </TouchableOpacity>
+                  
+                  {isCoverageExpanded && (
+                    <View className="px-4 pb-4">
+                      <View className="border-t border-gray-200 pt-3">
+                        <View className="flex-row flex-wrap">
+                          {availableCountries.map((country) => (
+                            <TouchableOpacity
+                              key={country.id}
+                              onPress={() => {
+                                const newSelectedCountries = new Set(selectedCountries);
+                                if (newSelectedCountries.has(country.id)) {
+                                  newSelectedCountries.delete(country.id);
+                                } else {
+                                  newSelectedCountries.add(country.id);
+                                }
+                                setSelectedCountries(newSelectedCountries);
+                              }}
+                              className="flex-row items-center bg-white rounded-full px-3 py-2 m-1 border border-gray-200"
+                            >
+                              <Text className={`text-sm mr-2 ${
+                                selectedCountries.has(country.id) ? 'text-blue-600 font-medium' : 'text-gray-700'
+                              }`}>
+                                {country.name}
+                              </Text>
+                              <View className={`w-4 h-4 rounded border-2 items-center justify-center ${
+                                selectedCountries.has(country.id) 
+                                  ? 'bg-blue-500 border-blue-500' 
+                                  : 'border-gray-300'
+                              }`}>
+                                {selectedCountries.has(country.id) && (
+                                  <Ionicons name="checkmark" size={10} color="white" />
+                                )}
+                              </View>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </View>
+                    </View>
+                  )}
+                </View>
+                {errors.coverage && (
+                  <Text className="text-red-500 text-sm mt-1">{errors.coverage}</Text>
+                )}
+
+                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <YesNoToggle
+                  field="network"
+                  label="5G"
+                  value={plan.network === '5G'}
+                  onValueChange={(field: string, value: boolean) => {
+                    setPlan({ ...plan, network: value ? '5G' : 'LTE' });
+                  }}
+                />
+                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <YesNoToggle
+                  field="voicemail"
+                  label="Voicemail"
+                  value={plan.voicemail}
+                  onValueChange={handleBooleanValueChange}
+                />
+                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <YesNoToggle
+                  field="call_display"
+                  label="Call Display"
+                  value={plan.call_display}
+                  onValueChange={handleBooleanValueChange}
+                />
+                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <YesNoToggle
+                  field="call_waiting"
+                  label="Call Waiting"
+                  value={plan.call_waiting}
+                  onValueChange={handleBooleanValueChange}
+                />
+                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <YesNoToggle
+                  field="suspicious_call_detection"
+                  label="Suspicious Call Detection"
+                  value={plan.suspicious_call_detection}
+                  onValueChange={handleBooleanValueChange}
+                />
+                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <YesNoToggle
+                  field="hotspot"
+                  label="Hotspot"
+                  value={plan.hotspot}
+                  onValueChange={handleBooleanValueChange}
+                />
+                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <YesNoToggle
+                  field="conference_call"
+                  label="Conference Call"
+                  value={plan.conference_call}
+                  onValueChange={handleBooleanValueChange}
+                />
+                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <YesNoToggle
+                  field="video_call"
+                  label="Video Call"
+                  value={plan.video_call}
+                  onValueChange={handleBooleanValueChange}
+                />
+              </View>
             </View>
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
 
-      {/* iOS Modal for boolean pickers */}
-      {Platform.OS === 'ios' && (
-        <Modal
-          isVisible={isPickerVisible}
-          onBackdropPress={() => {
-            console.log('Modal backdrop pressed, closing picker');
-            setActivePicker('');
-            setPickerLabel('');
-            setTempStringPickerValue('');
-            setPickerVisible(false);
-          }}
-          style={{ justifyContent: 'flex-end', margin: 0 }}
-          useNativeDriver={true}
-          hideModalContentWhileAnimating={true}
-          avoidKeyboard={true}
-          backdropOpacity={0.5}
-        >
-          <View className="bg-white rounded-t-xl" style={{ 
-            minHeight: responsive.hp(27), 
-            paddingBottom: responsive.hp(4) 
-          }}>
-            {/* Modal Header */}
-            <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-200">
-              <TouchableOpacity
-                onPress={() => {
-                  setActivePicker('');
-                  setPickerLabel('');
-                  setTempStringPickerValue('');
-                  setPickerVisible(false);
-                }}
-                className="py-1"
-              >
-                <Text className="text-blue-500 text-base">Cancel</Text>
-              </TouchableOpacity>
-              <Text className="text-lg font-semibold">{pickerLabel}</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  if (pickerField === 'network') {
-                    if (tempStringPickerValue) {
-                      setPlan({ ...plan, [pickerField]: tempStringPickerValue });
-                    }
-                  } else {
-                    if (tempPickerValue !== null) {
-                      setPlan({ ...plan, [pickerField]: tempPickerValue });
-                    }
-                  }
-                  setActivePicker('');
-                  setPickerLabel('');
-                  setTempStringPickerValue('');
-                  setPickerVisible(false);
-                }}
-                className="py-1"
-              >
-                <Text className="text-blue-500 text-base font-semibold">Done</Text>
-              </TouchableOpacity>
-            </View>
-            
-            {/* Picker */}
-            <View style={{ height: responsive.hp(22) }}>
-              {pickerField === 'network' ? (
-                <Picker
-                  selectedValue={tempStringPickerValue}
-                  onValueChange={(value: string) => {
-                    console.log(`Network picker value changed to: ${value}`);
-                    setTempStringPickerValue(value);
-                  }}
-                  style={{ height: responsive.hp(22), width:responsive.wp(100)}}
-                  itemStyle={{ height: responsive.hp(22), width:responsive.wp(100),color:"black" }}
-                >
-                  <Picker.Item label="5G" value="5G" />
-                  <Picker.Item label="LTE" value="LTE" />
-                </Picker>
-              ) : (
-                <Picker
-                  selectedValue={tempPickerValue ?? false}
-                  onValueChange={(value: boolean) => {
-                    console.log(`Boolean picker value changed to: ${value}`);
-                    setTempPickerValue(value);
-                  }}
-                  style={{ height: responsive.hp(22), width:responsive.wp(100) }}
-                  itemStyle={{ height: responsive.hp(22), width:responsive.wp(100), color:"black" }}
-                >
-                  <Picker.Item label="No" value={false} />
-                  <Picker.Item label="Yes" value={true} />
-                </Picker>
-              )}
-            </View>
-          </View>
-        </Modal>
-      )}
     </SafeAreaView>
   );
 };

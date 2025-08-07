@@ -1,9 +1,11 @@
 // src/types/userPlan.ts
 
+import { Country } from "@/app/services/countryService";
+
 export interface UserPlan {
     provider: string;
     data: number | null;
-    coverage: string;
+    coverage: Country[];
     voicemail: boolean;
     price: number;
     network: string;

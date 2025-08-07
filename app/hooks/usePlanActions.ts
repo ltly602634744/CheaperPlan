@@ -1,5 +1,6 @@
 import { useAuthContext } from "@/app/context/AuthContext";
 import { fetchUserPlan } from "@/app/services/planService";
+import { Country } from "@/app/services/countryService";
 import { useEffect, useState } from "react";
 
 export const usePlanActions = ()=>{
@@ -22,12 +23,17 @@ export const usePlanActions = ()=>{
     useEffect(() => {
         const loadCurrentPlan = async () => {
             if (session?.user.id) {
-                const { data, error } = await fetchUserPlan(session.user.id);
+                const { data, error } = await fetchUserPlan();
                 if (data) {
+                    // 将Country[]数组转换为逗号分隔的字符串以保持兼容性
+                    const coverageString = data.coverage && Array.isArray(data.coverage) 
+                        ? data.coverage.map((country: Country) => country.name).join(', ')
+                        : '';
+                    
                     setPlan({
                         provider: data.provider || '',
                         data: data.data || null,
-                        coverage: data.coverage || '',
+                        coverage: coverageString,
                         voicemail: data.voicemail || false,
                         price: data.price || 0,
                         network: data.network || '',

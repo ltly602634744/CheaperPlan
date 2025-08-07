@@ -112,7 +112,9 @@ const ProfileScreen: React.FC = () => {
             </Text>
             <Text className="text-base text-gray-700 mb-1">
               <Text className="font-semibold">Coverage: </Text>
-              {userPlan.coverage || "N/A"}
+              {userPlan.coverage && userPlan.coverage.length > 0
+                ? userPlan.coverage.map(country => country.name).join(", ")
+                : "N/A"}
             </Text>
             <Text className="text-base text-gray-700 mb-1">
               <Text className="font-semibold">Data: </Text>
