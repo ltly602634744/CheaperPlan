@@ -4,7 +4,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -12,12 +12,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import eventBus from '../utils/eventBus';
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { user, plan: userPlan, loading, refetch } = useUserProfile();
-  const { betterPlans } = useRecommendPlans();
+  const { betterPlans, refetch: refetchBetterPlans } = useRecommendPlans();
   const [showSavingsNotification, setShowSavingsNotification] = useState(true);
 
   // 只在从编辑页面返回时刷新数据
@@ -31,6 +32,24 @@ const ProfileScreen: React.FC = () => {
       }
     }, [params.refresh, refetch])
   );
+
+  // 监听套餐更新事件，在套餐保存后刷新数据并显示提醒框
+  useEffect(() => {
+    const handlePlanUpdated = async () => {
+      // 先刷新用户套餐数据
+      await refetch();
+      // 然后刷新推荐套餐数据
+      await refetchBetterPlans();
+      // 最后显示提醒框
+      setShowSavingsNotification(true);
+    };
+
+    eventBus.on('userPlanUpdated', handlePlanUpdated);
+
+    return () => {
+      eventBus.off('userPlanUpdated', handlePlanUpdated);
+    };
+  }, [refetch, refetchBetterPlans]);
 
   // 计算节省金额
   let maxSavings = 0;

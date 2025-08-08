@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { resetPassword } from '@/app/services/authService';
 
 const ForgotPasswordScreen: React.FC = () => {
@@ -35,7 +35,8 @@ const ForgotPasswordScreen: React.FC = () => {
     };
 
     return (
-        <View style={styles.container}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.container}>
             <Text style={styles.title}>Reset Password</Text>
             <Text style={styles.description}>
                 Enter your email address and we'll send you a link to reset your password.
@@ -74,7 +75,8 @@ const ForgotPasswordScreen: React.FC = () => {
                     </Text>
                 </Text>
             </View>
-        </View>
+            </View>
+        </TouchableWithoutFeedback>
     );
 };
 

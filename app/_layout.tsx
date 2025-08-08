@@ -181,7 +181,7 @@ function AppLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="screens/WelcomeScreen" options={{ headerShown: false }} />
       <Stack.Screen name="screens/AuthScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
-      <Stack.Screen name="screens/RegisterScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
+      <Stack.Screen name="screens/RegisterScreen" options={{ headerShown: false }} />
       <Stack.Screen name="screens/ForgotPasswordScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
       <Stack.Screen name="screens/ResetPasswordScreen" options={{ header: () => <View style={{ height: 160 }} /> }} />
       <Stack.Screen name="screens/PlanFormScreen" options={{ title: 'Edit Plan', headerBackTitle: 'Back' }} />

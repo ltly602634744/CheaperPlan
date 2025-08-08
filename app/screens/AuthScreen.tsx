@@ -1,7 +1,7 @@
 import { useAuthContext } from "@/app/context/AuthContext";
 import { useRouter } from 'expo-router';
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 
 const AuthScreen: React.FC = () => {
@@ -26,7 +26,8 @@ const AuthScreen: React.FC = () => {
     }
 
     return (
-        <View style={styles.container}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.container}>
             <Text style={styles.title}>Log in</Text>
             <View style={[styles.verticallySpaced, styles.mt20]}>
                 <Text style={styles.label}>Email</Text>
@@ -65,14 +66,14 @@ const AuthScreen: React.FC = () => {
                     <Text style={styles.buttonText}>Sign in</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.verticallySpaced}>
+            <View style={[styles.verticallySpaced, styles.mt30]}>
                 <Text style={styles.forgotPasswordText}>
                     <Text style={styles.forgotPasswordLink} onPress={() => router.push('/screens/ForgotPasswordScreen')}>
                         Forgot your password?
                     </Text>
                 </Text>
             </View>
-            <View style={[styles.verticallySpaced, styles.mt20]}>
+            <View style={[styles.verticallySpaced, styles.mt10]}>
                 <Text style={styles.signUpText}>
                     Don't have an account?{' '}
                     <Text style={styles.signUpLink} onPress={handleRegister}>
@@ -80,7 +81,8 @@ const AuthScreen: React.FC = () => {
                     </Text>
                 </Text>
             </View>
-        </View>
+            </View>
+        </TouchableWithoutFeedback>
     );
 };
 
@@ -97,6 +99,12 @@ const styles = StyleSheet.create({
     },
     mt20: {
         marginTop: 20,
+    },
+    mt30: {
+        marginTop: 30,
+    },
+    mt10: {
+        marginTop: 10,
     },
     label: {
         fontSize: 16,

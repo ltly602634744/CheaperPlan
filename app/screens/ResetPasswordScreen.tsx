@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { updatePassword, isPasswordResetSession, setPasswordResetMode } from '@/app/services/authService';
 import { useAuthContext } from '@/app/context/AuthContext';
 
@@ -56,52 +56,54 @@ const ResetPasswordScreen: React.FC = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Set New Password</Text>
-            <Text style={styles.description}>
-                Enter your new password below.
-            </Text>
-            
-            <View style={[styles.verticallySpaced, styles.mt20]}>
-                <Text style={styles.label}>New Password</Text>
-                <View style={styles.inputContainer}>
-                    <Text style={styles.icon}>🔒</Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={(text) => setPassword(text)}
-                        value={password}
-                        secureTextEntry={true}
-                        placeholder="Enter new password"
-                        autoCapitalize="none"
-                    />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.container}>
+                <Text style={styles.title}>Set New Password</Text>
+                <Text style={styles.description}>
+                    Enter your new password below.
+                </Text>
+                
+                <View style={[styles.verticallySpaced, styles.mt20]}>
+                    <Text style={styles.label}>New Password</Text>
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.icon}>🔒</Text>
+                        <TextInput
+                            style={styles.input}
+                            onChangeText={(text) => setPassword(text)}
+                            value={password}
+                            secureTextEntry={true}
+                            placeholder="Enter new password"
+                            autoCapitalize="none"
+                        />
+                    </View>
+                </View>
+
+                <View style={styles.verticallySpaced}>
+                    <Text style={styles.label}>Confirm New Password</Text>
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.icon}>🔒</Text>
+                        <TextInput
+                            style={styles.input}
+                            onChangeText={(text) => setConfirmPassword(text)}
+                            value={confirmPassword}
+                            secureTextEntry={true}
+                            placeholder="Confirm new password"
+                            autoCapitalize="none"
+                        />
+                    </View>
+                </View>
+
+                <View style={[styles.verticallySpaced, styles.mt20]}>
+                    <TouchableOpacity
+                        style={[styles.button, loading && styles.buttonDisabled]}
+                        disabled={loading}
+                        onPress={handleUpdatePassword}
+                    >
+                        <Text style={styles.buttonText}>Update Password</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
-
-            <View style={styles.verticallySpaced}>
-                <Text style={styles.label}>Confirm New Password</Text>
-                <View style={styles.inputContainer}>
-                    <Text style={styles.icon}>🔒</Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={(text) => setConfirmPassword(text)}
-                        value={confirmPassword}
-                        secureTextEntry={true}
-                        placeholder="Confirm new password"
-                        autoCapitalize="none"
-                    />
-                </View>
-            </View>
-
-            <View style={[styles.verticallySpaced, styles.mt20]}>
-                <TouchableOpacity
-                    style={[styles.button, loading && styles.buttonDisabled]}
-                    disabled={loading}
-                    onPress={handleUpdatePassword}
-                >
-                    <Text style={styles.buttonText}>Update Password</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+        </TouchableWithoutFeedback>
     );
 };
 
