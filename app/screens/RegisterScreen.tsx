@@ -1,7 +1,7 @@
 import { useAuthContext } from "@/app/context/AuthContext";
 import { useRouter } from "expo-router"; // 导入类型定义
 import React, { useState } from "react";
-import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 // type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
 
@@ -37,12 +37,12 @@ const RegisterScreen: React.FC = () => {
         setLoading(true);
         const { data, error } = await signUp(email, password);
 
-        if (error){
+        if (error) {
             Alert.alert('Error', error.message);
-        } else if (!data.session){
+        } else if (!data.session) {
             Alert.alert('Please check your inbox for email verification!');
             router.push('/screens/AuthScreen');
-        }else{
+        } else {
             // Alert.alert('Success', 'Registration successful!');
             // TODO: Handle the email is existing
             router.push('/screens/AuthScreen');
@@ -51,84 +51,93 @@ const RegisterScreen: React.FC = () => {
     };
 
     return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.container}>
-                <Text style={styles.title}>Sign up</Text>
-                <View style={[styles.verticallySpaced, styles.mt20]}>
-                    <Text style={styles.label}>Email</Text>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.icon}>✉️</Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={(text) => setEmail(text)}
-                            value={email}
-                            placeholder="email@address.com"
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                        />
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+            className="flex-1">
+            <ScrollView
+                contentContainerStyle={{ flexGrow: 1 }}
+                keyboardShouldPersistTaps="handled">
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <View style={styles.container}>
+                        <Text style={styles.title}>Sign up</Text>
+                        <View style={[styles.verticallySpaced, styles.mt20]}>
+                            <Text style={styles.label}>Email</Text>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.icon}>✉️</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    onChangeText={(text) => setEmail(text)}
+                                    value={email}
+                                    placeholder="email@address.com"
+                                    autoCapitalize="none"
+                                    keyboardType="email-address"
+                                />
+                            </View>
+                        </View>
+                        <View style={styles.verticallySpaced}>
+                            <Text style={styles.label}>Confirm Email</Text>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.icon}>✉️</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    onChangeText={(text) => setConfirmEmail(text)}
+                                    value={confirmEmail}
+                                    placeholder="Confirm your email"
+                                    autoCapitalize="none"
+                                    keyboardType="email-address"
+                                />
+                            </View>
+                        </View>
+                        <View style={styles.verticallySpaced}>
+                            <Text style={styles.label}>Password</Text>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.icon}>🔒</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    onChangeText={(text) => setPassword(text)}
+                                    value={password}
+                                    secureTextEntry={true}
+                                    placeholder="Password"
+                                    autoCapitalize="none"
+                                />
+                            </View>
+                        </View>
+                        <View style={styles.verticallySpaced}>
+                            <Text style={styles.label}>Confirm Password</Text>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.icon}>🔒</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    onChangeText={(text) => setConfirmPassword(text)}
+                                    value={confirmPassword}
+                                    secureTextEntry={true}
+                                    placeholder="Confirm Password"
+                                    autoCapitalize="none"
+                                />
+                            </View>
+                        </View>
+                        <View style={[styles.verticallySpaced, styles.mt20]}>
+                            <TouchableOpacity
+                                style={[styles.button, loading && styles.buttonDisabled]}
+                                disabled={loading}
+                                onPress={handleRegister}
+                            >
+                                <Text style={styles.buttonText}>Sign up</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={[styles.verticallySpaced, styles.mt20]}>
+                            <Text style={styles.signInText}>
+                                Already have an account?{' '}
+                                <Text style={styles.signInLink} onPress={() => router.push('/screens/AuthScreen')}>
+                                    Sign in
+                                </Text>
+                            </Text>
+                        </View>
                     </View>
-                </View>
-                <View style={styles.verticallySpaced}>
-                    <Text style={styles.label}>Confirm Email</Text>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.icon}>✉️</Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={(text) => setConfirmEmail(text)}
-                            value={confirmEmail}
-                            placeholder="Confirm your email"
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                        />
-                    </View>
-                </View>
-                <View style={styles.verticallySpaced}>
-                    <Text style={styles.label}>Password</Text>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.icon}>🔒</Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={(text) => setPassword(text)}
-                            value={password}
-                            secureTextEntry={true}
-                            placeholder="Password"
-                            autoCapitalize="none"
-                        />
-                    </View>
-                </View>
-                <View style={styles.verticallySpaced}>
-                    <Text style={styles.label}>Confirm Password</Text>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.icon}>🔒</Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={(text) => setConfirmPassword(text)}
-                            value={confirmPassword}
-                            secureTextEntry={true}
-                            placeholder="Confirm Password"
-                            autoCapitalize="none"
-                        />
-                    </View>
-                </View>
-                <View style={[styles.verticallySpaced, styles.mt20]}>
-                    <TouchableOpacity
-                        style={[styles.button, loading && styles.buttonDisabled]}
-                        disabled={loading}
-                        onPress={handleRegister}
-                    >
-                        <Text style={styles.buttonText}>Sign up</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={[styles.verticallySpaced, styles.mt20]}>
-                    <Text style={styles.signInText}>
-                        Already have an account?{' '}
-                        <Text style={styles.signInLink} onPress={() => router.back()}>
-                            Sign in
-                        </Text>
-                    </Text>
-                </View>
-            </View>
-        </TouchableWithoutFeedback>
+                </TouchableWithoutFeedback>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -136,7 +145,7 @@ export default RegisterScreen;
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 100,
+        marginTop: 150,
         padding: 12,
     },
     verticallySpaced: {

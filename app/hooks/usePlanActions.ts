@@ -12,7 +12,7 @@ export const usePlanActions = ()=>{
         coverage: '',
         voicemail: false,
         price: 0,
-        network: '',
+        network: 'LTE',
         call_display: false,
         call_waiting: false,
         suspicious_call_detection: false,

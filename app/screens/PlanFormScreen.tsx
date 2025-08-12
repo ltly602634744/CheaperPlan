@@ -1,8 +1,9 @@
 import { usePlanActions } from "@/app/hooks/usePlanActions";
+import { Country, fetchCountries } from '@/app/services/countryService';
 import { createUserPlan, updateUserPlan } from '@/app/services/planService';
-import { fetchCountries, Country } from '@/app/services/countryService';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRouter } from "expo-router";
-import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -16,7 +17,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { EnhancedInput } from '../components/EnhancedInput';
 import { YesNoToggle } from '../components/YesNoToggle';
 import eventBus from '../utils/eventBus';
@@ -65,17 +65,15 @@ const PlanFormScreen: React.FC = () => {
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
     
+    // Only validate required fields: provider, data, price
     if (!plan.provider.trim()) {
-      newErrors.provider = 'Provider is required';
-    }
-    if (!plan.network.trim()) {
-      newErrors.network = 'Network type is required';
+      newErrors.provider = 'Provider name is required';
     }
     if (plan.data === null || plan.data === undefined || plan.data < 0) {
-      newErrors.data = 'Valid data amount is required';
+      newErrors.data = 'Data amount is required and must be greater than 0';
     }
     if (plan.price === null || plan.price === undefined || plan.price < 0) {
-      newErrors.price = 'Valid price is required';
+      newErrors.price = 'Monthly price is required and must be greater than 0';
     }
     
     setErrors(newErrors);
@@ -86,7 +84,13 @@ const PlanFormScreen: React.FC = () => {
     if (!session?.user.id) return;
     
     if (!validateForm()) {
-      Alert.alert('Validation Error', 'Please fill in all required fields correctly.');
+      // Show specific error messages for each missing required field
+      const errorMessages = [];
+      if (errors.provider) errorMessages.push(errors.provider);
+      if (errors.data) errorMessages.push(errors.data);
+      if (errors.price) errorMessages.push(errors.price);
+      
+      Alert.alert('Please fix the following:', errorMessages.join('\n'));
       return;
     }
 
@@ -133,17 +137,31 @@ const PlanFormScreen: React.FC = () => {
       headerLeft: () => (
         <TouchableOpacity
           onPress={handleCancel}
-          style={{ paddingLeft: 10 }}
+          style={{ 
+            paddingLeft: Platform.OS === 'android' ? 20 : 10,
+            paddingHorizontal: Platform.OS === 'android' ? 8 : 0,
+          }}
         >
-          <Text style={{ color: '#007AFF', fontSize: 17 }}>Cancel</Text>
+          {Platform.OS === 'android' ? (
+            <Ionicons name="close" size={24} color="#007AFF" />
+          ) : (
+            <Text style={{ color: '#007AFF', fontSize: 17 }}>Cancel</Text>
+          )}
         </TouchableOpacity>
       ),
       headerRight: () => (
         <TouchableOpacity
           onPress={handleSavePlan}
-          style={{ paddingRight: 10 }}
+          style={{ 
+            paddingRight: Platform.OS === 'android' ? 20 : 10,
+            paddingHorizontal: Platform.OS === 'android' ? 8 : 0,
+          }}
         >
-          <Text style={{ color: '#007AFF', fontSize: 17, fontWeight: '600' }}>Save</Text>
+          {Platform.OS === 'android' ? (
+            <Ionicons name="checkmark" size={24} color="#007AFF" />
+          ) : (
+            <Text style={{ color: '#007AFF', fontSize: 17, fontWeight: '600' }}>Save</Text>
+          )}
         </TouchableOpacity>
       ),
     });
@@ -186,7 +204,7 @@ const PlanFormScreen: React.FC = () => {
                   field="provider"
                   label="Provider"
                   value={plan.provider}
-                  placeholder="e.g., Verizon, AT&T, Rogers"
+                  placeholder="e.g., Bell, Videotron, Rogers"
                   autoCapitalize="words"
                   ref={providerRef}
                   onSubmitEditing={() => dataRef.current?.focus()}

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { useAuthContext } from '../context/AuthContext';
 import { updateUserProfile } from '../services/userService';
@@ -54,7 +55,7 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
 
       console.log('Found monthly package:', monthlyPackage);
       console.log('Found yearly package:', yearlyPackage);
-      
+
       // 详细价格调试信息
       if (monthlyPackage) {
         console.log('Monthly package details:');
@@ -63,7 +64,7 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
         console.log('- Currency code:', monthlyPackage.product.currencyCode);
         console.log('- Product identifier:', monthlyPackage.product.identifier);
       }
-      
+
       if (yearlyPackage) {
         console.log('Yearly package details:');
         console.log('- Price:', yearlyPackage.product.price);
@@ -92,7 +93,7 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
 
       // Get real subscription info from RevenueCat
       const customerInfo = await Purchases.getCustomerInfo();
-      
+
       // Find the correct entitlement based on purchased package
       let entitlement = null;
       if (selectedPlanRef.current === 'monthly') {
@@ -100,7 +101,7 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
       } else {
         entitlement = customerInfo.entitlements.active["one_year_access"];
       }
-      
+
       // Fallback: try to find any active entitlement
       if (!entitlement) {
         const activeEntitlements = Object.values(customerInfo.entitlements.active);
@@ -177,32 +178,33 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
   }, []);
 
   return (
-    <Modal
-      visible={visible}
-      animationType="fade"
-      transparent={true}
-      onRequestClose={onClose}
-      statusBarTranslucent
-    >
-      <View className="flex-1 bg-black/50 justify-end">
-        <TouchableOpacity 
-          activeOpacity={1} 
-          className="flex-1 justify-end" 
-          onPress={handleBackdropPress}
-        >
-          <TouchableOpacity 
-            activeOpacity={1} 
-            style={styles.modalContent} 
-            onPress={handleContentPress}
+    <SafeAreaView className="flex-1">
+      <Modal
+        visible={visible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={onClose}
+        statusBarTranslucent
+      >
+        <View className="flex-1 bg-black/50 justify-end">
+          <TouchableOpacity
+            activeOpacity={1}
+            className="flex-1 justify-end"
+            onPress={handleBackdropPress}
           >
-            <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
-              <Text className="text-2xl font-bold text-gray-700">Get Premium Access</Text>
-              <TouchableOpacity onPress={onClose} className="p-2">
-                <Ionicons name="close" size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.modalContent}
+              onPress={handleContentPress}
+            >
+              <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
+                <Text className="text-2xl font-bold text-gray-700">Get Premium Access</Text>
+                <TouchableOpacity onPress={onClose} className="p-2">
+                  <Ionicons name="close" size={24} color="#666" />
+                </TouchableOpacity>
+              </View>
 
-            <View className="flex-1 p-6">
+              <View className="flex-1 p-6">
                 {loading ? (
                   <View className="flex-1 justify-center items-center">
                     <ActivityIndicator size="large" color="#007AFF" />
@@ -312,7 +314,8 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
           </TouchableOpacity>
         </View>
       </Modal>
-    );
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({

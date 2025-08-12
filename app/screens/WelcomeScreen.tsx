@@ -28,6 +28,30 @@ const WelcomeScreen: React.FC = () => {
                 >
                     <Text className="text-white text-lg font-semibold">Create Account</Text>
                 </TouchableOpacity>
+                
+                <Text className="text-center text-sm text-gray-500 mt-4 px-4">
+                    By signing up, you agree to our{' '}
+                    <Text 
+                        className="text-blue-500 underline"
+                        onPress={() => router.push({
+                            pathname: '/screens/ContentDisplayScreen',
+                            params: { contentType: 'Terms of Use' }
+                        })}
+                    >
+                        Terms
+                    </Text>
+                    {' '}and{' '}
+                    <Text 
+                        className="text-blue-500 underline"
+                        onPress={() => router.push({
+                            pathname: '/screens/ContentDisplayScreen',
+                            params: { contentType: 'Privacy Policy' }
+                        })}
+                    >
+                        Privacy Policy
+                    </Text>
+                    .
+                </Text>
             </View>
             
             <View className="items-center pb-10 justify-end">

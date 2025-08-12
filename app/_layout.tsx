@@ -5,8 +5,9 @@ import { Href, Stack, useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 import React, { useEffect } from 'react';
-import { Platform, Text, TextInput, View } from 'react-native';
+import { Platform, StatusBar, Text, TextInput, View } from 'react-native';
 import Purchases from 'react-native-purchases';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuthContext } from './context/AuthContext';
 import { supabase } from './services/supabase';
 import { setPasswordResetMode } from './services/authService';
@@ -198,12 +199,15 @@ function AppLayout() {
 }
 
 export default function RootLayout() {
-  // ⑤ 在根布局组件中，使用 AuthProvider 包裹所有内容
+  // ⑤ 在根布局组件中，使用 SafeAreaProvider 和 AuthProvider 包裹所有内容
   return (
-    <AuthProvider>
-      {/*<PaperProvider>*/}
-      <AppLayout />
-      {/*</PaperProvider>*/}
-    </AuthProvider>
+    <SafeAreaProvider>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <AuthProvider>
+        {/*<PaperProvider>*/}
+        <AppLayout />
+        {/*</PaperProvider>*/}
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

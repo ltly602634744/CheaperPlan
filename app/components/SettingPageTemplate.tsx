@@ -1,6 +1,7 @@
 import { useNavigation, useRouter } from 'expo-router';
 import React, { useCallback, useLayoutEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface SettingPageTemplateProps {
   title: string;
@@ -35,18 +36,28 @@ export default function SettingPageTemplate({
       title,
       headerRight: () => (
         <TouchableOpacity onPress={handleSave} style={styles.saveButton} disabled={loading}>
-          <Text style={styles.saveButtonText}>{loading ? 'Saving...' : saveButtonText}</Text>
+          {Platform.OS === 'android' ? (
+            <Ionicons 
+              name="checkmark" 
+              size={24} 
+              color={loading ? '#999' : '#007AFF'} 
+            />
+          ) : (
+            <Text style={[styles.saveButtonText, loading && styles.loadingText]}>
+              {loading ? 'Saving...' : saveButtonText}
+            </Text>
+          )}
         </TouchableOpacity>
       ),
     });
   }, [navigation, title, saveButtonText, loading, handleSave]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         {children}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -60,11 +71,15 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   saveButton: {
-    marginRight: 16,
+    marginRight: Platform.OS === 'android' ? 20 : 16,
+    paddingHorizontal: Platform.OS === 'android' ? 8 : 0,
   },
   saveButtonText: {
     color: '#007AFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingText: {
+    color: '#999',
   },
 }); 

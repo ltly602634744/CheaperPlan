@@ -1,6 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { Alert, Linking, Platform, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import SubscriptionModal from '../components/SubscriptionModal';
 import { useAuthContext } from '../context/AuthContext';
 import { getSubscriptionStatus, getMembershipStatusDisplay, SubscriptionInfo } from '../services/subscriptionService';

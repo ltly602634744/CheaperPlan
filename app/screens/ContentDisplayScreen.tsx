@@ -2,7 +2,8 @@ import { modalContents, ModalContentKey } from "@/app/data";
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ContentDisplayScreen() {
     const router = useRouter();
@@ -19,20 +20,31 @@ export default function ContentDisplayScreen() {
                 <TouchableOpacity
                     onPress={() => router.back()}
                     className="flex-row items-center"
-                    style={{ minWidth: 80 }}
+                    style={{ 
+                        minWidth: Platform.OS === 'android' ? 60 : 80,
+                        paddingLeft: Platform.OS === 'android' ? 8 : 0,
+                    }}
                 >
                     <Ionicons name="chevron-back" size={24} color="#007AFF" />
-                    <Text style={{ color: '#007AFF', fontSize: 17, marginLeft: 4 }}>
-                        Back
-                    </Text>
+                    {Platform.OS === 'ios' && (
+                        <Text style={{ color: '#007AFF', fontSize: 17, marginLeft: 4 }}>
+                            Back
+                        </Text>
+                    )}
                 </TouchableOpacity>
                 
-                <Text className="text-lg font-semibold text-gray-800 flex-1 text-center">
+                <Text 
+                    className="text-lg font-semibold text-gray-800 flex-1"
+                    style={{
+                        textAlign: 'center',
+                        marginHorizontal: Platform.OS === 'android' ? 16 : 0,
+                    }}
+                >
                     {title}
                 </Text>
                 
                 {/* 右侧占位，保持标题居中 */}
-                <View style={{ minWidth: 80 }} />
+                <View style={{ minWidth: Platform.OS === 'android' ? 60 : 80 }} />
             </View>
 
             <ScrollView 
