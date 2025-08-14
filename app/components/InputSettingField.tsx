@@ -1,5 +1,6 @@
-import React from 'react';
-import { Text, TextInput, View } from 'react-native';
+import React, { useState } from 'react';
+import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Entypo } from '@expo/vector-icons';
 
 interface InputSettingFieldProps {
   label: string;
@@ -33,23 +34,51 @@ export default function InputSettingField({
     onChangeText(text);
   };
 
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
+
   return (
     <View className="mb-5">
       <Text className="text-base font-semibold text-gray-800 mb-2">{label}</Text>
-      <TextInput
-        className={`bg-white border border-gray-300 rounded-lg p-3 text-base ${multiline ? 'min-h-[100px]' : ''}`}
-        value={value}
-        onChangeText={handleChangeText}
-        placeholder={placeholder}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        numberOfLines={numberOfLines}
-        textAlignVertical={multiline ? "top" : "center"}
-        autoCapitalize={autoCapitalize}
-        autoCorrect={autoCorrect}
-        editable={editable}
-        secureTextEntry={secureTextEntry}
-      />
+      <View className={`bg-white border border-gray-300 rounded-lg ${multiline ? 'min-h-[100px]' : ''} ${secureTextEntry ? 'flex-row items-center pr-3' : ''}`}>
+        <TextInput
+          className={`text-base ${secureTextEntry ? 'flex-1' : ''}`}
+          style={{
+            height: multiline ? undefined : 48,
+            paddingHorizontal: 12,
+            paddingVertical: multiline ? 12 : 0,
+            textAlignVertical: multiline ? "top" : "center",
+            includeFontPadding: false,
+            lineHeight: Platform.OS === 'android' ? 20 : undefined
+          }}
+          value={value}
+          onChangeText={handleChangeText}
+          placeholder={placeholder}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
+          editable={editable}
+          secureTextEntry={secureTextEntry && !isPasswordVisible}
+        />
+        {secureTextEntry && (
+          <TouchableOpacity
+            onPress={togglePasswordVisibility}
+            className="p-2"
+            activeOpacity={0.7}
+          >
+            <Entypo 
+              name={isPasswordVisible ? 'eye-with-line' : 'eye'} 
+              size={20} 
+              color="#666" 
+            />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 }

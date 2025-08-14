@@ -49,7 +49,7 @@ const BetterPlanCard: React.FC<BetterPlanCard> = ({
               tint={"light"}
               style={[
                 StyleSheet.absoluteFillObject,
-                { zIndex: 100 }
+                { zIndex: 100, borderRadius: 16 }
               ]}
             />
             

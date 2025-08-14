@@ -1,7 +1,8 @@
 import { useAuthContext } from "@/app/context/AuthContext";
-import { useRouter } from "expo-router"; // 导入类型定义
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import PasswordInput from '../components/PasswordInput';
 
 // type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
 
@@ -91,31 +92,19 @@ const RegisterScreen: React.FC = () => {
                         </View>
                         <View style={styles.verticallySpaced}>
                             <Text style={styles.label}>Password</Text>
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.icon}>🔒</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    onChangeText={(text) => setPassword(text)}
-                                    value={password}
-                                    secureTextEntry={true}
-                                    placeholder="Password"
-                                    autoCapitalize="none"
-                                />
-                            </View>
+                            <PasswordInput
+                                value={password}
+                                onChangeText={setPassword}
+                                placeholder="Password"
+                            />
                         </View>
                         <View style={styles.verticallySpaced}>
                             <Text style={styles.label}>Confirm Password</Text>
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.icon}>🔒</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    onChangeText={(text) => setConfirmPassword(text)}
-                                    value={confirmPassword}
-                                    secureTextEntry={true}
-                                    placeholder="Confirm Password"
-                                    autoCapitalize="none"
-                                />
-                            </View>
+                            <PasswordInput
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                placeholder="Confirm Password"
+                            />
                         </View>
                         <View style={[styles.verticallySpaced, styles.mt20]}>
                             <TouchableOpacity

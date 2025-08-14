@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthContext } from '../context/AuthContext';
 import { updateUserProfile } from '../services/userService';
 import eventBus from '../utils/eventBus';
@@ -21,6 +21,7 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
   const selectedPlanRef = useRef<'monthly' | 'yearly'>('yearly');
   const [, forceUpdate] = useState({});
   const { session } = useAuthContext();
+  const insets = useSafeAreaInsets();
 
   const updateSelectedPlan = (plan: 'monthly' | 'yearly') => {
     selectedPlanRef.current = plan;
@@ -178,25 +179,27 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
   }, []);
 
   return (
-    <SafeAreaView className="flex-1">
-      <Modal
-        visible={visible}
-        animationType="fade"
-        transparent={true}
-        onRequestClose={onClose}
-        statusBarTranslucent
-      >
-        <View className="flex-1 bg-black/50 justify-end">
+    <Modal
+      visible={visible}
+      animationType="fade"
+      transparent={true}
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <View className="flex-1 bg-black/50 justify-end">
+        <TouchableOpacity
+          activeOpacity={1}
+          className="flex-1 justify-end"
+          onPress={handleBackdropPress}
+        >
           <TouchableOpacity
             activeOpacity={1}
-            className="flex-1 justify-end"
-            onPress={handleBackdropPress}
+            style={[
+              styles.modalContent,
+              { paddingBottom: Math.max(insets.bottom, 20) }
+            ]}
+            onPress={handleContentPress}
           >
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.modalContent}
-              onPress={handleContentPress}
-            >
               <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
                 <Text className="text-2xl font-bold text-gray-700">Get Premium Access</Text>
                 <TouchableOpacity onPress={onClose} className="p-2">
@@ -248,7 +251,7 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
                           ]}>365 Days</Text>
                           {yearlyPkg && monthlyPkg && (
                             <Text style={styles.bestValueText}>
-                              Best Value
+                              Save more than 16%
                             </Text>
                           )}
                         </TouchableOpacity>
@@ -311,10 +314,9 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
                 )}
               </View>
             </TouchableOpacity>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-    </SafeAreaView>
+        </TouchableOpacity>
+      </View>
+    </Modal>
   );
 }
 

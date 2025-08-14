@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { updatePassword, isPasswordResetSession, setPasswordResetMode } from '@/app/services/authService';
 import { useAuthContext } from '@/app/context/AuthContext';
+import PasswordInput from '../components/PasswordInput';
 
 const ResetPasswordScreen: React.FC = () => {
     const router = useRouter();
@@ -65,32 +66,20 @@ const ResetPasswordScreen: React.FC = () => {
                 
                 <View style={[styles.verticallySpaced, styles.mt20]}>
                     <Text style={styles.label}>New Password</Text>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.icon}>🔒</Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={(text) => setPassword(text)}
-                            value={password}
-                            secureTextEntry={true}
-                            placeholder="Enter new password"
-                            autoCapitalize="none"
-                        />
-                    </View>
+                    <PasswordInput
+                        value={password}
+                        onChangeText={setPassword}
+                        placeholder="Enter new password"
+                    />
                 </View>
 
                 <View style={styles.verticallySpaced}>
                     <Text style={styles.label}>Confirm New Password</Text>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.icon}>🔒</Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={(text) => setConfirmPassword(text)}
-                            value={confirmPassword}
-                            secureTextEntry={true}
-                            placeholder="Confirm new password"
-                            autoCapitalize="none"
-                        />
-                    </View>
+                    <PasswordInput
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        placeholder="Confirm new password"
+                    />
                 </View>
 
                 <View style={[styles.verticallySpaced, styles.mt20]}>

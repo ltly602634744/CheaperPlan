@@ -7,6 +7,7 @@ import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BetterPlanCard from "../components/BetterPlanCard";
 import BottomSheetModal from "../components/BottomSheetModal";
 import SubscriptionModal from "../components/SubscriptionModal";
@@ -14,7 +15,6 @@ import { useAuthContext } from "../context/AuthContext";
 import { getProviderUrl, hasProviderUrl } from "../data";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { hasActivePremium } from "../services/subscriptionService";
-import { updateUserProfile } from "../services/userService";
 import eventBus from '../utils/eventBus';
 
 
@@ -47,6 +47,7 @@ const BetterPlanScreen: React.FC = () => {
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // 排序和筛选状态
   const [selectedSort, setSelectedSort] = useState('price-asc');
@@ -121,6 +122,19 @@ const BetterPlanScreen: React.FC = () => {
     return Array.from(countryMap.values()).sort();
   }, [betterPlans]);
 
+
+  // 获取网站域名
+  const getWebsiteDomain = (provider: string): string => {
+    const url = getProviderUrl(provider);
+    if (url) {
+      try {
+        return new URL(url).hostname.replace('www.', '');
+      } catch {
+        return 'website';
+      }
+    }
+    return 'website';
+  };
 
   // 处理跳转到运营商官网
   const handleVisitWebsite = (provider: string) => {
@@ -242,7 +256,10 @@ const BetterPlanScreen: React.FC = () => {
       </View>
 
       {filteredAndSortedPlans.length > 0 ? (
-        <ScrollView className="px-4">
+        <ScrollView 
+          className="px-4"
+          showsVerticalScrollIndicator={false}
+        >
           {filteredAndSortedPlans.map((plan, index) => (
             <BetterPlanCard
               key={index}
@@ -252,7 +269,14 @@ const BetterPlanScreen: React.FC = () => {
               className={index !== filteredAndSortedPlans.length - 1 ? 'mb-4' : ''}
             >
               <View
-                className="bg-[#F0F7FF] p-4 rounded-2xl shadow-lg shadow-black/10 border border-gray-200 relative"
+                className="bg-[#F0F7FF] p-4 rounded-2xl border border-gray-200 relative"
+                style={{
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }}
               >
                 {/* 运营商官网按钮 */}
                 {plan.provider && hasProviderUrl(plan.provider) && (
@@ -261,7 +285,7 @@ const BetterPlanScreen: React.FC = () => {
                     className="absolute top-3 right-3 z-10 bg-blue-500 px-3 py-1 rounded-full flex-row items-center"
                   >
                     <Ionicons name="globe-outline" size={14} color="white" />
-                    <Text className="text-white text-xs font-medium ml-1">Visit</Text>
+                    <Text className="text-white text-xs font-medium ml-1">Go to {getWebsiteDomain(plan.provider)}</Text>
                   </TouchableOpacity>
                 )}
 
@@ -335,9 +359,11 @@ const BetterPlanScreen: React.FC = () => {
           ))}
         </ScrollView>
       ) : (
-        <Text className="text-center text-gray-500 mt-10 px-4">
-          No plans match your current filters
-        </Text>
+        <View>
+          <Text className="text-center text-gray-500 mt-10 px-4">
+            No plans match your current filters
+          </Text>
+        </View>
       )}
 
       {/* 排序模态框 */}
@@ -376,7 +402,7 @@ const BetterPlanScreen: React.FC = () => {
       <BottomSheetModal
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
-        title="Filter Plans"
+        title="Filter"
       >
         {/* All Plans 选项 */}
         <TouchableOpacity
@@ -499,24 +525,32 @@ const BetterPlanScreen: React.FC = () => {
               <Text className={`ml-4 flex-1 text-lg ${selectedFilters.has(option.key) ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}>
                 {option.label}
               </Text>
-              {selectedFilters.has(option.key) && (
-                <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
-              )}
+              <View className={`w-6 h-6 rounded border-2 items-center justify-center ${
+                selectedFilters.has(option.key) 
+                  ? 'bg-blue-500 border-blue-500' 
+                  : 'border-gray-300'
+              }`}>
+                {selectedFilters.has(option.key) && (
+                  <Ionicons name="checkmark" size={14} color="white" />
+                )}
+              </View>
             </TouchableOpacity>
           );
         })}
       </BottomSheetModal>
 
       {/* Subscription Modal */}
-      <SubscriptionModal
-        visible={showSubscriptionModal}
-        onClose={() => setShowSubscriptionModal(false)}
-        onSubscriptionSuccess={() => {
-          setShowSubscriptionModal(false);
-          // 重新检查 premium 状态
-          checkPremiumStatus();
-        }}
-      />
+      {showSubscriptionModal && (
+        <SubscriptionModal
+          visible={showSubscriptionModal}
+          onClose={() => setShowSubscriptionModal(false)}
+          onSubscriptionSuccess={() => {
+            setShowSubscriptionModal(false);
+            // 重新检查 premium 状态
+            checkPremiumStatus();
+          }}
+        />
+      )}
     </View>
   );
 };

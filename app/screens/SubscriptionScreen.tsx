@@ -4,7 +4,7 @@ import { Alert, Linking, Platform, ScrollView, Text, TouchableOpacity, View } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SubscriptionModal from '../components/SubscriptionModal';
 import { useAuthContext } from '../context/AuthContext';
-import { getSubscriptionStatus, getMembershipStatusDisplay, SubscriptionInfo } from '../services/subscriptionService';
+import { getMembershipStatusDisplay, getSubscriptionStatus, SubscriptionInfo } from '../services/subscriptionService';
 
 export default function SubscriptionScreen() {
     const { session } = useAuthContext();
@@ -125,10 +125,8 @@ export default function SubscriptionScreen() {
 
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <SafeAreaView className="flex-1 bg-white" edges={['bottom']}>
             <ScrollView className="flex-1 px-4 pt-6">
-                <Text className="text-2xl font-bold text-center mb-8">My Subscription</Text>
-                
                 {/* 订阅状态卡片 */}
                 <View className="bg-gray-50 rounded-xl p-6 mb-6 shadow-sm">
                     <Text className="text-lg font-semibold text-gray-800 mb-4">Subscription Details</Text>
@@ -253,15 +251,17 @@ export default function SubscriptionScreen() {
             </ScrollView>
 
             {/* SubscriptionModal */}
-            <SubscriptionModal
-                visible={showSubscriptionModal}
-                onClose={() => setShowSubscriptionModal(false)}
-                onSubscriptionSuccess={() => {
-                    setShowSubscriptionModal(false);
-                    // 刷新用户信息以更新订阅状态
-                    fetchSubscriptionInfo();
-                }}
-            />
+            {showSubscriptionModal && (
+                <SubscriptionModal
+                    visible={showSubscriptionModal}
+                    onClose={() => setShowSubscriptionModal(false)}
+                    onSubscriptionSuccess={() => {
+                        setShowSubscriptionModal(false);
+                        // 刷新用户信息以更新订阅状态
+                        fetchSubscriptionInfo();
+                    }}
+                />
+            )}
         </SafeAreaView>
     );
 }

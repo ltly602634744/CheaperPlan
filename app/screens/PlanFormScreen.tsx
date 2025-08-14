@@ -18,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import { EnhancedInput } from '../components/EnhancedInput';
+import { FeatureInfoModal } from '../components/FeatureInfoModal';
 import { YesNoToggle } from '../components/YesNoToggle';
 import eventBus from '../utils/eventBus';
 
@@ -30,6 +31,13 @@ const PlanFormScreen: React.FC = () => {
   const [isCoverageExpanded, setIsCoverageExpanded] = useState(false);
   const [selectedCountries, setSelectedCountries] = useState<Set<number>>(new Set());
   const [availableCountries, setAvailableCountries] = useState<Country[]>([]);
+  
+  // Feature info modal states
+  const [showFeatureModal, setShowFeatureModal] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState<{title: string; description: string}>({
+    title: '',
+    description: ''
+  });
   
   // 获取国家数据
   useEffect(() => {
@@ -179,6 +187,30 @@ const PlanFormScreen: React.FC = () => {
     setErrors({ ...errors, [field]: '' });
   };
 
+  // Handle feature info display
+  const handleFeatureInfo = (feature: string) => {
+    const featureInfo = {
+      '5G': {
+        title: '5G Network',
+        description: 'Feature description for 5G will be added here.'
+      },
+      'Call Waiting': {
+        title: 'Call Waiting',
+        description: 'Feature description for Call Waiting will be added here.'
+      },
+      'Hotspot': {
+        title: 'Hotspot',
+        description: 'Feature description for Hotspot will be added here.'
+      }
+    };
+
+    const info = featureInfo[feature as keyof typeof featureInfo];
+    if (info) {
+      setSelectedFeature(info);
+      setShowFeatureModal(true);
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
@@ -195,11 +227,7 @@ const PlanFormScreen: React.FC = () => {
             <View className="flex-1 items-center justify-start px-6 py-4 pb-8">
               {/* 第一部分：Your Current Plan */}
               <View className="w-full mb-4">
-                <Text className="text-lg font-bold text-gray-900 mb-2">Your Current Plan</Text>
-                <Text className="text-sm text-gray-600 mb-4">
-                  We'll only recommend plans that are cheaper and offer more data.
-                </Text>
-
+                <Text className="text-lg font-bold text-gray-900 mb-4">Your Current Plan</Text>
                 <EnhancedInput
                   field="provider"
                   label="Provider"
@@ -280,16 +308,15 @@ const PlanFormScreen: React.FC = () => {
                   errors={errors}
                   onErrorClear={handleErrorClear}
                 />
+                <Text className="text-sm text-gray-600 mb-2">
+                  We'll only recommend plans that are cheaper and offer more data.
+                </Text>
               </View>
               <View className="w-full h-1 bg-gray-100 my-3" />
 
               {/* 第二部分：Optional Features You Need */}
               <View className="w-full mb-6 mt-6">
-                <Text className="text-lg font-bold text-gray-900 mb-2">Optional Features You Need</Text>
-                <Text className="text-sm text-gray-600 mb-4">
-                  We'll make sure to recommend plans that match these needs.
-                </Text>
-
+                <Text className="text-lg font-bold text-gray-900 mb-6">Features You Need ( Optional )</Text>
                 {/* Coverage Area Selection */}
                 <View className={`rounded-lg ${
                   selectedCountries.size > 0 || isCoverageExpanded 
@@ -365,6 +392,8 @@ const PlanFormScreen: React.FC = () => {
                   onValueChange={(field: string, value: boolean) => {
                     setPlan({ ...plan, network: value ? '5G' : 'LTE' });
                   }}
+                  showInfoButton={true}
+                  onInfoPress={() => handleFeatureInfo('5G')}
                 />
                 <View className="w-full h-0.5 bg-gray-100 my-3" />
                 <YesNoToggle
@@ -386,6 +415,8 @@ const PlanFormScreen: React.FC = () => {
                   label="Call Waiting"
                   value={plan.call_waiting}
                   onValueChange={handleBooleanValueChange}
+                  showInfoButton={true}
+                  onInfoPress={() => handleFeatureInfo('Call Waiting')}
                 />
                 <View className="w-full h-0.5 bg-gray-100 my-3" />
                 <YesNoToggle
@@ -400,6 +431,8 @@ const PlanFormScreen: React.FC = () => {
                   label="Hotspot"
                   value={plan.hotspot}
                   onValueChange={handleBooleanValueChange}
+                  showInfoButton={true}
+                  onInfoPress={() => handleFeatureInfo('Hotspot')}
                 />
                 <View className="w-full h-0.5 bg-gray-100 my-3" />
                 <YesNoToggle
@@ -415,11 +448,23 @@ const PlanFormScreen: React.FC = () => {
                   value={plan.video_call}
                   onValueChange={handleBooleanValueChange}
                 />
+                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <Text className="text-sm text-gray-600 mt-2">
+                  We'll make sure to recommend plans that match these needs.
+                </Text>
               </View>
             </View>
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Feature Info Modal */}
+      <FeatureInfoModal
+        visible={showFeatureModal}
+        onClose={() => setShowFeatureModal(false)}
+        title={selectedFeature.title}
+        description={selectedFeature.description}
+      />
 
     </SafeAreaView>
   );

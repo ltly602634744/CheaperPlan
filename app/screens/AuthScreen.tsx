@@ -2,6 +2,7 @@ import { useAuthContext } from "@/app/context/AuthContext";
 import { useRouter } from 'expo-router';
 import React, { useState } from "react";
 import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import PasswordInput from '../components/PasswordInput';
 
 
 const AuthScreen: React.FC = () => {
@@ -45,17 +46,11 @@ const AuthScreen: React.FC = () => {
             </View>
             <View style={styles.verticallySpaced}>
                 <Text style={styles.label}>Password</Text>
-                <View style={styles.inputContainer}>
-                    <Text style={styles.icon}>🔒</Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={(text) => setPassword(text)}
-                        value={password}
-                        secureTextEntry={true}
-                        placeholder="Password"
-                        autoCapitalize="none"
-                    />
-                </View>
+                <PasswordInput
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="Password"
+                />
             </View>
             <View style={[styles.verticallySpaced, styles.mt20]}>
                 <TouchableOpacity
