@@ -3,14 +3,15 @@ import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
+import { BlurView } from 'expo-blur';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import BetterPlanCard from "../components/BetterPlanCard";
 import BottomSheetModal from "../components/BottomSheetModal";
 import SubscriptionModal from "../components/SubscriptionModal";
+import { Colors } from "../constants/Colors";
 import { useAuthContext } from "../context/AuthContext";
 import { getProviderUrl, hasProviderUrl } from "../data";
 import { useUserProfile } from "../hooks/useUserProfile";
@@ -45,7 +46,6 @@ const BetterPlanScreen: React.FC = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -102,14 +102,6 @@ const BetterPlanScreen: React.FC = () => {
     }, [])
   );
 
-  //点击卡片函数
-  const handlePress = (index: number, canView: boolean) => {
-    if (canView) {
-      setExpandedIndex(prev => (prev === index ? null : index));
-    } else {
-      setShowSubscriptionModal(true);
-    }
-  }
 
   // 获取所有可用国家
   const availableCountries = useMemo(() => {
@@ -232,138 +224,201 @@ const BetterPlanScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
 
       {/* 排序和筛选栏 */}
       <View className="flex-row justify-between px-4 mb-4 pt-2">
         <TouchableOpacity
           onPress={() => setShowSortModal(true)}
-          className="flex-row items-center bg-white border border-gray-200 px-3 py-2 rounded-lg flex-1 mr-2"
+          className="flex-row items-center px-3 py-2 rounded-lg flex-1 mr-2"
+          style={{ backgroundColor: Colors.background.primary, borderWidth: 1, borderColor: Colors.border.light }}
         >
-          <FontAwesome name="sort-amount-desc" size={16} color="#374151" />
-          <Text className="text-gray-800 ml-2 flex-1 text-sm">{getCurrentSortLabel()}</Text>
-          <Ionicons name="chevron-down" size={16} color="#374151" />
+          <FontAwesome name="sort-amount-desc" size={16} color={Colors.text.secondary} />
+          <Text className="ml-2 flex-1 text-base" style={{ color: Colors.text.primary }}>{getCurrentSortLabel()}</Text>
+          <Ionicons name="chevron-down" size={16} color={Colors.text.secondary} />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => setShowFilterModal(true)}
-          className="flex-row items-center bg-white border border-gray-200 px-3 py-2 rounded-lg flex-1 ml-2"
+          className="flex-row items-center px-3 py-2 rounded-lg flex-1 ml-2"
+          style={{ backgroundColor: Colors.background.primary, borderWidth: 1, borderColor: Colors.border.light }}
         >
-          <FontAwesome5 name="filter" size={16} color="#374151" />
-          <Text className="text-gray-800 ml-2 flex-1 text-sm">{getCurrentFilterLabel()}</Text>
-          <Ionicons name="chevron-down" size={16} color="#374151" />
+          <FontAwesome5 name="filter" size={16} color={Colors.text.secondary} />
+          <Text className="ml-2 flex-1 text-base" style={{ color: Colors.text.primary }}>{getCurrentFilterLabel()}</Text>
+          <Ionicons name="chevron-down" size={16} color={Colors.text.secondary} />
         </TouchableOpacity>
       </View>
 
-      {filteredAndSortedPlans.length > 0 ? (
-        <ScrollView 
-          className="px-4"
-          showsVerticalScrollIndicator={false}
-        >
-          {filteredAndSortedPlans.map((plan, index) => (
-            <BetterPlanCard
-              key={index}
-              isBlurred={!isPremium}
-              activeOpacity={0.9}
-              onPress={() => handlePress(index, isPremium)}
-              className={index !== filteredAndSortedPlans.length - 1 ? 'mb-4' : ''}
-            >
+      <View style={{ flex: 1, position: 'relative' }}>
+        {filteredAndSortedPlans.length > 0 ? (
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+          >
+            {filteredAndSortedPlans.map((plan, index) => (
               <View
-                className="bg-[#F0F7FF] p-4 rounded-2xl border border-gray-200 relative"
+                key={index}
                 style={{
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 8,
-                  elevation: 8,
+                  backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa',
+                  width: '100%',
                 }}
               >
-                {/* 运营商官网按钮 */}
-                {plan.provider && hasProviderUrl(plan.provider) && (
-                  <TouchableOpacity
-                    onPress={() => handleVisitWebsite(plan.provider)}
-                    className="absolute top-3 right-3 z-10 bg-blue-500 px-3 py-1 rounded-full flex-row items-center"
-                  >
-                    <Ionicons name="globe-outline" size={14} color="white" />
-                    <Text className="text-white text-xs font-medium ml-1">Go to {getWebsiteDomain(plan.provider)}</Text>
-                  </TouchableOpacity>
-                )}
-
-                {/* 基本信息 */}
-                <Text className="text-base text-gray-800 mb-1">
-                  <Text className="font-semibold">Provider:</Text>{" "}
-                  {plan.provider || "N/A"}
-                </Text>
-                <Text className="text-base text-gray-800 mb-1">
-                  <Text className="font-semibold">Network:</Text>{" "}
-                  {plan.network || "N/A"}
-                </Text>
-                <Text className="text-base text-gray-800 mb-1">
-                  <Text className="font-semibold">Coverage:</Text>{" "}
-                  {Array.isArray(plan.coverage) 
-                    ? plan.coverage.map(country => country.name).join(", ") 
-                    : typeof plan.coverage === 'string' 
-                    ? plan.coverage 
-                    : "N/A"}
-                </Text>
-                <Text className="text-base text-gray-800 mb-1">
-                  <Text className="font-semibold">Data:</Text>{" "}
-                  {plan.data !== null ? `${plan.data} GB` : "N/A"}
-                </Text>
-                <Text className="text-base text-gray-800 mb-1">
-                  <Text className="font-semibold">Price:</Text>{" "}
-                  ${plan.price || "N/A"}
-                </Text>
-
-                {/* Features 折叠/展开 */}
-                {expandedIndex === index && (
-                  <View className="mt-3 pt-3 border-t border-gray-200">
-                    <Text className="text-base text-gray-700 mb-1">
-                      <Text className="font-semibold">Voicemail:</Text>{" "}
-                      {plan.voicemail ? "Yes" : "No"}
-                    </Text>
-                    <Text className="text-base text-gray-700 mb-1">
-                      <Text className="font-semibold">Call Display:</Text>{" "}
-                      {plan.call_display ? "Yes" : "No"}
-                    </Text>
-                    <Text className="text-base text-gray-700 mb-1">
-                      <Text className="font-semibold">Call Waiting:</Text>{" "}
-                      {plan.call_waiting ? "Yes" : "No"}
-                    </Text>
-                    <Text className="text-base text-gray-700 mb-1">
-                      <Text className="font-semibold">Suspicious Call Detection:</Text>{" "}
-                      {plan.suspicious_call_detection ? "Yes" : "No"}
-                    </Text>
-                    <Text className="text-base text-gray-700 mb-1">
-                      <Text className="font-semibold">Hotspot:</Text>{" "}
-                      {plan.hotspot ? "Yes" : "No"}
-                    </Text>
-                    <Text className="text-base text-gray-700 mb-1">
-                      <Text className="font-semibold">Conference Call:</Text>{" "}
-                      {plan.conference_call ? "Yes" : "No"}
-                    </Text>
-                    <Text className="text-base text-gray-700">
-                      <Text className="font-semibold">Video Call:</Text>{" "}
-                      {plan.video_call ? "Yes" : "No"}
-                    </Text>
-                    {/* 收起提示 */}
-                    <Text className="text-center text-blue-500 mt-4">Click to collapse</Text>
+                <View className="px-4 py-4">
+                  {/* 三列布局 - 第一行 */}
+                  <View className="flex-row mb-4 items-end">
+                    <View className="flex-1">
+                      <Text className="text-2xl font-bold" style={{ color: Colors.text.primary, textAlign: 'left', paddingLeft: 6 }}>
+                        {plan.provider || "N/A"}
+                      </Text>
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-xl" style={{ color: Colors.text.primary }}>
+                        <Text className="font-semibold">Price:</Text>{" "}
+                        ${plan.price || "N/A"}
+                      </Text>
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-xl" style={{ color: Colors.text.primary }}>
+                        <Text className="font-semibold">Data:</Text>{" "}
+                        {plan.data !== null ? `${plan.data} GB` : "N/A"}
+                      </Text>
+                    </View>
                   </View>
-                )}
-                {/* 折叠时显示展开提示 */}
-                {expandedIndex !== index && (
-                  <Text className="text-center text-blue-400 mt-3">Click to expand and view more details</Text>
-                )}
+
+                  {/* 分隔线 */}
+                  <View className="mb-3" style={{ height: 1, backgroundColor: 'rgba(128, 128, 128, 0.2)', marginHorizontal: 0 }} />
+
+                  {/* 三列布局 - 第二行 */}
+                  <View className="flex-row mb-2">
+                    <View className="flex-1">
+                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                        <Text>Network:</Text>{" "}
+                        {plan.network || "N/A"}
+                      </Text>
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                        <Text>Voicemail</Text>{" "}
+                        <Text style={{ color: plan.voicemail ? Colors.functional.success : Colors.functional.error }}>
+                          {plan.voicemail ? "✓" : "✗"}
+                        </Text>
+                      </Text>
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                        <Text>Call Display</Text>{" "}
+                        <Text style={{ color: plan.call_display ? Colors.functional.success : Colors.functional.error }}>
+                          {plan.call_display ? "✓" : "✗"}
+                        </Text>
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* 三列布局 - 第三行 */}
+                  <View className="flex-row mb-2">
+                    <View className="flex-1">
+                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                        <Text>Call Waiting</Text>{" "}
+                        <Text style={{ color: plan.call_waiting ? Colors.functional.success : Colors.functional.error }}>
+                          {plan.call_waiting ? "✓" : "✗"}
+                        </Text>
+                      </Text>
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                        <Text>Hotspot</Text>{" "}
+                        <Text style={{ color: plan.hotspot ? Colors.functional.success : Colors.functional.error }}>
+                          {plan.hotspot ? "✓" : "✗"}
+                        </Text>
+                      </Text>
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                        <Text>Video Call</Text>{" "}
+                        <Text style={{ color: plan.video_call ? Colors.functional.success : Colors.functional.error }}>
+                          {plan.video_call ? "✓" : "✗"}
+                        </Text>
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* 三列布局 - 第四行 */}
+                  <View className="flex-row mb-2">
+                    <View className="flex-1">
+                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                        <Text>Group Call</Text>{" "}
+                        <Text style={{ color: plan.conference_call ? Colors.functional.success : Colors.functional.error }}>
+                          {plan.conference_call ? "✓" : "✗"}
+                        </Text>
+                      </Text>
+                    </View>
+                    <View style={{ flex: 2 }}>
+                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                        <Text>Suspicious Call Detection</Text>{" "}
+                        <Text style={{ color: plan.suspicious_call_detection ? Colors.functional.success : Colors.functional.error }}>
+                          {plan.suspicious_call_detection ? "✓" : "✗"}
+                        </Text>
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Coverage - 最后一行 */}
+                  <View className="mb-4">
+                    <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                      <Text>Coverage:</Text>{" "}
+                      {Array.isArray(plan.coverage) 
+                        ? plan.coverage.map(country => country.name).join(", ") 
+                        : typeof plan.coverage === 'string' 
+                        ? plan.coverage 
+                        : "N/A"}
+                    </Text>
+                  </View>
+
+                  {/* 运营商官网按钮 - 卡片最下方 */}
+                  {plan.provider && hasProviderUrl(plan.provider) && (
+                    <View className="flex-row justify-center mb-3">
+                      <TouchableOpacity
+                        onPress={() => handleVisitWebsite(plan.provider)}
+                        className="px-6 py-3 rounded-full flex-row items-center justify-center"
+                        style={{ backgroundColor: Colors.functional.success, width: '60%' }}
+                      >
+                        <Ionicons name="globe-outline" size={16} color="white" />
+                        <Text className="text-base font-medium ml-2" style={{ color: Colors.text.inverse }}>Go to {getWebsiteDomain(plan.provider)}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
               </View>
-            </BetterPlanCard>
-          ))}
-        </ScrollView>
-      ) : (
-        <View>
-          <Text className="text-center text-gray-500 mt-10 px-4">
-            No plans match your current filters
-          </Text>
-        </View>
+            ))}
+          </ScrollView>
+        ) : (
+          <View>
+            <Text className="text-center text-lg mt-10 px-4" style={{ color: Colors.text.secondary }}>
+              No plans match your current filters
+            </Text>
+          </View>
+        )}
+
+      </View>
+
+      {/* 非会员时的全页面模糊遮罩 */}
+      {!isPremium && (
+      // {false && (
+        <>
+          <BlurView
+            intensity={50}
+            tint="light"
+            style={StyleSheet.absoluteFillObject}
+          />
+          <TouchableOpacity 
+            style={styles.premiumOverlay}
+            activeOpacity={1}
+            onPress={() => setShowSubscriptionModal(true)}
+          >
+            <View style={styles.premiumBadge}>
+              <Text style={styles.premiumText}>🔒 Premium Content</Text>
+            </View>
+          </TouchableOpacity>
+        </>
       )}
 
       {/* 排序模态框 */}
@@ -379,20 +434,23 @@ const BetterPlanScreen: React.FC = () => {
               setSelectedSort(option.key);
               setShowSortModal(false);
             }}
-            className={`flex-row items-center p-4 rounded-lg mb-3 ${selectedSort === option.key ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
-              }`}
+            className="flex-row items-center p-4 rounded-lg mb-3"
+            style={{
+              backgroundColor: selectedSort === option.key ? Colors.status.successBg : Colors.background.secondary,
+              borderWidth: selectedSort === option.key ? 1 : 0,
+              borderColor: selectedSort === option.key ? Colors.border.soft : 'transparent'
+            }}
           >
             <Ionicons
               name={option.icon as any}
               size={24}
-              color={selectedSort === option.key ? '#3B82F6' : '#6B7280'}
+              color={selectedSort === option.key ? Colors.primary.main : Colors.text.secondary}
             />
-            <Text className={`ml-4 flex-1 text-lg ${selectedSort === option.key ? 'text-blue-600 font-semibold' : 'text-gray-700'
-              }`}>
+            <Text className="ml-4 flex-1 text-xl font-semibold" style={{color: selectedSort === option.key ? Colors.primary.main : Colors.text.secondary}}>
               {option.label}
             </Text>
             {selectedSort === option.key && (
-              <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
+              <Ionicons name="checkmark-circle" size={24} color={Colors.primary.main} />
             )}
           </TouchableOpacity>
         ))}
@@ -412,18 +470,23 @@ const BetterPlanScreen: React.FC = () => {
             setIsCoverageExpanded(false);
             setShowFilterModal(false);
           }}
-          className={`flex-row items-center p-4 rounded-lg mb-3 ${selectedFilters.size === 0 && selectedCountries.size === 0 ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}
+          className="flex-row items-center p-4 rounded-lg mb-3"
+          style={{
+            backgroundColor: selectedFilters.size === 0 && selectedCountries.size === 0 ? Colors.status.successBg : Colors.background.secondary,
+            borderWidth: selectedFilters.size === 0 && selectedCountries.size === 0 ? 1 : 0,
+            borderColor: selectedFilters.size === 0 && selectedCountries.size === 0 ? Colors.border.soft : 'transparent'
+          }}
         >
           <Ionicons
             name="list"
             size={24}
-            color={selectedFilters.size === 0 && selectedCountries.size === 0 ? '#3B82F6' : '#6B7280'}
+            color={selectedFilters.size === 0 && selectedCountries.size === 0 ? Colors.primary.main : Colors.text.secondary}
           />
-          <Text className={`ml-4 flex-1 text-lg ${selectedFilters.size === 0 && selectedCountries.size === 0 ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}>
+          <Text className="ml-4 flex-1 text-xl font-semibold" style={{color: selectedFilters.size === 0 && selectedCountries.size === 0 ? Colors.primary.main : Colors.text.secondary}}>
             All Plans
           </Text>
           {selectedFilters.size === 0 && selectedCountries.size === 0 && (
-            <Ionicons name="checkmark-circle" size={24} color="#3B82F6" />
+            <Ionicons name="checkmark-circle" size={24} color={Colors.primary.main} />
           )}
         </TouchableOpacity>
 
@@ -432,11 +495,12 @@ const BetterPlanScreen: React.FC = () => {
             return (
               <View 
                 key={option.key} 
-                className={`mb-3 rounded-lg ${
-                  selectedCountries.size > 0 || isCoverageExpanded 
-                    ? 'bg-blue-50 border border-blue-200' 
-                    : 'bg-gray-50'
-                }`}
+                className="mb-3 rounded-lg"
+                style={{
+                  backgroundColor: selectedCountries.size > 0 || isCoverageExpanded ? Colors.status.successBg : Colors.background.secondary,
+                  borderWidth: selectedCountries.size > 0 || isCoverageExpanded ? 1 : 0,
+                  borderColor: selectedCountries.size > 0 || isCoverageExpanded ? Colors.border.soft : 'transparent'
+                }}
               >
                 <TouchableOpacity
                   onPress={() => {
@@ -447,25 +511,21 @@ const BetterPlanScreen: React.FC = () => {
                   <Ionicons
                     name={option.icon as any}
                     size={24}
-                    color={selectedCountries.size > 0 || isCoverageExpanded ? '#3B82F6' : '#6B7280'}
+                    color={selectedCountries.size > 0 || isCoverageExpanded ? Colors.primary.main : Colors.text.secondary}
                   />
-                  <Text className={`ml-4 flex-1 text-lg ${
-                    selectedCountries.size > 0 || isCoverageExpanded 
-                      ? 'text-blue-600 font-semibold' 
-                      : 'text-gray-700'
-                  }`}>
+                  <Text className="ml-4 flex-1 text-xl font-semibold" style={{color: selectedCountries.size > 0 || isCoverageExpanded ? Colors.primary.main : Colors.text.secondary}}>
                     {option.label}
                   </Text>
                   <Ionicons 
                     name={isCoverageExpanded ? "chevron-up" : "chevron-down"} 
                     size={20} 
-                    color={selectedCountries.size > 0 || isCoverageExpanded ? '#3B82F6' : '#6B7280'} 
+                    color={selectedCountries.size > 0 || isCoverageExpanded ? Colors.primary.main : Colors.text.secondary} 
                   />
                 </TouchableOpacity>
                 
                 {isCoverageExpanded && (
                   <View className="px-4 pb-4">
-                    <View className="border-t border-gray-200 pt-3">
+                    <View className="pt-3" style={{ borderTopWidth: 1, borderTopColor: Colors.border.light }}>
                       <View className="flex-row flex-wrap">
                         {availableCountries.map((country, index) => (
                           <TouchableOpacity
@@ -481,14 +541,14 @@ const BetterPlanScreen: React.FC = () => {
                             }}
                             className="w-1/3 flex-row items-center mb-2 pr-2"
                           >
-                            <Text className="text-sm text-gray-700 mr-1" numberOfLines={1}>
+                            <Text className="text-base mr-1" style={{ color: Colors.text.secondary }} numberOfLines={1}>
                               {country}
                             </Text>
-                            <View className={`w-4 h-4 rounded border-2 items-center justify-center ${
-                              selectedCountries.has(country) 
-                                ? 'bg-blue-500 border-blue-500' 
-                                : 'border-gray-300'
-                            }`}>
+                            <View className="w-4 h-4 rounded items-center justify-center" style={{
+                              backgroundColor: selectedCountries.has(country) ? Colors.functional.success : 'transparent',
+                              borderWidth: 2,
+                              borderColor: selectedCountries.has(country) ? Colors.functional.success : Colors.border.medium
+                            }}>
                               {selectedCountries.has(country) && (
                                 <Ionicons name="checkmark" size={10} color="white" />
                               )}
@@ -515,21 +575,26 @@ const BetterPlanScreen: React.FC = () => {
                 }
                 setSelectedFilters(newSelectedFilters);
               }}
-              className={`flex-row items-center p-4 rounded-lg mb-3 ${selectedFilters.has(option.key) ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}
+              className="flex-row items-center p-4 rounded-lg mb-3"
+              style={{
+                backgroundColor: selectedFilters.has(option.key) ? Colors.status.successBg : Colors.background.secondary,
+                borderWidth: selectedFilters.has(option.key) ? 1 : 0,
+                borderColor: selectedFilters.has(option.key) ? Colors.border.soft : 'transparent'
+              }}
             >
               <Ionicons
                 name={option.icon as any}
                 size={24}
-                color={selectedFilters.has(option.key) ? '#3B82F6' : '#6B7280'}
+                color={selectedFilters.has(option.key) ? Colors.primary.main : Colors.text.secondary}
               />
-              <Text className={`ml-4 flex-1 text-lg ${selectedFilters.has(option.key) ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}>
+              <Text className="ml-4 flex-1 text-xl font-semibold" style={{color: selectedFilters.has(option.key) ? Colors.primary.main : Colors.text.secondary}}>
                 {option.label}
               </Text>
-              <View className={`w-6 h-6 rounded border-2 items-center justify-center ${
-                selectedFilters.has(option.key) 
-                  ? 'bg-blue-500 border-blue-500' 
-                  : 'border-gray-300'
-              }`}>
+              <View className="w-6 h-6 rounded items-center justify-center" style={{
+                backgroundColor: selectedFilters.has(option.key) ? Colors.functional.success : 'transparent',
+                borderWidth: 2,
+                borderColor: selectedFilters.has(option.key) ? Colors.functional.success : Colors.border.medium
+              }}>
                 {selectedFilters.has(option.key) && (
                   <Ionicons name="checkmark" size={14} color="white" />
                 )}
@@ -554,5 +619,38 @@ const BetterPlanScreen: React.FC = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  premiumOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 200,
+  },
+  premiumBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 24,
+    shadowColor: Colors.neutral.darkest,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  premiumText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Colors.text.primary,
+    textAlign: 'center',
+  },
+  premiumSubtext: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: Colors.text.secondary,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+});
 
 export default BetterPlanScreen;

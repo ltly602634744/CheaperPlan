@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { ReactNode } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Colors } from '../constants/Colors';
 
 interface BottomSheetModalProps {
   visible: boolean;
@@ -31,10 +32,10 @@ export default function BottomSheetModal({
           <TouchableWithoutFeedback onPress={() => {}}>
             <View className={`bg-white rounded-t-3xl ${minHeight} ${maxHeight}`}>
               {/* Header */}
-              <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
-                <Text className="text-2xl font-bold text-gray-800">{title}</Text>
+              <View className="flex-row justify-between items-center p-6" style={{ borderBottomWidth: 1, borderBottomColor: Colors.border.light }}>
+                <Text className="text-2xl font-bold" style={{ color: Colors.text.primary }}>{title}</Text>
                 <TouchableOpacity onPress={onClose} className="p-2">
-                  <Ionicons name="close" size={24} color="#666" />
+                  <Ionicons name="close" size={24} color={Colors.neutral.dark} />
                 </TouchableOpacity>
               </View>
 

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Colors } from '../constants/Colors';
 
 interface Option {
   code: string;
@@ -35,7 +36,7 @@ export default function SelectionSettingField({
             <Text style={styles.optionCode}>{option.name}</Text>
           </View>
           {selectedValue === option.code && (
-            <Ionicons name="checkmark" size={24} color="#007AFF" />
+            <Ionicons name="checkmark" size={24} color={Colors.accent.blue} />
           )}
         </TouchableOpacity>
       ))}
@@ -51,14 +52,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: Colors.background.card,
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
   },
   selectedRow: {
-    backgroundColor: '#f0f8ff',
-    borderColor: '#007AFF',
+    backgroundColor: Colors.status.infoBg,
+    borderColor: Colors.accent.blue,
     borderWidth: 1,
   },
   optionInfo: {
@@ -67,11 +68,11 @@ const styles = StyleSheet.create({
   optionName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: Colors.text.primary,
   },
   optionCode: {
     fontSize: 14,
-    color: '#666',
+    color: Colors.text.secondary,
     marginTop: 2,
   },
 }); 

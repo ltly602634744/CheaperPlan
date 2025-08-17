@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Colors } from '../constants/Colors';
 
 interface FeatureInfoModalProps {
   visible: boolean;
@@ -22,31 +23,31 @@ export const FeatureInfoModal: React.FC<FeatureInfoModalProps> = ({
       transparent={true}
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-black/50 justify-center items-center px-6">
+      <View style={styles.backdrop}>
         <TouchableOpacity
           activeOpacity={1}
-          className="flex-1 w-full justify-center items-center"
+          style={styles.backdropTouchable}
           onPress={onClose}
         >
           <TouchableOpacity
             activeOpacity={1}
-            className="bg-white rounded-2xl p-6 w-full max-w-sm"
+            style={styles.modalContent}
             onPress={() => {}} // Prevent backdrop close when touching content
           >
             {/* Header */}
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-gray-800 flex-1">{title}</Text>
+            <View style={styles.header}>
+              <Text style={styles.title}>{title}</Text>
               <TouchableOpacity
                 onPress={onClose}
-                className="ml-4 p-2 -m-2" // Negative margin for larger touch area
+                style={styles.closeButton}
               >
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color={Colors.text.secondary} />
               </TouchableOpacity>
             </View>
 
             {/* Content */}
-            <View className="mb-4">
-              <Text className="text-gray-600 text-base leading-6">
+            <View style={styles.content}>
+              <Text style={styles.description}>
                 {description}
               </Text>
             </View>
@@ -54,9 +55,9 @@ export const FeatureInfoModal: React.FC<FeatureInfoModalProps> = ({
             {/* Close Button */}
             <TouchableOpacity
               onPress={onClose}
-              className="bg-blue-500 rounded-xl py-3 items-center"
+              style={styles.gotItButton}
             >
-              <Text className="text-white font-semibold text-base">Got it</Text>
+              <Text style={styles.gotItButtonText}>Got it</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -64,3 +65,62 @@ export const FeatureInfoModal: React.FC<FeatureInfoModalProps> = ({
     </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  backdropTouchable: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: Colors.background.card,
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 320,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text.primary,
+    flex: 1,
+  },
+  closeButton: {
+    marginLeft: 16,
+    padding: 8,
+    margin: -8, // Negative margin for larger touch area
+  },
+  content: {
+    marginBottom: 16,
+  },
+  description: {
+    color: Colors.text.secondary,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  gotItButton: {
+    backgroundColor: Colors.button.primaryBg,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  gotItButtonText: {
+    color: Colors.button.primaryText,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+});

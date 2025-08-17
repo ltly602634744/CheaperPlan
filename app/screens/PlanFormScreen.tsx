@@ -4,6 +4,7 @@ import { createUserPlan, updateUserPlan } from '@/app/services/planService';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Colors } from '../constants/Colors';
 import {
   Alert,
   Keyboard,
@@ -151,9 +152,9 @@ const PlanFormScreen: React.FC = () => {
           }}
         >
           {Platform.OS === 'android' ? (
-            <Ionicons name="close" size={24} color="#007AFF" />
+            <Ionicons name="close" size={24} color={Colors.accent.blue} />
           ) : (
-            <Text style={{ color: '#007AFF', fontSize: 17 }}>Cancel</Text>
+            <Text style={{ color: Colors.accent.blue, fontSize: 17 }}>Cancel</Text>
           )}
         </TouchableOpacity>
       ),
@@ -166,9 +167,9 @@ const PlanFormScreen: React.FC = () => {
           }}
         >
           {Platform.OS === 'android' ? (
-            <Ionicons name="checkmark" size={24} color="#007AFF" />
+            <Ionicons name="checkmark" size={24} color={Colors.accent.blue} />
           ) : (
-            <Text style={{ color: '#007AFF', fontSize: 17, fontWeight: '600' }}>Save</Text>
+            <Text style={{ color: Colors.accent.blue, fontSize: 17, fontWeight: '600' }}>Save</Text>
           )}
         </TouchableOpacity>
       ),
@@ -212,11 +213,11 @@ const PlanFormScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background.primary }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={80}
-        className="flex-1"
+        style={{ flex: 1 }}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView 
@@ -224,10 +225,10 @@ const PlanFormScreen: React.FC = () => {
             contentContainerStyle={{ flexGrow: 1 }} 
             keyboardShouldPersistTaps="handled"
           >
-            <View className="flex-1 items-center justify-start px-6 py-4 pb-8">
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', paddingHorizontal: 24, paddingVertical: 16, paddingBottom: 32 }}>
               {/* 第一部分：Your Current Plan */}
-              <View className="w-full mb-4">
-                <Text className="text-lg font-bold text-gray-900 mb-4">Your Current Plan</Text>
+              <View style={{ width: '100%', marginBottom: 16 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.text.primary, marginBottom: 16 }}>Your Current Plan</Text>
                 <EnhancedInput
                   field="provider"
                   label="Provider"
@@ -308,43 +309,45 @@ const PlanFormScreen: React.FC = () => {
                   errors={errors}
                   onErrorClear={handleErrorClear}
                 />
-                <Text className="text-sm text-gray-600 mb-2">
-                  We'll only recommend plans that are cheaper and offer more data.
+                <Text style={{ fontSize: 14, color: Colors.text.secondary, marginBottom: 8 }}>
+                  We&apos;ll only recommend plans that are cheaper and offer more data.
                 </Text>
               </View>
-              <View className="w-full h-1 bg-gray-100 my-3" />
+              <View style={{ width: '100%', height: 4, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
 
               {/* 第二部分：Optional Features You Need */}
-              <View className="w-full mb-6 mt-6">
-                <Text className="text-lg font-bold text-gray-900 mb-6">Features You Need ( Optional )</Text>
+              <View style={{ width: '100%', marginBottom: 24, marginTop: 24 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.text.primary, marginBottom: 24 }}>Features You Need ( Optional )</Text>
                 {/* Coverage Area Selection */}
-                <View className={`rounded-lg ${
+                <View style={[
+                  { borderRadius: 8 },
                   selectedCountries.size > 0 || isCoverageExpanded 
-                    ? 'bg-blue-50 border border-blue-200' 
-                    : 'bg-gray-50 border border-gray-200'
-                }`}>
+                    ? { backgroundColor: Colors.status.primaryBg, borderWidth: 1, borderColor: Colors.border.soft } 
+                    : { backgroundColor: Colors.neutral.lightest, borderWidth: 1, borderColor: Colors.border.light }
+                ]}>
                   <TouchableOpacity
                     onPress={() => setIsCoverageExpanded(!isCoverageExpanded)}
-                    className="flex-row items-center p-4"
+                    style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}
                   >
-                    <Text className={`flex-1 text-base font-medium ${
+                    <Text style={[
+                      { flex: 1, fontSize: 16, fontWeight: '500' },
                       selectedCountries.size > 0 || isCoverageExpanded 
-                        ? 'text-blue-600' 
-                        : 'text-gray-700'
-                    }`}>
+                        ? { color: Colors.primary.main } 
+                        : { color: Colors.text.primary }
+                    ]}>
                       International Coverage
                     </Text>
                     <Ionicons 
                       name={isCoverageExpanded ? "chevron-up" : "chevron-down"} 
                       size={20} 
-                      color={selectedCountries.size > 0 || isCoverageExpanded ? '#3B82F6' : '#6B7280'} 
+                      color={selectedCountries.size > 0 || isCoverageExpanded ? Colors.primary.main : Colors.text.secondary} 
                     />
                   </TouchableOpacity>
                   
                   {isCoverageExpanded && (
-                    <View className="px-4 pb-4">
-                      <View className="border-t border-gray-200 pt-3">
-                        <View className="flex-row flex-wrap">
+                    <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                      <View style={{ borderTopWidth: 1, borderTopColor: Colors.border.light, paddingTop: 12 }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                           {availableCountries.map((country) => (
                             <TouchableOpacity
                               key={country.id}
@@ -357,18 +360,20 @@ const PlanFormScreen: React.FC = () => {
                                 }
                                 setSelectedCountries(newSelectedCountries);
                               }}
-                              className="flex-row items-center bg-white rounded-full px-3 py-2 m-1 border border-gray-200"
+                              style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.background.card, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, margin: 4, borderWidth: 1, borderColor: Colors.border.light }}
                             >
-                              <Text className={`text-sm mr-2 ${
-                                selectedCountries.has(country.id) ? 'text-blue-600 font-medium' : 'text-gray-700'
-                              }`}>
+                              <Text style={[
+                                { fontSize: 14, marginRight: 8 },
+                                selectedCountries.has(country.id) ? { color: Colors.primary.main, fontWeight: '500' } : { color: Colors.text.primary }
+                              ]}>
                                 {country.name}
                               </Text>
-                              <View className={`w-4 h-4 rounded border-2 items-center justify-center ${
+                              <View style={[
+                                { width: 16, height: 16, borderRadius: 8, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
                                 selectedCountries.has(country.id) 
-                                  ? 'bg-blue-500 border-blue-500' 
-                                  : 'border-gray-300'
-                              }`}>
+                                  ? { backgroundColor: Colors.primary.main, borderColor: Colors.primary.main } 
+                                  : { borderColor: Colors.neutral.medium }
+                              ]}>
                                 {selectedCountries.has(country.id) && (
                                   <Ionicons name="checkmark" size={10} color="white" />
                                 )}
@@ -381,10 +386,10 @@ const PlanFormScreen: React.FC = () => {
                   )}
                 </View>
                 {errors.coverage && (
-                  <Text className="text-red-500 text-sm mt-1">{errors.coverage}</Text>
+                  <Text style={{ color: Colors.functional.error, fontSize: 14, marginTop: 4 }}>{errors.coverage}</Text>
                 )}
 
-                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
                 <YesNoToggle
                   field="network"
                   label="5G"
@@ -395,21 +400,21 @@ const PlanFormScreen: React.FC = () => {
                   showInfoButton={true}
                   onInfoPress={() => handleFeatureInfo('5G')}
                 />
-                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
                 <YesNoToggle
                   field="voicemail"
                   label="Voicemail"
                   value={plan.voicemail}
                   onValueChange={handleBooleanValueChange}
                 />
-                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
                 <YesNoToggle
                   field="call_display"
                   label="Call Display"
                   value={plan.call_display}
                   onValueChange={handleBooleanValueChange}
                 />
-                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
                 <YesNoToggle
                   field="call_waiting"
                   label="Call Waiting"
@@ -418,14 +423,14 @@ const PlanFormScreen: React.FC = () => {
                   showInfoButton={true}
                   onInfoPress={() => handleFeatureInfo('Call Waiting')}
                 />
-                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
                 <YesNoToggle
                   field="suspicious_call_detection"
                   label="Suspicious Call Detection"
                   value={plan.suspicious_call_detection}
                   onValueChange={handleBooleanValueChange}
                 />
-                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
                 <YesNoToggle
                   field="hotspot"
                   label="Hotspot"
@@ -434,23 +439,23 @@ const PlanFormScreen: React.FC = () => {
                   showInfoButton={true}
                   onInfoPress={() => handleFeatureInfo('Hotspot')}
                 />
-                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
                 <YesNoToggle
                   field="conference_call"
                   label="Conference Call"
                   value={plan.conference_call}
                   onValueChange={handleBooleanValueChange}
                 />
-                <View className="w-full h-0.5 bg-gray-100 my-3" />
+                <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
                 <YesNoToggle
                   field="video_call"
                   label="Video Call"
                   value={plan.video_call}
                   onValueChange={handleBooleanValueChange}
                 />
-                <View className="w-full h-0.5 bg-gray-100 my-3" />
-                <Text className="text-sm text-gray-600 mt-2">
-                  We'll make sure to recommend plans that match these needs.
+                <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
+                <Text style={{ fontSize: 14, color: Colors.text.secondary, marginTop: 8 }}>
+                  We&apos;ll make sure to recommend plans that match these needs.
                 </Text>
               </View>
             </View>

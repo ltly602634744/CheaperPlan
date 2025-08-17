@@ -12,7 +12,11 @@
       "Bash(git checkout:*)",
       "Bash(find:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

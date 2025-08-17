@@ -1,26 +1,27 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { Colors } from '../constants/Colors';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#F5F5F5',
-          borderTopColor: '#E5E5E5',
+          backgroundColor: Colors.tab.background,
+          borderTopColor: Colors.tab.border,
         },
-        tabBarActiveTintColor: '#3B82F6',
-        tabBarInactiveTintColor: '#6B7280',
+        tabBarActiveTintColor: Colors.tab.active,
+        tabBarInactiveTintColor: Colors.tab.inactive,
         headerStyle: {
-          backgroundColor: '#F5F5F5',
+          backgroundColor: Colors.background.secondary,
         },
-        headerTintColor: '#1F2937',
+        headerTintColor: Colors.text.primary,
       }}
     >
       <Tabs.Screen
         name="ProfileScreen"
         options={{
-          title: 'Your Plan',
+          title: 'Home',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-circle-outline" size={size} color={color} />
           ),
@@ -29,7 +30,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="BetterPlanScreen"
         options={{
-          title: 'Cheaper Plans',
+          title: 'Plans',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bulb-outline" size={size} color={color} />
           ),

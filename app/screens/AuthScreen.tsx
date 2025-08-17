@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from "react";
 import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import PasswordInput from '../components/PasswordInput';
+import { Colors } from '../constants/Colors';
 
 
 const AuthScreen: React.FC = () => {
@@ -16,9 +17,8 @@ const AuthScreen: React.FC = () => {
         const {data, error } = await signIn(email, password);
         if (error) {
             Alert.alert('Error', error.message);
-        }else if (data.session){
-            router.replace("/");
         }
+        // 不需要手动重定向，_layout.tsx会自动处理登录后的重定向
         setLoading(false);
     };
 
@@ -41,6 +41,7 @@ const AuthScreen: React.FC = () => {
                         placeholder="email@address.com"
                         autoCapitalize="none"
                         keyboardType="email-address"
+                        placeholderTextColor={Colors.text.placeholder}
                     />
                 </View>
             </View>
@@ -70,7 +71,7 @@ const AuthScreen: React.FC = () => {
             </View>
             <View style={[styles.verticallySpaced, styles.mt10]}>
                 <Text style={styles.signUpText}>
-                    Don't have an account?{' '}
+                    Don&apos;t have an account?{' '}
                     <Text style={styles.signUpLink} onPress={handleRegister}>
                         Sign up
                     </Text>
@@ -104,17 +105,17 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 16,
         fontWeight: '500',
-        color: '#333',
+        color: Colors.text.primary,
         marginBottom: 8,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: Colors.border.light,
         borderRadius: 8,
         paddingHorizontal: 10,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.background.card,
     },
     icon: {
         fontSize: 20,
@@ -123,20 +124,20 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         height: 48,
-        fontSize: 16,
-        color: '#333',
+        fontSize: 18,
+        color: Colors.text.primary,
     },
     button: {
-        backgroundColor: '#007AFF',
+        backgroundColor: Colors.accent.blue,
         borderRadius: 8,
         paddingVertical: 12,
         alignItems: 'center',
     },
     buttonDisabled: {
-        backgroundColor: '#99C2FF',
+        backgroundColor: Colors.button.disabledBg,
     },
     buttonText: {
-        color: '#fff',
+        color: Colors.text.inverse,
         fontSize: 16,
         fontWeight: '600',
     },
@@ -148,21 +149,21 @@ const styles = StyleSheet.create({
     },
     signUpText: {
         fontSize: 16,
-        color: '#666',
+        color: Colors.text.secondary,
         textAlign: 'center',
     },
     signUpLink: {
-        color: '#007AFF',
+        color: Colors.accent.blue,
         fontWeight: '500',
         textDecorationLine: 'underline',
     },
     forgotPasswordText: {
         fontSize: 16,
-        color: '#666',
+        color: Colors.text.secondary,
         textAlign: 'center',
     },
     forgotPasswordLink: {
-        color: '#007AFF',
+        color: Colors.accent.blue,
         fontWeight: '500',
         textDecorationLine: 'underline',
     },

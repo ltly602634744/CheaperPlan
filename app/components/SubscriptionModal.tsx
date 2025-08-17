@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors } from '../constants/Colors';
 import { useAuthContext } from '../context/AuthContext';
 import { updateUserProfile } from '../services/userService';
 import eventBus from '../utils/eventBus';
@@ -186,10 +187,10 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <View className="flex-1 bg-black/50 justify-end">
+      <View style={[styles.backdrop]}>
         <TouchableOpacity
           activeOpacity={1}
-          className="flex-1 justify-end"
+          style={styles.backdropTouchable}
           onPress={handleBackdropPress}
         >
           <TouchableOpacity
@@ -200,28 +201,28 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
             ]}
             onPress={handleContentPress}
           >
-              <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
-                <Text className="text-2xl font-bold text-gray-700">Get Premium Access</Text>
-                <TouchableOpacity onPress={onClose} className="p-2">
-                  <Ionicons name="close" size={24} color="#666" />
+              <View style={styles.header}>
+                <Text style={styles.headerTitle}>Get Premium Access</Text>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <Ionicons name="close" size={24} color={Colors.text.secondary} />
                 </TouchableOpacity>
               </View>
 
-              <View className="flex-1 p-6">
+              <View style={styles.content}>
                 {loading ? (
-                  <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color="#007AFF" />
-                    <Text className="mt-4 text-gray-500">Loading subscription options...</Text>
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={Colors.accent.blue} />
+                    <Text style={styles.loadingText}>Loading subscription options...</Text>
                   </View>
                 ) : !hasValidPackages ? (
-                  <View className="flex-1 justify-center items-center">
-                    <Text className="text-center text-gray-500">
-                      Sorry there's an error on our side. Please contact customer service.
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>
+                      Sorry there&apos;s an error on our side. Please contact customer service.
                     </Text>
                   </View>
                 ) : (
-                  <View className="flex-1">
-                    <View className="flex-row mb-6 bg-gray-100 rounded-2xl p-1">
+                  <View style={styles.contentBody}>
+                    <View style={styles.planSwitcher}>
                       {monthlyPkg && (
                         <TouchableOpacity
                           onPress={() => updateSelectedPlan('monthly')}
@@ -233,7 +234,7 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
                           <Text style={[
                             styles.planOptionText,
                             selectedPlanRef.current === 'monthly' && styles.planOptionTextSelected
-                          ]}>30 Days</Text>
+                          ]}>Monthly</Text>
                         </TouchableOpacity>
                       )}
 
@@ -248,7 +249,7 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
                           <Text style={[
                             styles.planOptionText,
                             selectedPlanRef.current === 'yearly' && styles.planOptionTextSelected
-                          ]}>365 Days</Text>
+                          ]}>Yearly</Text>
                           {yearlyPkg && monthlyPkg && (
                             <Text style={styles.bestValueText}>
                               Save more than 16%
@@ -261,34 +262,21 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
                     {/* Selected Package Info */}
                     {currentPackage && (
                       <View style={styles.packageInfo}>
-                        <Text style={styles.packageTitle}>Premium Pass</Text>
                         <Text style={styles.packagePrice}>
                           {cleanPriceString(currentPackage.product.priceString)}
                           <Text style={styles.packageDuration}>
-                            {selectedPlanRef.current === 'monthly' ? ' for 30 days' : ' for 365 days'}
+                            {selectedPlanRef.current === 'monthly' ? ' per month' : ' per year'}
                           </Text>
                         </Text>
 
-                        {/* Features */}
-                        <View className="space-y-2">
-                          <View className="flex-row items-center">
-                            <View style={styles.featureIcon}>
-                              <Text style={styles.featureIconText}>✓</Text>
-                            </View>
-                            <Text className="ml-3 text-gray-700 text-sm">Access all carrier information</Text>
-                          </View>
-                          <View className="flex-row items-center">
-                            <View style={styles.featureIcon}>
-                              <Text style={styles.featureIconText}>✓</Text>
-                            </View>
-                            <Text className="ml-3 text-gray-700 text-sm">Unlock all hidden plan details</Text>
-                          </View>
-                          <View className="flex-row items-center">
-                            <View style={styles.featureIcon}>
-                              <Text style={styles.featureIconText}>✓</Text>
-                            </View>
-                            <Text className="ml-3 text-gray-700 text-sm">Get priority customer support</Text>
-                          </View>
+                        {/* Description */}
+                        <View>
+                          <Text style={styles.primaryDescription}>
+                            Get Premium now to unlock all recommended plans.
+                          </Text>
+                          <Text style={styles.secondaryDescription}>
+                            We know you won&apos;t change your mobile plan often. You can cancel anytime and still receive notifications when we find a cheaper plan for you.
+                          </Text>
                         </View>
                       </View>
                     )}
@@ -321,12 +309,73 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
 }
 
 const styles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  backdropTouchable: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: Colors.background.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     minHeight: '60%',
     maxHeight: '90%',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border.light,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.text.primary,
+  },
+  closeButton: {
+    padding: 8,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    color: Colors.text.secondary,
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    textAlign: 'center',
+    color: Colors.text.secondary,
+    fontSize: 16,
+  },
+  contentBody: {
+    flex: 1,
+  },
+  planSwitcher: {
+    flexDirection: 'row',
+    marginBottom: 24,
+    backgroundColor: Colors.neutral.lightest,
+    borderRadius: 16,
+    padding: 4,
   },
   planOption: {
     flex: 1,
@@ -336,71 +385,69 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   planOptionSelected: {
-    backgroundColor: 'white',
+    backgroundColor: Colors.background.card,
+    shadowColor: Colors.border.light,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   planOptionText: {
     textAlign: 'center',
     fontWeight: '600',
     fontSize: 16,
-    color: '#6b7280',
+    color: Colors.text.secondary,
   },
   planOptionTextSelected: {
-    color: '#2563eb',
+    color: Colors.accent.blue,
   },
   bestValueText: {
     textAlign: 'center',
     fontSize: 10,
-    color: '#10b981',
+    color: Colors.functional.success,
     fontWeight: '500',
     marginTop: 2,
   },
   packageInfo: {
-    backgroundColor: '#eff6ff',
+    backgroundColor: Colors.status.infoBg,
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
-  },
-  packageTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#2563eb',
-    marginBottom: 6,
   },
   packagePrice: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#2563eb',
+    color: Colors.accent.blue,
     marginBottom: 12,
+    marginTop: 6,
   },
   packageDuration: {
     fontSize: 16,
-    color: '#6b7280',
+    color: Colors.text.secondary,
   },
-  featureIcon: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#10b981',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  featureIconText: {
-    color: 'white',
-    fontSize: 12,
+  primaryDescription: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: Colors.text.primary,
+    marginBottom: 8,
+    lineHeight: 24,
+  },
+  secondaryDescription: {
+    fontSize: 14,
+    color: Colors.text.secondary,
+    lineHeight: 20,
   },
   buyButton: {
     paddingVertical: 16,
     borderRadius: 16,
-    backgroundColor: '#2563eb',
+    backgroundColor: Colors.button.primaryBg,
   },
   buyButtonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: Colors.button.disabledBg,
   },
   buyButtonText: {
-    color: 'white',
+    color: Colors.button.primaryText,
     textAlign: 'center',
     fontSize: 18,
     fontWeight: '600',
@@ -411,7 +458,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   purchasingText: {
-    color: 'white',
+    color: Colors.button.primaryText,
     marginLeft: 8,
     fontSize: 16,
     fontWeight: '600',

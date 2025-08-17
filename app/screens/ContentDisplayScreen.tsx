@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors } from '../constants/Colors';
 
 export default function ContentDisplayScreen() {
     const router = useRouter();
@@ -14,31 +15,35 @@ export default function ContentDisplayScreen() {
     const content = modalContents[title] || "Content not found";
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background.primary }}>
             {/* 自定义Header */}
-            <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: Colors.border.light, backgroundColor: Colors.background.card }}>
                 <TouchableOpacity
                     onPress={() => router.back()}
-                    className="flex-row items-center"
-                    style={{ 
-                        minWidth: Platform.OS === 'android' ? 60 : 80,
-                        paddingLeft: Platform.OS === 'android' ? 8 : 0,
-                    }}
+                    style={[
+                        { flexDirection: 'row', alignItems: 'center' },
+                        { 
+                            minWidth: Platform.OS === 'android' ? 60 : 80,
+                            paddingLeft: Platform.OS === 'android' ? 8 : 0,
+                        }
+                    ]}
                 >
-                    <Ionicons name="chevron-back" size={24} color="#007AFF" />
+                    <Ionicons name="chevron-back" size={24} color={Colors.accent.blue} />
                     {Platform.OS === 'ios' && (
-                        <Text style={{ color: '#007AFF', fontSize: 17, marginLeft: 4 }}>
+                        <Text style={{ color: Colors.accent.blue, fontSize: 17, marginLeft: 4 }}>
                             Back
                         </Text>
                     )}
                 </TouchableOpacity>
                 
                 <Text 
-                    className="text-lg font-semibold text-gray-800 flex-1"
-                    style={{
-                        textAlign: 'center',
-                        marginHorizontal: Platform.OS === 'android' ? 16 : 0,
-                    }}
+                    style={[
+                        { fontSize: 18, fontWeight: '600', color: Colors.text.primary, flex: 1 },
+                        {
+                            textAlign: 'center',
+                            marginHorizontal: Platform.OS === 'android' ? 16 : 0,
+                        }
+                    ]}
                 >
                     {title}
                 </Text>
@@ -48,11 +53,11 @@ export default function ContentDisplayScreen() {
             </View>
 
             <ScrollView 
-                className="flex-1 px-6 py-4"
+                style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 16 }}
                 showsVerticalScrollIndicator={true}
                 bounces={true}
             >
-                <Text className="text-gray-700 leading-6 text-base">
+                <Text style={{ color: Colors.text.primary, lineHeight: 24, fontSize: 16 }}>
                     {content}
                 </Text>
                 {/* 添加底部间距 */}

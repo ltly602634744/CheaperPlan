@@ -11,6 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuthContext } from './context/AuthContext';
 import { supabase } from './services/supabase';
 import { setPasswordResetMode } from './services/authService';
+import { Colors } from './constants/Colors';
 
 // 导入 NativeWind 样式
 import '../global.css';
@@ -159,12 +160,15 @@ function AppLayout() {
     return () => subscription?.remove();
   }, []);
 
-  // ③ 登录状态变化时的重定向逻辑（保持原逻辑不变）
+  // ③ 登录状态变化时的重定向逻辑
   useEffect(() => {
     if (loading) return;
 
     if (!session) {
       router.replace('/screens/WelcomeScreen');
+    } else {
+      // 用户已登录，确保重定向到主应用并清空导航堆栈
+      router.replace('/');
     }
   }, [session, loading]);
 
@@ -202,7 +206,7 @@ export default function RootLayout() {
   // ⑤ 在根布局组件中，使用 SafeAreaProvider 和 AuthProvider 包裹所有内容
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.background.primary} />
       <AuthProvider>
         {/*<PaperProvider>*/}
         <AppLayout />

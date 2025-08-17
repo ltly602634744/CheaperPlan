@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { Colors } from '../constants/Colors';
 
 interface InfoSettingFieldProps {
   label: string;
@@ -17,11 +18,11 @@ export default function InfoSettingField({
   const getStatusColor = () => {
     switch (status) {
       case 'active':
-        return '#4CAF50';
+        return Colors.functional.success;
       case 'inactive':
-        return '#F44336';
+        return Colors.functional.error;
       default:
-        return '#666';
+        return Colors.text.secondary;
     }
   };
 
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: Colors.background.card,
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: Colors.text.primary,
   },
   value: {
     fontSize: 16,

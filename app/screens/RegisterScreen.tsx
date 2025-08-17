@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import PasswordInput from '../components/PasswordInput';
+import { Colors } from '../constants/Colors';
 
 // type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
 
@@ -55,7 +56,7 @@ const RegisterScreen: React.FC = () => {
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-            className="flex-1">
+            style={{ flex: 1 }}>
             <ScrollView
                 contentContainerStyle={{ flexGrow: 1 }}
                 keyboardShouldPersistTaps="handled">
@@ -73,6 +74,7 @@ const RegisterScreen: React.FC = () => {
                                     placeholder="email@address.com"
                                     autoCapitalize="none"
                                     keyboardType="email-address"
+                                    placeholderTextColor={Colors.text.placeholder}
                                 />
                             </View>
                         </View>
@@ -87,6 +89,7 @@ const RegisterScreen: React.FC = () => {
                                     placeholder="Confirm your email"
                                     autoCapitalize="none"
                                     keyboardType="email-address"
+                                    placeholderTextColor={Colors.text.placeholder}
                                 />
                             </View>
                         </View>
@@ -148,17 +151,17 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 16,
         fontWeight: '500',
-        color: '#333',
+        color: Colors.text.primary,
         marginBottom: 8,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: Colors.border.light,
         borderRadius: 8,
         paddingHorizontal: 10,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.background.card,
     },
     icon: {
         fontSize: 20,
@@ -167,31 +170,31 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         height: 48,
-        fontSize: 16,
-        color: '#333',
+        fontSize: 18,
+        color: Colors.text.primary,
         textAlignVertical: 'center',
     },
     button: {
-        backgroundColor: '#007AFF',
+        backgroundColor: Colors.accent.blue,
         borderRadius: 8,
         paddingVertical: 12,
         alignItems: 'center',
     },
     buttonDisabled: {
-        backgroundColor: '#99C2FF',
+        backgroundColor: Colors.button.disabledBg,
     },
     buttonText: {
-        color: '#fff',
+        color: Colors.text.inverse,
         fontSize: 16,
         fontWeight: '600',
     },
     signInText: {
         fontSize: 16,
-        color: '#666',
+        color: Colors.text.secondary,
         textAlign: 'center',
     },
     signInLink: {
-        color: '#007AFF',
+        color: Colors.accent.blue,
         fontWeight: '500',
         textDecorationLine: 'underline',
     },

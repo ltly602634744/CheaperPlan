@@ -129,18 +129,18 @@ export default function SubscriptionScreen() {
             <ScrollView className="flex-1 px-4 pt-6">
                 {/* 订阅状态卡片 */}
                 <View className="bg-gray-50 rounded-xl p-6 mb-6 shadow-sm">
-                    <Text className="text-lg font-semibold text-gray-800 mb-4">Subscription Details</Text>
+                    <Text className="text-xl font-semibold text-gray-800 mb-4">Subscription Details</Text>
                     
                     <View className="flex-row justify-between items-center mb-4">
-                        <Text className="text-gray-600">Status:</Text>
-                        <Text className={`font-semibold ${getStatusColor()}`}>
+                        <Text className="text-lg text-gray-600">Status:</Text>
+                        <Text className={`text-lg font-semibold ${getStatusColor()}`}>
                             {getSubscriptionStatusDisplay()}
                         </Text>
                     </View>
                     
-                    <View className="flex-row justify-between items-center mb-4">
-                        <Text className="text-gray-600">Plan Type:</Text>
-                        <Text className="font-semibold text-gray-800">
+                    <View className="flex-row justify-between items-center mb-2">
+                        <Text className="text-lg text-gray-600">Plan Type:</Text>
+                        <Text className="text-lg font-semibold text-gray-800">
                             {loading ? '...' : getSubscriptionType()}
                         </Text>
                     </View>
@@ -148,17 +148,17 @@ export default function SubscriptionScreen() {
                     {getMembershipStatus() !== 'free' && getExpirationDate() && (
                         <>
                             <View className="flex-row justify-between items-center mb-4">
-                                <Text className="text-gray-600">
+                                <Text className="text-lg text-gray-600">
                                     {isAutoRenewing() ? 'Next Renewal:' : 'Expires On:'}
                                 </Text>
-                                <Text className="font-semibold text-gray-800">
+                                <Text className="text-lg font-semibold text-gray-800">
                                     {loading ? '...' : formatExpirationDate(getExpirationDate())}
                                 </Text>
                             </View>
                             
                             <View className="flex-row justify-between items-center mb-4">
-                                <Text className="text-gray-600">Auto-Renewal:</Text>
-                                <Text className={`font-semibold ${isAutoRenewing() ? 'text-green-600' : 'text-orange-600'}`}>
+                                <Text className="text-lg text-gray-600">Auto-Renewal:</Text>
+                                <Text className={`text-lg font-semibold ${isAutoRenewing() ? 'text-green-600' : 'text-orange-600'}`}>
                                     {loading ? '...' : (isAutoRenewing() ? 'On' : 'Off')}
                                 </Text>
                             </View>
@@ -168,29 +168,29 @@ export default function SubscriptionScreen() {
 
                 {/* 功能列表 */}
                 <View className="bg-white rounded-xl shadow-sm mb-6">
-                    <Text className="text-lg font-semibold text-gray-800 px-6 pt-6 pb-4">
+                    <Text className="text-xl font-semibold text-gray-800 px-6 pt-6 pb-4">
                         {hasActiveSubscription() ? 'Premium Features' : 'Get Premium to Unlock'}
                     </Text>
                     
                     <View className="px-6 pb-6">
                         <View className="flex-row items-center mb-3">
-                            <Text className="text-green-500 mr-3">✓</Text>
-                            <Text className="text-gray-600 flex-1">Unlimited plan searches</Text>
+                            <Text className="text-lg text-green-500 mr-3">✓</Text>
+                            <Text className="text-lg text-gray-600 flex-1">Unlimited plan searches</Text>
                         </View>
                         
                         <View className="flex-row items-center mb-3">
-                            <Text className="text-green-500 mr-3">✓</Text>
-                            <Text className="text-gray-600 flex-1">Find perfect matches with smart filters</Text>
+                            <Text className="text-lg text-green-500 mr-3">✓</Text>
+                            <Text className="text-lg text-gray-600 flex-1">Find perfect matches with smart filters</Text>
                         </View>
                         
                         <View className="flex-row items-center mb-3">
-                            <Text className="text-green-500 mr-3">✓</Text>
-                            <Text className="text-gray-600 flex-1">Be the first to know when better plans drop</Text>
+                            <Text className="text-lg text-green-500 mr-3">✓</Text>
+                            <Text className="text-lg text-gray-600 flex-1">Be the first to know when better plans drop</Text>
                         </View>
                         
                         <View className="flex-row items-center">
-                            <Text className="text-green-500 mr-3">✓</Text>
-                            <Text className="text-gray-600 flex-1">Flexible subscription management with full control</Text>
+                            <Text className="text-lg text-green-500 mr-3">✓</Text>
+                            <Text className="text-lg text-gray-600 flex-1">Flexible subscription management with full control</Text>
                         </View>
                     </View>
                 </View>
@@ -198,7 +198,7 @@ export default function SubscriptionScreen() {
 
                 {!loading && getMembershipStatus() === 'free' && (
                     <TouchableOpacity
-                        className="bg-blue-500 rounded-xl py-4 items-center shadow-sm"
+                        className="bg-green-500 rounded-xl py-4 items-center shadow-sm"
                         onPress={() => setShowSubscriptionModal(true)}
                     >
                         <Text className="text-white text-lg font-semibold">Upgrade to Premium</Text>
@@ -207,7 +207,7 @@ export default function SubscriptionScreen() {
 
                 {!loading && getMembershipStatus() === 'expired' && (
                     <TouchableOpacity
-                        className="bg-blue-500 rounded-xl py-4 items-center shadow-sm"
+                        className="bg-green-500 rounded-xl py-4 items-center shadow-sm"
                         onPress={() => setShowSubscriptionModal(true)}
                     >
                         <Text className="text-white text-lg font-semibold">Renew Premium</Text>
@@ -220,18 +220,18 @@ export default function SubscriptionScreen() {
                         className="bg-red-50 border border-red-200 rounded-xl py-3 items-center mt-4"
                         onPress={handleCancelSubscription}
                     >
-                        <Text className="text-red-600 font-semibold">Cancel Subscription</Text>
+                        <Text className="text-red-600 text-lg font-semibold">Cancel Subscription</Text>
                     </TouchableOpacity>
                 )}
 
                 {/* 已取消但仍有效的订阅 - 显示到期信息 */}
                 {!loading && hasActiveSubscription() && !isAutoRenewing() && (
                     <View className="bg-orange-50 border border-orange-200 rounded-xl p-4 mt-4">
-                        <Text className="text-orange-800 text-center mb-3">
+                        <Text className="text-orange-800 text-lg text-center mb-3">
                             Your subscription will expire on {formatExpirationDate(getExpirationDate())}
                         </Text>
-                        <Text className="text-orange-600 text-sm text-center">
-                            To reactivate auto-renewal, go to your device's subscription settings.
+                        <Text className="text-orange-600 text-base text-center">
+                            To reactivate auto-renewal, go to your device&apos;s subscription settings.
                         </Text>
                     </View>
                 )}
@@ -239,12 +239,12 @@ export default function SubscriptionScreen() {
                 {/* 错误显示 */}
                 {error && (
                     <View className="bg-red-50 border border-red-200 rounded-xl p-4 mt-4">
-                        <Text className="text-red-700 text-center">{error}</Text>
+                        <Text className="text-red-700 text-lg text-center">{error}</Text>
                         <TouchableOpacity
                             className="mt-2"
                             onPress={fetchSubscriptionInfo}
                         >
-                            <Text className="text-red-600 text-center font-semibold">Tap to retry</Text>
+                            <Text className="text-red-600 text-lg text-center font-semibold">Tap to retry</Text>
                         </TouchableOpacity>
                     </View>
                 )}

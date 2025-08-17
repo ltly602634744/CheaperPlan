@@ -2,6 +2,7 @@ import { useNavigation, useRouter } from 'expo-router';
 import React, { useCallback, useLayoutEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '../constants/Colors';
 
 interface SettingPageTemplateProps {
   title: string;
@@ -40,7 +41,7 @@ export default function SettingPageTemplate({
             <Ionicons 
               name="checkmark" 
               size={24} 
-              color={loading ? '#999' : '#007AFF'} 
+              color={loading ? Colors.text.disabled : Colors.accent.blue} 
             />
           ) : (
             <Text style={[styles.saveButtonText, loading && styles.loadingText]}>
@@ -64,7 +65,7 @@ export default function SettingPageTemplate({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.background.secondary,
   },
   content: {
     flex: 1,
@@ -75,11 +76,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Platform.OS === 'android' ? 8 : 0,
   },
   saveButtonText: {
-    color: '#007AFF',
+    color: Colors.accent.blue,
     fontSize: 16,
     fontWeight: '600',
   },
   loadingText: {
-    color: '#999',
+    color: Colors.text.disabled,
   },
 }); 

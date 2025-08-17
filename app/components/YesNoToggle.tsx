@@ -1,6 +1,7 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { Colors } from '../constants/Colors';
 
 interface YesNoToggleProps {
   field: string;
@@ -20,54 +21,70 @@ export const YesNoToggle: React.FC<YesNoToggleProps> = ({
   onInfoPress,
 }) => {
   return (
-    <View className="mb-1 flex-row items-center">
-      <View className="flex-1 flex-row items-center">
-        <Text className="text-base font-semibold text-gray-800 mr-2">{label}</Text>
+    <View style={{ marginBottom: 4, flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+        <Text style={{ fontSize: 16, fontWeight: '600', color: Colors.text.primary, marginRight: 8 }}>{label}</Text>
         {showInfoButton && (
           <TouchableOpacity
             onPress={onInfoPress}
-            className="ml-1 p-1 -m-1" // Negative margin for larger touch area
+            style={{ marginLeft: 4, padding: 4, margin: -4 }} // Negative margin for larger touch area
           >
-            <Entypo name="help-with-circle" size={12} color="#6B7280" />
+            <Entypo name="help-with-circle" size={12} color={Colors.text.secondary} />
           </TouchableOpacity>
         )}
       </View>
       <TouchableOpacity
         onPress={() => onValueChange(field, !value)}
         activeOpacity={0.7}
-        className="relative bg-gray-200 rounded-full p-1 flex-row h-10 w-20"
+        style={{ 
+          position: 'relative', 
+          backgroundColor: Colors.neutral.light, 
+          borderRadius: 20, 
+          padding: 4, 
+          flexDirection: 'row', 
+          height: 40, 
+          width: 80 
+        }}
       >
         {/* Sliding background */}
         <View
-          className={`absolute top-1 bottom-1 w-1/2 bg-blue-500 rounded-full shadow-sm ${
-            value ? 'right-1' : 'left-1'
-          }`}
-          style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.2,
-            shadowRadius: 2,
-            elevation: 2,
-          }}
+          style={[
+            {
+              position: 'absolute',
+              top: 4,
+              bottom: 4,
+              width: '50%',
+              backgroundColor: Colors.primary.main,
+              borderRadius: 16,
+              shadowColor: Colors.neutral.darkest,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.2,
+              shadowRadius: 2,
+              elevation: 2,
+            },
+            value ? { right: 4 } : { left: 4 }
+          ]}
         />
         
         {/* No label */}
-        <View className="flex-1 items-center justify-center z-10">
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
           <Text
-            className={`text-sm font-semibold ${
-              !value ? 'text-white' : 'text-gray-600'
-            }`}
+            style={[
+              { fontSize: 14, fontWeight: '600' },
+              !value ? { color: Colors.text.inverse } : { color: Colors.text.secondary }
+            ]}
           >
             No
           </Text>
         </View>
         
         {/* Yes label */}
-        <View className="flex-1 items-center justify-center z-10">
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
           <Text
-            className={`text-sm font-semibold ${
-              value ? 'text-white' : 'text-gray-600'
-            }`}
+            style={[
+              { fontSize: 14, fontWeight: '600' },
+              value ? { color: Colors.text.inverse } : { color: Colors.text.secondary }
+            ]}
           >
             Yes
           </Text>

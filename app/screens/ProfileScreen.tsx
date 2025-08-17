@@ -4,14 +4,16 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Colors } from '../constants/Colors';
 import eventBus from '../utils/eventBus';
 
 const ProfileScreen: React.FC = () => {
@@ -19,7 +21,6 @@ const ProfileScreen: React.FC = () => {
   const params = useLocalSearchParams();
   const { user, plan: userPlan, loading, refetch } = useUserProfile();
   const { betterPlans, refetch: refetchBetterPlans } = useRecommendPlans();
-  const [showSavingsNotification, setShowSavingsNotification] = useState(true);
 
   // 只在从编辑页面返回时刷新数据
   useFocusEffect(
@@ -33,15 +34,13 @@ const ProfileScreen: React.FC = () => {
     }, [params.refresh, refetch])
   );
 
-  // 监听套餐更新事件，在套餐保存后刷新数据并显示提醒框
+  // 监听套餐更新事件，在套餐保存后刷新数据
   useEffect(() => {
     const handlePlanUpdated = async () => {
       // 先刷新用户套餐数据
       await refetch();
       // 然后刷新推荐套餐数据
       await refetchBetterPlans();
-      // 最后显示提醒框
-      setShowSavingsNotification(true);
     };
 
     eventBus.on('userPlanUpdated', handlePlanUpdated);
@@ -74,115 +73,153 @@ const ProfileScreen: React.FC = () => {
 
   if (loading)
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#999" />
-        <Text className="mt-2 text-gray-600">Loading...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.text.secondary} />
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
 
   return (
-    <ScrollView className="flex-1 px-4 pt-8 bg-white">
+    <ScrollView style={styles.container}>
 
       {/* 新增：节省信息 */}
-      {userPlan && betterPlans.length > 0 && maxSavings > 0 && showSavingsNotification && (
-        <View className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 relative">
-          {/* 关闭按钮 */}
-          <TouchableOpacity
-            onPress={() => setShowSavingsNotification(false)}
-            className="absolute top-1 right-1 p-1"
-          >
-            <AntDesign name="closecircle" size={20} color="#059669" />
+      {userPlan && (
+        betterPlans.length > 0 && maxSavings > 0 ? (
+          <TouchableOpacity style={styles.savingsNotification} onPress={handleBetterPlan}>
+            <View style={styles.savingsContent}>
+              <Text style={styles.savingsTitle}>
+                🎉 We found {betterPlans.filter(plan => userPlan.price > plan.price).length} cheaper plans！
+              </Text>
+              <Text style={styles.savingsText}>
+                Save up to <Text style={styles.boldText}>${maxSavings.toFixed(2)}</Text> per month.{'\n'}That's <Text style={styles.boldText}>${(maxSavings * 12).toFixed(2)}</Text> per year. 
+              </Text>
+            </View>
+            <View style={styles.savingsIcon}>
+              <AntDesign name="right" size={20} color={Colors.functional.success} />
+            </View>
           </TouchableOpacity>
-          
-          <Text className="text-green-700 text-base font-semibold mb-1">
-            🎉 We found {betterPlans.filter(plan => userPlan.price > plan.price).length} cheaper plans for you！
-          </Text>
-          <Text className="text-green-700 text-base mb-3">
-            Save up to <Text className="font-bold">${maxSavings.toFixed(2)}</Text> every month, <Text className="font-bold">${(maxSavings * 12).toFixed(2)}</Text> a year 
-          </Text>
-          <TouchableOpacity
-            className="bg-green-600 py-2 px-4 rounded-lg self-start"
-            onPress={handleBetterPlan}
-          >
-            <Text className="text-white font-semibold">View Now</Text>
-          </TouchableOpacity>
-        </View>
+        ) : (
+          <View style={styles.savingsNotificationStatic}>
+            <Text style={styles.savingsTitle}>
+              🎉 Congratulations!
+            </Text>
+            <Text style={styles.savingsText}>
+              Your current plan is one of the best. We'll notify you as soon as we find a cheaper plan. 🔔
+            </Text>
+          </View>
+        )
       )}
 
       {userPlan ? (
-        <View className="space-y-4">
-          <View className="bg-[#F7F8FA] p-4 rounded-lg shadow-sm mb-4 relative">
+        <View>
+          <View style={styles.planCard}>
             {/* 编辑图标 */}
             <TouchableOpacity
               onPress={handleAddPlan}
-              className="absolute top-3 right-3 z-10"
+              style={styles.editButton}
             >
-              <FontAwesome6 name="pencil" size={20} color="#3B82F6" />
+              <FontAwesome6 name="pencil" size={26} color={Colors.primary.main} />
             </TouchableOpacity>
             
             {/* 基本信息 */}
-            <Text className="text-base text-gray-700 mb-1">
-              <Text className="font-semibold">Provider: </Text>
+            <Text style={styles.basicInfoText}>
+              <Text style={styles.planLabel}>Provider: </Text>
               {userPlan.provider || "N/A"}
             </Text>
-            <Text className="text-base text-gray-700 mb-1">
-              <Text className="font-semibold">Network: </Text>
+            <Text style={styles.basicInfoText}>
+              <Text style={styles.planLabel}>Network: </Text>
               {userPlan.network || "N/A"}
             </Text>
-            <Text className="text-base text-gray-700 mb-1">
-              <Text className="font-semibold">Coverage: </Text>
+            <Text style={styles.basicInfoText}>
+              <Text style={styles.planLabel}>Data: </Text>
+              {userPlan.data !== null ? `${userPlan.data} GB` : "N/A"}
+            </Text>
+            <Text style={styles.basicInfoText}>
+              <Text style={styles.planLabel}>Price: </Text>${userPlan.price || "N/A"}
+            </Text>
+            <Text style={styles.basicInfoText}>
+              <Text style={styles.planLabel}>Coverage: </Text>
               {userPlan.coverage && userPlan.coverage.length > 0
                 ? userPlan.coverage.map(country => country.name).join(", ")
                 : "N/A"}
             </Text>
-            <Text className="text-base text-gray-700 mb-1">
-              <Text className="font-semibold">Data: </Text>
-              {userPlan.data !== null ? `${userPlan.data} GB` : "N/A"}
-            </Text>
-            <Text className="text-base text-gray-700 mb-1">
-              <Text className="font-semibold">Price: </Text>${userPlan.price || "N/A"}
-            </Text>
             
             {/* 功能特性 */}
-            <View className="mt-3 pt-3 border-t border-gray-200">
-              <Text className="text-base text-gray-700 mb-1">
-                <Text className="font-semibold">Voicemail: </Text>
-                {userPlan.voicemail ? "Yes" : "No"}
-              </Text>
-              <Text className="text-base text-gray-700 mb-1">
-                <Text className="font-semibold">Call Display: </Text>
-                {userPlan.call_display ? "Yes" : "No"}
-              </Text>
-              <Text className="text-base text-gray-700 mb-1">
-                <Text className="font-semibold">Call Waiting: </Text>
-                {userPlan.call_waiting ? "Yes" : "No"}
-              </Text>
-              <Text className="text-base text-gray-700 mb-1">
-                <Text className="font-semibold">Suspicious Call Detection: </Text>
-                {userPlan.suspicious_call_detection ? "Yes" : "No"}
-              </Text>
-              <Text className="text-base text-gray-700 mb-1">
-                <Text className="font-semibold">Hotspot: </Text>
-                {userPlan.hotspot ? "Yes" : "No"}
-              </Text>
-              <Text className="text-base text-gray-700 mb-1">
-                <Text className="font-semibold">Conference Call: </Text>
-                {userPlan.conference_call ? "Yes" : "No"}
-              </Text>
-              <Text className="text-base text-gray-700">
-                <Text className="font-semibold">Video Call: </Text>
-                {userPlan.video_call ? "Yes" : "No"}
-              </Text>
+            <View style={styles.featuresSection}>
+              {/* 两列布局 */}
+              <View style={styles.featuresRow}>
+                <View style={styles.featureColumnLeft}>
+                  <View style={styles.featureRow}>
+                    <Text style={styles.featureLabel}>Voicemail </Text>
+                    <AntDesign 
+                      name={userPlan.voicemail ? "checkcircle" : "closecircle"} 
+                      size={16} 
+                      color={userPlan.voicemail ? Colors.functional.success : Colors.neutral.medium} 
+                    />
+                  </View>
+                  <View style={styles.featureRow}>
+                    <Text style={styles.featureLabel}>Call Waiting </Text>
+                    <AntDesign 
+                      name={userPlan.call_waiting ? "checkcircle" : "closecircle"} 
+                      size={16} 
+                      color={userPlan.call_waiting ? Colors.functional.success : Colors.neutral.medium} 
+                    />
+                  </View>
+                  <View style={styles.featureRow}>
+                    <Text style={styles.featureLabel}>Conference Call </Text>
+                    <AntDesign 
+                      name={userPlan.conference_call ? "checkcircle" : "closecircle"} 
+                      size={16} 
+                      color={userPlan.conference_call ? Colors.functional.success : Colors.neutral.medium} 
+                    />
+                  </View>
+                </View>
+                <View style={styles.featureColumnRight}>
+                  <View style={styles.featureRow}>
+                    <Text style={styles.featureLabel}>Call Display </Text>
+                    <AntDesign 
+                      name={userPlan.call_display ? "checkcircle" : "closecircle"} 
+                      size={16} 
+                      color={userPlan.call_display ? Colors.functional.success : Colors.neutral.medium} 
+                    />
+                  </View>
+                  <View style={styles.featureRow}>
+                    <Text style={styles.featureLabel}>Hotspot </Text>
+                    <AntDesign 
+                      name={userPlan.hotspot ? "checkcircle" : "closecircle"} 
+                      size={16} 
+                      color={userPlan.hotspot ? Colors.functional.success : Colors.neutral.medium} 
+                    />
+                  </View>
+                  <View style={styles.featureRow}>
+                    <Text style={styles.featureLabel}>Video Call </Text>
+                    <AntDesign 
+                      name={userPlan.video_call ? "checkcircle" : "closecircle"} 
+                      size={16} 
+                      color={userPlan.video_call ? Colors.functional.success : Colors.neutral.medium} 
+                    />
+                  </View>
+                </View>
+              </View>
+              {/* Suspicious Call Detection 单独一行 */}
+              <View style={styles.featureRow}>
+                <Text style={styles.featureLabel}>Suspicious Call Detection </Text>
+                <AntDesign 
+                  name={userPlan.suspicious_call_detection ? "checkcircle" : "closecircle"} 
+                  size={16} 
+                  color={userPlan.suspicious_call_detection ? Colors.functional.success : Colors.neutral.medium} 
+                />
+              </View>
             </View>
           </View>
         </View>
       ) : (
         <View>
           <TouchableOpacity
-            className="bg-blue-500 py-3 rounded-lg items-center mt-4"
+            style={styles.addPlanButton}
             onPress={handleAddPlan}
           >
-            <Text className="text-white font-semibold">Add your current plan to start</Text>
+            <Text style={styles.addPlanButtonText}>Add your current plan to start</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -190,5 +227,135 @@ const ProfileScreen: React.FC = () => {
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 8,
+    color: Colors.text.secondary,
+    fontSize: 16,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 32,
+    backgroundColor: Colors.background.primary,
+  },
+  savingsNotification: {
+    backgroundColor: Colors.status.successBg,
+    borderWidth: 1,
+    borderColor: Colors.functional.success,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  savingsContent: {
+    flex: 4,
+  },
+  savingsIcon: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingRight: 4,
+  },
+  savingsNotificationStatic: {
+    backgroundColor: Colors.status.successBg,
+    borderWidth: 1,
+    borderColor: Colors.functional.success,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  savingsTitle: {
+    color: Colors.functional.success,
+    fontSize: 18,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  savingsText: {
+    color: Colors.functional.success,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  boldText: {
+    fontWeight: 'bold',
+  },
+  planCard: {
+    backgroundColor: Colors.background.secondary,
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+    position: 'relative',
+    shadowColor: Colors.border.light,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  editButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    zIndex: 10,
+  },
+  planText: {
+    fontSize: 16,
+    color: Colors.text.primary,
+    marginBottom: 4,
+  },
+  planLabel: {
+    fontWeight: '600',
+  },
+  featuresSection: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.light,
+  },
+  featuresRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  featureColumnLeft: {
+    flex: 1,
+    paddingRight: 20,
+  },
+  featureColumnRight: {
+    flex: 1,
+    paddingLeft: 24,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  featureLabel: {
+    fontSize: 18,
+    fontWeight: 'normal',
+    color: Colors.text.primary,
+  },
+  basicInfoText: {
+    fontSize: 17,
+    color: Colors.text.primary,
+    marginBottom: 8,
+  },
+  addPlanButton: {
+    backgroundColor: Colors.button.primaryBg,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  addPlanButtonText: {
+    color: Colors.button.primaryText,
+    fontWeight: '600',
+  },
+});
 
 export default ProfileScreen;

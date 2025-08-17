@@ -18,6 +18,7 @@ import {
   resolvePermission,
   setPermissionDialog,
 } from '@/app/services/pushNotificationService';
+import { Colors } from '../constants/Colors';
 
 export const PushNotificationPermissionModal: React.FC = () => {
   const [visible, setVisible] = useState(false);
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
   },
   box: {
     width: '80%',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background.card,
     borderRadius: 12,
     padding: 24,
   },

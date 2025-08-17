@@ -1,5 +1,6 @@
 import React from 'react';
 import { Platform, Text, TextInput, View } from 'react-native';
+import { Colors } from '../constants/Colors';
 
 interface EnhancedInputProps {
   field: string;
@@ -51,20 +52,29 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
   const displayValue = formatValue ? formatValue(value) : (value?.toString() || '');
 
   return (
-    <View className="w-full mb-4">
-      <Text className="text-base mb-1 text-gray-700 font-medium">{label}</Text>
+    <View style={{ width: '100%', marginBottom: 16 }}>
+      <Text style={{ fontSize: 16, marginBottom: 4, color: Colors.text.primary, fontWeight: '500' }}>{label}</Text>
       <TextInput
         ref={ref}
-        className={`border rounded-lg px-3 bg-white text-base ${
-          hasError ? 'border-red-400' : isFocused ? 'border-blue-400' : 'border-gray-300'
-        }`}
-        style={{
-          height: 48,
-          paddingVertical: 0,
-          textAlignVertical: 'center',
-          includeFontPadding: false,
-          lineHeight: Platform.OS === 'android' ? 20 : undefined
-        }}
+        style={[
+          {
+            borderWidth: 1,
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            backgroundColor: Colors.background.card,
+            fontSize: 16,
+            height: 48,
+            paddingVertical: 0,
+            textAlignVertical: 'center',
+            includeFontPadding: false,
+            lineHeight: Platform.OS === 'android' ? 20 : undefined
+          },
+          hasError 
+            ? { borderColor: Colors.functional.error } 
+            : isFocused 
+              ? { borderColor: Colors.accent.blue } 
+              : { borderColor: Colors.border.light }
+        ]}
         value={displayValue}
         onChangeText={(text) => {
           const parsedValue = parseValue ? parseValue(text) : text;
@@ -83,10 +93,10 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
         onSubmitEditing={onSubmitEditing}
         returnKeyType={returnKeyType}
         multiline={multiline}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={Colors.text.placeholder}
       />
       {hasError && (
-        <Text className="text-red-500 text-sm mt-1">{hasError}</Text>
+        <Text style={{ color: Colors.functional.error, fontSize: 14, marginTop: 4 }}>{hasError}</Text>
       )}
     </View>
   );

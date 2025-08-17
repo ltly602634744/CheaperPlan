@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
+import { Colors } from '../constants/Colors';
 
 interface PasswordInputProps {
   value: string;
@@ -39,6 +40,7 @@ export default function PasswordInput({
         secureTextEntry={!isPasswordVisible}
         placeholder={placeholder}
         autoCapitalize={autoCapitalize}
+        placeholderTextColor={Colors.text.placeholder}
       />
       <TouchableOpacity
         style={styles.eyeButton}
@@ -48,7 +50,7 @@ export default function PasswordInput({
         <Entypo 
           name={isPasswordVisible ? 'eye-with-line' : 'eye'} 
           size={20} 
-          color="#666" 
+          color={Colors.text.secondary} 
         />
       </TouchableOpacity>
     </View>
@@ -60,10 +62,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.border.light,
     borderRadius: 8,
     paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background.card,
   },
   icon: {
     fontSize: 20,
@@ -72,8 +74,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 48,
-    fontSize: 16,
-    color: '#333',
+    fontSize: 18,
+    color: Colors.text.primary,
     textAlignVertical: 'center',
   },
   eyeButton: {

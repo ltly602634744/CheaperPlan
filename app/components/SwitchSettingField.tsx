@@ -1,5 +1,6 @@
 import React from 'react';
 import { Switch, Text, View } from 'react-native';
+import { Colors } from '../constants/Colors';
 
 interface SwitchSettingFieldProps {
   label: string;
@@ -17,20 +18,34 @@ export default function SwitchSettingField({
   disabled = false,
 }: SwitchSettingFieldProps) {
   return (
-    <View className="mb-5">
-      <View className="flex-row justify-between items-center bg-white p-4 rounded-lg mb-3">
-        <Text className={`text-base font-semibold text-gray-800 ${disabled ? 'opacity-50' : ''}`}>{label}</Text>
+    <View style={{ marginBottom: 20 }}>
+      <View style={{ 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        backgroundColor: Colors.background.card, 
+        padding: 16, 
+        borderRadius: 8, 
+        marginBottom: 12 
+      }}>
+        <Text style={[
+          { fontSize: 20, fontWeight: '600', color: Colors.text.primary },
+          disabled && { opacity: 0.5 }
+        ]}>{label}</Text>
         <Switch
-          trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={value ? '#f5dd4b' : '#f4f3f4'}
-          ios_backgroundColor="#3e3e3e"
+          trackColor={{ false: Colors.neutral.medium, true: Colors.primary.main }}
+          thumbColor={Colors.neutral.white}
+          ios_backgroundColor={Colors.neutral.medium}
           onValueChange={onValueChange}
           value={value}
           disabled={disabled}
         />
       </View>
       {description && (
-        <Text className={`text-sm text-gray-600 leading-5 ${disabled ? 'opacity-50' : ''}`}>{description}</Text>
+        <Text style={[
+          { fontSize: 16, color: Colors.text.secondary, lineHeight: 20 },
+          disabled && { opacity: 0.5 }
+        ]}>{description}</Text>
       )}
     </View>
   );
