@@ -88,14 +88,14 @@ const ProfileScreen: React.FC = () => {
           <TouchableOpacity style={styles.savingsNotification} onPress={handleBetterPlan}>
             <View style={styles.savingsContent}>
               <Text style={styles.savingsTitle}>
-                🎉 We found {betterPlans.filter(plan => userPlan.price > plan.price).length} cheaper plans！
+                🎉 We found {betterPlans.filter(plan => userPlan.price > plan.price).length} cheaper plans for you！
               </Text>
               <Text style={styles.savingsText}>
                 Save up to <Text style={styles.boldText}>${maxSavings.toFixed(2)}</Text> per month.{'\n'}That's <Text style={styles.boldText}>${(maxSavings * 12).toFixed(2)}</Text> per year. 
               </Text>
             </View>
             <View style={styles.savingsIcon}>
-              <AntDesign name="right" size={20} color={Colors.functional.success} />
+              <AntDesign name="right" size={24} color={Colors.functional.success} />
             </View>
           </TouchableOpacity>
         ) : (
@@ -112,106 +112,43 @@ const ProfileScreen: React.FC = () => {
 
       {userPlan ? (
         <View>
-          <View style={styles.planCard}>
-            {/* 编辑图标 */}
-            <TouchableOpacity
-              onPress={handleAddPlan}
-              style={styles.editButton}
-            >
-              <FontAwesome6 name="pencil" size={26} color={Colors.primary.main} />
-            </TouchableOpacity>
-            
-            {/* 基本信息 */}
-            <Text style={styles.basicInfoText}>
-              <Text style={styles.planLabel}>Provider: </Text>
-              {userPlan.provider || "N/A"}
-            </Text>
-            <Text style={styles.basicInfoText}>
-              <Text style={styles.planLabel}>Network: </Text>
-              {userPlan.network || "N/A"}
-            </Text>
-            <Text style={styles.basicInfoText}>
-              <Text style={styles.planLabel}>Data: </Text>
-              {userPlan.data !== null ? `${userPlan.data} GB` : "N/A"}
-            </Text>
-            <Text style={styles.basicInfoText}>
-              <Text style={styles.planLabel}>Price: </Text>${userPlan.price || "N/A"}
-            </Text>
-            <Text style={styles.basicInfoText}>
-              <Text style={styles.planLabel}>Coverage: </Text>
-              {userPlan.coverage && userPlan.coverage.length > 0
-                ? userPlan.coverage.map(country => country.name).join(", ")
-                : "N/A"}
+          {/* 搜索条件信息框 */}
+          <View style={styles.searchCriteriaCard}>
+            <Text style={styles.searchCriteriaTitle}>Based on your plan</Text>
+            <Text style={styles.searchCriteriaText}>
+              We'll look for <Text style={styles.boldText}>{userPlan.network === 'LTE' ? 'LTE/5G' : userPlan.network || 'LTE/5G'}</Text> plans that cost less than <Text style={styles.boldText}>${userPlan.price || 0}</Text>, include at least <Text style={styles.boldText}>{userPlan.data || 0}GB</Text> of data, cover <Text style={styles.boldText}>{userPlan.coverage && userPlan.coverage.length > 0 ? userPlan.coverage.map(country => country.name).join(', ') : 'your selected areas'}</Text> and provide below services:
             </Text>
             
-            {/* 功能特性 */}
-            <View style={styles.featuresSection}>
-              {/* 两列布局 */}
-              <View style={styles.featuresRow}>
-                <View style={styles.featureColumnLeft}>
-                  <View style={styles.featureRow}>
-                    <Text style={styles.featureLabel}>Voicemail </Text>
-                    <AntDesign 
-                      name={userPlan.voicemail ? "checkcircle" : "closecircle"} 
-                      size={16} 
-                      color={userPlan.voicemail ? Colors.functional.success : Colors.neutral.medium} 
-                    />
-                  </View>
-                  <View style={styles.featureRow}>
-                    <Text style={styles.featureLabel}>Call Waiting </Text>
-                    <AntDesign 
-                      name={userPlan.call_waiting ? "checkcircle" : "closecircle"} 
-                      size={16} 
-                      color={userPlan.call_waiting ? Colors.functional.success : Colors.neutral.medium} 
-                    />
-                  </View>
-                  <View style={styles.featureRow}>
-                    <Text style={styles.featureLabel}>Conference Call </Text>
-                    <AntDesign 
-                      name={userPlan.conference_call ? "checkcircle" : "closecircle"} 
-                      size={16} 
-                      color={userPlan.conference_call ? Colors.functional.success : Colors.neutral.medium} 
-                    />
-                  </View>
-                </View>
-                <View style={styles.featureColumnRight}>
-                  <View style={styles.featureRow}>
-                    <Text style={styles.featureLabel}>Call Display </Text>
-                    <AntDesign 
-                      name={userPlan.call_display ? "checkcircle" : "closecircle"} 
-                      size={16} 
-                      color={userPlan.call_display ? Colors.functional.success : Colors.neutral.medium} 
-                    />
-                  </View>
-                  <View style={styles.featureRow}>
-                    <Text style={styles.featureLabel}>Hotspot </Text>
-                    <AntDesign 
-                      name={userPlan.hotspot ? "checkcircle" : "closecircle"} 
-                      size={16} 
-                      color={userPlan.hotspot ? Colors.functional.success : Colors.neutral.medium} 
-                    />
-                  </View>
-                  <View style={styles.featureRow}>
-                    <Text style={styles.featureLabel}>Video Call </Text>
-                    <AntDesign 
-                      name={userPlan.video_call ? "checkcircle" : "closecircle"} 
-                      size={16} 
-                      color={userPlan.video_call ? Colors.functional.success : Colors.neutral.medium} 
-                    />
-                  </View>
-                </View>
-              </View>
-              {/* Suspicious Call Detection 单独一行 */}
-              <View style={styles.featureRow}>
-                <Text style={styles.featureLabel}>Suspicious Call Detection </Text>
-                <AntDesign 
-                  name={userPlan.suspicious_call_detection ? "checkcircle" : "closecircle"} 
-                  size={16} 
-                  color={userPlan.suspicious_call_detection ? Colors.functional.success : Colors.neutral.medium} 
-                />
-              </View>
+            {/* 显示用户选择的功能 */}
+            <View style={styles.selectedFeaturesContainer}>
+              {userPlan.voicemail && <Text style={styles.selectedFeature}>• Voicemail</Text>}
+              {userPlan.call_display && <Text style={styles.selectedFeature}>• Call Display</Text>}
+              {userPlan.call_waiting && <Text style={styles.selectedFeature}>• Call Waiting</Text>}
+              {userPlan.suspicious_call_detection && <Text style={styles.selectedFeature}>• Suspicious Call Detection</Text>}
+              {userPlan.hotspot && <Text style={styles.selectedFeature}>• Hotspot</Text>}
+              {userPlan.conference_call && <Text style={styles.selectedFeature}>• Conference Call</Text>}
+              {userPlan.video_call && <Text style={styles.selectedFeature}>• Video Call</Text>}
+              
+              {/* 如果没有选择任何功能 */}
+              {!userPlan.voicemail && !userPlan.call_display && !userPlan.call_waiting && 
+               !userPlan.suspicious_call_detection && !userPlan.hotspot && 
+               !userPlan.conference_call && !userPlan.video_call && (
+                <Text style={styles.selectedFeature}>• No specific services required</Text>
+              )}
             </View>
           </View>
+          
+          {/* 更新提示框 */}
+          <TouchableOpacity style={styles.updateReminderCard} onPress={handleAddPlan}>
+            <View style={styles.savingsContent}>
+              <Text style={styles.updateReminderText}>
+                Keep your plan updated so we can serve you better.
+              </Text>
+            </View>
+            <View style={styles.savingsIcon}>
+              <AntDesign name="sync" size={24} color={Colors.text.secondary} />
+            </View>
+          </TouchableOpacity>
         </View>
       ) : (
         <View>
@@ -247,8 +184,6 @@ const styles = StyleSheet.create({
   },
   savingsNotification: {
     backgroundColor: Colors.status.successBg,
-    borderWidth: 1,
-    borderColor: Colors.functional.success,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -266,84 +201,24 @@ const styles = StyleSheet.create({
   },
   savingsNotificationStatic: {
     backgroundColor: Colors.status.successBg,
-    borderWidth: 1,
-    borderColor: Colors.functional.success,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
   },
   savingsTitle: {
     color: Colors.functional.success,
-    fontSize: 18,
-    fontWeight: '500',
-    marginBottom: 4,
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   savingsText: {
     color: Colors.functional.success,
-    fontSize: 14,
+    fontSize: 16,
+    lineHeight: 24,
     marginBottom: 4,
   },
   boldText: {
     fontWeight: 'bold',
-  },
-  planCard: {
-    backgroundColor: Colors.background.secondary,
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
-    position: 'relative',
-    shadowColor: Colors.border.light,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  editButton: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    zIndex: 10,
-  },
-  planText: {
-    fontSize: 16,
-    color: Colors.text.primary,
-    marginBottom: 4,
-  },
-  planLabel: {
-    fontWeight: '600',
-  },
-  featuresSection: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border.light,
-  },
-  featuresRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  featureColumnLeft: {
-    flex: 1,
-    paddingRight: 20,
-  },
-  featureColumnRight: {
-    flex: 1,
-    paddingLeft: 24,
-  },
-  featureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  featureLabel: {
-    fontSize: 18,
-    fontWeight: 'normal',
-    color: Colors.text.primary,
-  },
-  basicInfoText: {
-    fontSize: 17,
-    color: Colors.text.primary,
-    marginBottom: 8,
   },
   addPlanButton: {
     backgroundColor: Colors.button.primaryBg,
@@ -355,6 +230,47 @@ const styles = StyleSheet.create({
   addPlanButtonText: {
     color: Colors.button.primaryText,
     fontWeight: '600',
+  },
+  searchCriteriaCard: {
+    backgroundColor: Colors.status.infoBg,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+  },
+  searchCriteriaTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Colors.functional.info,
+    marginBottom: 8,
+  },
+  searchCriteriaText: {
+    fontSize: 16,
+    color: Colors.functional.info,
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  selectedFeaturesContainer: {
+    marginTop: 4,
+  },
+  selectedFeature: {
+    fontSize: 16,
+    color: Colors.functional.info,
+    marginBottom: 4,
+    paddingLeft: 8,
+    fontWeight: '600',
+  },
+  updateReminderCard: {
+    backgroundColor: Colors.neutral.lightest,
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  updateReminderText: {
+    color: Colors.text.secondary,
+    fontSize: 16,
+    lineHeight: 24,
   },
 });
 

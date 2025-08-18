@@ -64,13 +64,8 @@ export default function NotificationSettingScreen() {
     checkNotificationPermission();
   }, []);
 
-  const handleSave = () => {
-    // 通知设置是实时同步的，不需要额外的保存逻辑
-    console.log('Notification setting is automatically synced');
-  };
-
   return (
-    <SettingPageTemplate title="Notification" onSave={handleSave}>
+    <SettingPageTemplate title="Notification">
       <SwitchSettingField
         label="Notification"
         value={isEnabled}

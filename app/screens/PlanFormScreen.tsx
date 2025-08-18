@@ -2,9 +2,9 @@ import { usePlanActions } from "@/app/hooks/usePlanActions";
 import { Country, fetchCountries } from '@/app/services/countryService';
 import { createUserPlan, updateUserPlan } from '@/app/services/planService';
 import { Ionicons } from '@expo/vector-icons';
+import Entypo from '@expo/vector-icons/Entypo';
 import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Colors } from '../constants/Colors';
 import {
   Alert,
   Keyboard,
@@ -21,6 +21,7 @@ import {
 import { EnhancedInput } from '../components/EnhancedInput';
 import { FeatureInfoModal } from '../components/FeatureInfoModal';
 import { YesNoToggle } from '../components/YesNoToggle';
+import { Colors } from '../constants/Colors';
 import eventBus from '../utils/eventBus';
 
 const PlanFormScreen: React.FC = () => {
@@ -202,6 +203,10 @@ const PlanFormScreen: React.FC = () => {
       'Hotspot': {
         title: 'Hotspot',
         description: 'Feature description for Hotspot will be added here.'
+      },
+      'Coverage': {
+        title: 'Coverage',
+        description: 'If you choose Quebec, we\'ll also look for Canada-wide plans as long as they\'re cheaper. If you choose Canada, we won\'t include Quebec-only plans.'
       }
     };
 
@@ -228,7 +233,7 @@ const PlanFormScreen: React.FC = () => {
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', paddingHorizontal: 24, paddingVertical: 16, paddingBottom: 32 }}>
               {/* 第一部分：Your Current Plan */}
               <View style={{ width: '100%', marginBottom: 16 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.text.primary, marginBottom: 16 }}>Your Current Plan</Text>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: Colors.text.primary, marginBottom: 16 }}>Your Current Plan</Text>
                 <EnhancedInput
                   field="provider"
                   label="Provider"
@@ -317,7 +322,7 @@ const PlanFormScreen: React.FC = () => {
 
               {/* 第二部分：Optional Features You Need */}
               <View style={{ width: '100%', marginBottom: 24, marginTop: 24 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.text.primary, marginBottom: 24 }}>Features You Need ( Optional )</Text>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: Colors.text.primary, marginBottom: 24 }}>Features You Need ( Optional )</Text>
                 {/* Coverage Area Selection */}
                 <View style={[
                   { borderRadius: 8 },
@@ -329,14 +334,22 @@ const PlanFormScreen: React.FC = () => {
                     onPress={() => setIsCoverageExpanded(!isCoverageExpanded)}
                     style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}
                   >
-                    <Text style={[
-                      { flex: 1, fontSize: 16, fontWeight: '500' },
-                      selectedCountries.size > 0 || isCoverageExpanded 
-                        ? { color: Colors.primary.main } 
-                        : { color: Colors.text.primary }
-                    ]}>
-                      International Coverage
-                    </Text>
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={[
+                        { fontSize: 18, fontWeight: '500', marginRight: 8 },
+                        selectedCountries.size > 0 || isCoverageExpanded 
+                          ? { color: Colors.primary.main } 
+                          : { color: Colors.text.primary }
+                      ]}>
+                        Coverage
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => handleFeatureInfo('Coverage')}
+                        style={{ marginLeft: 4, padding: 4, margin: -4 }}
+                      >
+                        <Entypo name="help-with-circle" size={14} color={Colors.text.secondary} />
+                      </TouchableOpacity>
+                    </View>
                     <Ionicons 
                       name={isCoverageExpanded ? "chevron-up" : "chevron-down"} 
                       size={20} 
@@ -347,8 +360,11 @@ const PlanFormScreen: React.FC = () => {
                   {isCoverageExpanded && (
                     <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
                       <View style={{ borderTopWidth: 1, borderTopColor: Colors.border.light, paddingTop: 12 }}>
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                          {availableCountries.map((country) => (
+                        {/* Quebec 和 Canada 单独一行 */}
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 }}>
+                          {availableCountries
+                            .filter(country => country.name === 'Quebec' || country.name === 'Canada')
+                            .map((country) => (
                             <TouchableOpacity
                               key={country.id}
                               onPress={() => {
@@ -381,6 +397,53 @@ const PlanFormScreen: React.FC = () => {
                             </TouchableOpacity>
                           ))}
                         </View>
+                        
+                        {/* International coverage 标题 */}
+                        {availableCountries.filter(country => country.name !== 'Quebec' && country.name !== 'Canada').length > 0 && (
+                          <View>
+                            <Text style={{ fontSize: 16, fontWeight: '600', color: Colors.text.primary, marginBottom: 12 }}>
+                              International coverage
+                            </Text>
+                            
+                            {/* 其他国家选项 */}
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                              {availableCountries
+                                .filter(country => country.name !== 'Quebec' && country.name !== 'Canada')
+                                .map((country) => (
+                                <TouchableOpacity
+                                  key={country.id}
+                                  onPress={() => {
+                                    const newSelectedCountries = new Set(selectedCountries);
+                                    if (newSelectedCountries.has(country.id)) {
+                                      newSelectedCountries.delete(country.id);
+                                    } else {
+                                      newSelectedCountries.add(country.id);
+                                    }
+                                    setSelectedCountries(newSelectedCountries);
+                                  }}
+                                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.background.card, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, margin: 4, borderWidth: 1, borderColor: Colors.border.light }}
+                                >
+                                  <Text style={[
+                                    { fontSize: 14, marginRight: 8 },
+                                    selectedCountries.has(country.id) ? { color: Colors.primary.main, fontWeight: '500' } : { color: Colors.text.primary }
+                                  ]}>
+                                    {country.name}
+                                  </Text>
+                                  <View style={[
+                                    { width: 16, height: 16, borderRadius: 8, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+                                    selectedCountries.has(country.id) 
+                                      ? { backgroundColor: Colors.primary.main, borderColor: Colors.primary.main } 
+                                      : { borderColor: Colors.neutral.medium }
+                                  ]}>
+                                    {selectedCountries.has(country.id) && (
+                                      <Ionicons name="checkmark" size={10} color="white" />
+                                    )}
+                                  </View>
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                          </View>
+                        )}
                       </View>
                     </View>
                   )}

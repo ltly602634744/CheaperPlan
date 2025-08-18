@@ -6,7 +6,7 @@ import { Colors } from '../constants/Colors';
 
 interface SettingPageTemplateProps {
   title: string;
-  onSave: () => void | Promise<void>;
+  onSave?: () => void | Promise<void>;
   loading?: boolean;
   children: React.ReactNode;
   saveButtonText?: string;
@@ -35,7 +35,7 @@ export default function SettingPageTemplate({
   useLayoutEffect(() => {
     navigation.setOptions({
       title,
-      headerRight: () => (
+      headerRight: onSave ? () => (
         <TouchableOpacity onPress={handleSave} style={styles.saveButton} disabled={loading}>
           {Platform.OS === 'android' ? (
             <Ionicons 
@@ -49,9 +49,9 @@ export default function SettingPageTemplate({
             </Text>
           )}
         </TouchableOpacity>
-      ),
+      ) : undefined,
     });
-  }, [navigation, title, saveButtonText, loading, handleSave]);
+  }, [navigation, title, saveButtonText, loading, handleSave, onSave]);
 
   return (
     <View style={styles.container}>

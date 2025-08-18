@@ -23,13 +23,13 @@ export const YesNoToggle: React.FC<YesNoToggleProps> = ({
   return (
     <View style={{ marginBottom: 4, flexDirection: 'row', alignItems: 'center' }}>
       <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={{ fontSize: 16, fontWeight: '600', color: Colors.text.primary, marginRight: 8 }}>{label}</Text>
+        <Text style={{ fontSize: 18, fontWeight: '600', color: Colors.text.primary, marginRight: 8 }}>{label}</Text>
         {showInfoButton && (
           <TouchableOpacity
             onPress={onInfoPress}
             style={{ marginLeft: 4, padding: 4, margin: -4 }} // Negative margin for larger touch area
           >
-            <Entypo name="help-with-circle" size={12} color={Colors.text.secondary} />
+            <Entypo name="help-with-circle" size={14} color={Colors.text.secondary} />
           </TouchableOpacity>
         )}
       </View>

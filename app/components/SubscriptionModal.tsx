@@ -5,6 +5,8 @@ import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Colors';
 import { useAuthContext } from '../context/AuthContext';
+import { useRecommendPlans } from '../hooks/useRecommendPlans';
+import { useUserProfile } from '../hooks/useUserProfile';
 import { updateUserProfile } from '../services/userService';
 import eventBus from '../utils/eventBus';
 
@@ -23,11 +25,24 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
   const [, forceUpdate] = useState({});
   const { session } = useAuthContext();
   const insets = useSafeAreaInsets();
+  const { plan: userPlan } = useUserProfile();
+  const { betterPlans } = useRecommendPlans();
 
   const updateSelectedPlan = (plan: 'monthly' | 'yearly') => {
     selectedPlanRef.current = plan;
     forceUpdate({});
   };
+
+  // 计算节省金额 - 使用与ProfileScreen相同的逻辑
+  let maxSavings = 0;
+  if (userPlan && betterPlans.length > 0) {
+    maxSavings = Math.max(
+      ...betterPlans.map(plan => userPlan.price - plan.price)
+    );
+    if (maxSavings < 0) maxSavings = 0;
+    // 修复浮点数精度问题，保留2位小数
+    maxSavings = Math.round(maxSavings * 100) / 100;
+  }
 
   useEffect(() => {
     if (visible) {
@@ -197,12 +212,12 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
             activeOpacity={1}
             style={[
               styles.modalContent,
-              { paddingBottom: Math.max(insets.bottom, 20) }
+              { paddingBottom: Math.max(insets.bottom + 20, 40) }
             ]}
             onPress={handleContentPress}
           >
               <View style={styles.header}>
-                <Text style={styles.headerTitle}>Get Premium Access</Text>
+                <Text style={styles.headerTitle}>Upgrade to Premium</Text>
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                   <Ionicons name="close" size={24} color={Colors.text.secondary} />
                 </TouchableOpacity>
@@ -264,18 +279,30 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
                       <View style={styles.packageInfo}>
                         <Text style={styles.packagePrice}>
                           {cleanPriceString(currentPackage.product.priceString)}
+                          <Text style={styles.packageSlash}> / </Text>
                           <Text style={styles.packageDuration}>
-                            {selectedPlanRef.current === 'monthly' ? ' per month' : ' per year'}
+                            {selectedPlanRef.current === 'monthly' ? 'Month' : 'Year'}
                           </Text>
                         </Text>
 
+                        {/* Bullet Points */}
+                        <View style={styles.bulletContainer}>
+                          <View style={styles.bulletPoint}>
+                            <Text style={styles.bulletDot}>✓</Text>
+                            <Text style={styles.bulletText}>Get the best plan that fits your needs</Text>
+                          </View>
+                          <View style={styles.bulletPoint}>
+                            <Text style={styles.bulletDot}>✓</Text>
+                            <Text style={styles.bulletText}>
+                              Be the first to see cheaper plans
+                            </Text>
+                          </View>
+                        </View>
+
                         {/* Description */}
                         <View>
-                          <Text style={styles.primaryDescription}>
-                            Get Premium now to unlock all recommended plans.
-                          </Text>
                           <Text style={styles.secondaryDescription}>
-                            We know you won&apos;t change your mobile plan often. You can cancel anytime and still receive notifications when we find a cheaper plan for you.
+                            Cancel anytime. We’ll keep watching for cheaper plans and let you know right away.
                           </Text>
                         </View>
                       </View>
@@ -295,7 +322,7 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
                           <Text style={styles.purchasingText}>Processing...</Text>
                         </View>
                       ) : (
-                        <Text style={styles.buyButtonText}>Buy Pass</Text>
+                        <Text style={styles.buyButtonText}>Get Premium</Text>
                       )}
                     </TouchableOpacity>
                   </View>
@@ -322,8 +349,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    minHeight: '60%',
-    maxHeight: '90%',
+    minHeight: '64%',
+    maxHeight: '95%',
   },
   header: {
     flexDirection: 'row',
@@ -419,12 +446,38 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     color: Colors.accent.blue,
-    marginBottom: 12,
+    marginBottom: 2,
     marginTop: 6,
+  },
+  packageSlash: {
+    fontSize: 28,
+    color: Colors.text.secondary,
   },
   packageDuration: {
     fontSize: 16,
     color: Colors.text.secondary,
+  },
+  bulletContainer: {
+    marginTop: 14,
+    marginBottom: 14,
+  },
+  bulletPoint: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 4,
+  },
+  bulletDot: {
+    color: Colors.functional.success,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 8,
+    marginTop: 1,
+  },
+  bulletText: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.text.primary,
+    lineHeight: 22,
   },
   primaryDescription: {
     fontSize: 18,
@@ -442,6 +495,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 16,
     backgroundColor: Colors.button.primaryBg,
+    marginBottom: 20,
   },
   buyButtonDisabled: {
     backgroundColor: Colors.button.disabledBg,
