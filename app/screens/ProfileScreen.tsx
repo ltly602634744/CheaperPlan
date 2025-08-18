@@ -116,7 +116,7 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.searchCriteriaCard}>
             <Text style={styles.searchCriteriaTitle}>Based on your plan</Text>
             <Text style={styles.searchCriteriaText}>
-              We'll look for <Text style={styles.boldText}>{userPlan.network === 'LTE' ? 'LTE/5G' : userPlan.network || 'LTE/5G'}</Text> plans that cost less than <Text style={styles.boldText}>${userPlan.price || 0}</Text>, include at least <Text style={styles.boldText}>{userPlan.data || 0}GB</Text> of data, cover <Text style={styles.boldText}>{userPlan.coverage && userPlan.coverage.length > 0 ? userPlan.coverage.map(country => country.name).join(', ') : 'your selected areas'}</Text> and provide below services:
+              We'll look for <Text style={styles.boldText}>{userPlan.network === 'LTE' ? 'LTE/5G' : userPlan.network || 'LTE/5G'}</Text> plans that cost less than <Text style={styles.boldText}>${userPlan.price || 0}</Text>, include at least <Text style={styles.boldText}>{userPlan.data || 0}GB</Text> of data, cover <Text style={styles.boldText}>{userPlan.coverage && userPlan.coverage.length > 0 ? userPlan.coverage.map(country => country.name).join(', ') : ''}</Text> and provide below services:
             </Text>
             
             {/* 显示用户选择的功能 */}

@@ -47,6 +47,30 @@ const PlanFormScreen: React.FC = () => {
       const { data, error } = await fetchCountries();
       if (data) {
         setAvailableCountries(data);
+        
+        // 检查Quebec和Canada的选择状态，确保只有一个被选中
+        const quebecCanadaSelected = Array.from(selectedCountries).filter(countryId => {
+          const country = data.find(c => c.id === countryId);
+          return country && (country.name === 'Quebec' || country.name === 'Canada');
+        });
+        
+        if (quebecCanadaSelected.length === 0) {
+          // 如果没有选择任何Quebec或Canada，默认选择Canada
+          const canadaCountry = data.find(country => country.name === 'Canada');
+          if (canadaCountry) {
+            setSelectedCountries(prev => new Set([...prev, canadaCountry.id]));
+          }
+        } else if (quebecCanadaSelected.length > 1) {
+          // 如果同时选择了Quebec和Canada，只保留Canada
+          const quebecCountry = data.find(country => country.name === 'Quebec');
+          if (quebecCountry && selectedCountries.has(quebecCountry.id)) {
+            setSelectedCountries(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(quebecCountry.id);
+              return newSet;
+            });
+          }
+        }
       }
       // 错误处理已在service中完成
     };
@@ -86,6 +110,16 @@ const PlanFormScreen: React.FC = () => {
       newErrors.price = 'Monthly price is required and must be greater than 0';
     }
     
+    // Validate that exactly one of Quebec or Canada is selected
+    const quebecCanadaSelected = Array.from(selectedCountries).filter(countryId => {
+      const country = availableCountries.find(c => c.id === countryId);
+      return country && (country.name === 'Quebec' || country.name === 'Canada');
+    });
+    
+    if (quebecCanadaSelected.length !== 1) {
+      newErrors.coverage = 'You must select exactly one of Quebec or Canada';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -99,6 +133,7 @@ const PlanFormScreen: React.FC = () => {
       if (errors.provider) errorMessages.push(errors.provider);
       if (errors.data) errorMessages.push(errors.data);
       if (errors.price) errorMessages.push(errors.price);
+      if (errors.coverage) errorMessages.push(errors.coverage);
       
       Alert.alert('Please fix the following:', errorMessages.join('\n'));
       return;
@@ -194,19 +229,23 @@ const PlanFormScreen: React.FC = () => {
     const featureInfo = {
       '5G': {
         title: '5G Network',
-        description: 'Feature description for 5G will be added here.'
+        description: 'Faster speed, lower delay than LTE.'
       },
       'Call Waiting': {
         title: 'Call Waiting',
-        description: 'Feature description for Call Waiting will be added here.'
+        description: 'Lets you take another call while you’re already on one.'
       },
       'Hotspot': {
         title: 'Hotspot',
-        description: 'Feature description for Hotspot will be added here.'
+        description: 'Share your mobile data with other devices. Some carriers don’t support this feature — please check with the carrier.'
       },
       'Coverage': {
         title: 'Coverage',
         description: 'If you choose Quebec, we\'ll also look for Canada-wide plans as long as they\'re cheaper. If you choose Canada, we won\'t include Quebec-only plans.'
+      },
+      'Conference Call': {
+        title: 'Conference Call',
+        description: 'Lets you talk with multiple people on the same call.'
       }
     };
 
@@ -369,10 +408,41 @@ const PlanFormScreen: React.FC = () => {
                               key={country.id}
                               onPress={() => {
                                 const newSelectedCountries = new Set(selectedCountries);
-                                if (newSelectedCountries.has(country.id)) {
-                                  newSelectedCountries.delete(country.id);
+                                const isQuebecOrCanada = country.name === 'Quebec' || country.name === 'Canada';
+                                
+                                if (isQuebecOrCanada) {
+                                  // 对于Quebec和Canada，实现互斥选择逻辑
+                                  const otherQuebecCanada = availableCountries.find(c => 
+                                    (c.name === 'Quebec' || c.name === 'Canada') && c.id !== country.id
+                                  );
+                                  
+                                  if (newSelectedCountries.has(country.id)) {
+                                    // 如果当前选项已被选中，尝试取消选择
+                                    // 检查另一个Quebec/Canada是否被选中
+                                    if (otherQuebecCanada && newSelectedCountries.has(otherQuebecCanada.id)) {
+                                      // 如果另一个也被选中，只取消当前的
+                                      newSelectedCountries.delete(country.id);
+                                    } else {
+                                      // 如果另一个没有被选中，自动选择另一个，取消当前的
+                                      newSelectedCountries.delete(country.id);
+                                      if (otherQuebecCanada) {
+                                        newSelectedCountries.add(otherQuebecCanada.id);
+                                      }
+                                    }
+                                  } else {
+                                    // 如果当前选项未被选中，选择它并取消另一个（如果另一个被选中）
+                                    newSelectedCountries.add(country.id);
+                                    if (otherQuebecCanada && newSelectedCountries.has(otherQuebecCanada.id)) {
+                                      newSelectedCountries.delete(otherQuebecCanada.id);
+                                    }
+                                  }
                                 } else {
-                                  newSelectedCountries.add(country.id);
+                                  // 对于其他国家，正常的切换逻辑
+                                  if (newSelectedCountries.has(country.id)) {
+                                    newSelectedCountries.delete(country.id);
+                                  } else {
+                                    newSelectedCountries.add(country.id);
+                                  }
                                 }
                                 setSelectedCountries(newSelectedCountries);
                               }}
@@ -508,6 +578,8 @@ const PlanFormScreen: React.FC = () => {
                   label="Conference Call"
                   value={plan.conference_call}
                   onValueChange={handleBooleanValueChange}
+                  showInfoButton={true}
+                  onInfoPress={() => handleFeatureInfo('Conference Call')}
                 />
                 <View style={{ width: '100%', height: 2, backgroundColor: Colors.neutral.lightest, marginVertical: 12 }} />
                 <YesNoToggle
