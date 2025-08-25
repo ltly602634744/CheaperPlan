@@ -37,7 +37,7 @@ export const signOut = async () => {
 
 export const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://www.cheaperplan.net/reset-password',
+        redirectTo: 'https://www.cheaperplan.net/screens/ResetPasswordScreen',
     });
     return { error };
 };

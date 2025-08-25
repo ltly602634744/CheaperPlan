@@ -98,7 +98,7 @@ function AppLayout() {
     const handleDeepLink = async (url: string) => {
       console.log('Deep link received:', url);
       
-      if (url.includes('reset-password')) {
+      if (url.includes('ResetPasswordScreen')) {
         console.log('Password reset intent detected');
         
         try {
@@ -200,11 +200,8 @@ function AppLayout() {
       } else {
         // 检查是否是密码重置会话
         const isResetSession = await isPasswordResetSession();
-        if (isResetSession) {
-          console.log('Redirecting to ResetPasswordScreen');
-          router.replace('/screens/ResetPasswordScreen');
-        } else {
-          // 用户已登录，重定向到主应用
+        if (!isResetSession) {
+          // 用户已登录但不是重置会话，重定向到主应用
           router.replace('/');
         }
       }

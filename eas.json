@@ -17,7 +17,7 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "GOOGLE_SERVICES_JSON": "$GOOGLE_SERVICES_JSON"
+        "GOOGLE_SERVICES_JSON": "@secret:GOOGLE_SERVICES_JSON"
       }
 
     },
@@ -25,14 +25,14 @@
       "channel": "main",
       "autoIncrement": true,
       "env": {
-        "GOOGLE_SERVICES_JSON": "$GOOGLE_SERVICES_JSON"
+        "GOOGLE_SERVICES_JSON": "@secret:GOOGLE_SERVICES_JSON"
       }
     }
   },
   "submit": {
     "production": {
       "android": {
-        "serviceAccountKeyPath": "$GOOGLE_SERVICE_ACCOUNT_KEY",
+        "serviceAccountKeyPath": "@secret:GOOGLE_SERVICE_ACCOUNT_KEY",
         "track": "internal",
         "releaseStatus": "draft"
       }
