@@ -1,5 +1,5 @@
-import { supabase } from "@/app/services/supabase";
 import { registerForPushNotificationsAsync } from '@/app/services/pushNotificationService';
+import { supabase } from "@/app/services/supabase";
 
 export const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({ 
@@ -36,7 +36,7 @@ export const signOut = async () => {
 
 export const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'cheaperplan://reset-password',
+        redirectTo: 'https://cheaperplan.net/reset-password',
     });
     return { error };
 };

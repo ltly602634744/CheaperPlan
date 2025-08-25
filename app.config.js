@@ -6,7 +6,7 @@ export default {
     slug: 'cheaper_plan_frontend',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './assets/images/icon.png',
+    icon: './assets/images/cheaper_plan_icon.png',
     scheme: 'cheaperplan',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
@@ -17,6 +17,10 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.yinghan.cheaperplan',
+      associatedDomains: [
+        'applinks:cheaperplan.net',
+        'applinks:www.cheaperplan.net'
+      ],
       entitlements: {
         'aps-environment': 'development'
       },
@@ -30,15 +34,26 @@ export default {
       googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
       permissions: ['NOTIFICATIONS'], // 通知权限
       adaptiveIcon: {
-        foregroundImage: './assets/images/adaptive-icon.png',
+        foregroundImage: './assets/images/android_adaptive_icon.png',
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
+      intentFilters: [
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: [
+            { scheme: 'https', host: 'cheaperplan.net', pathPrefix: '/reset-password' },
+            { scheme: 'https', host: 'www.cheaperplan.net', pathPrefix: '/reset-password' }
+          ],
+          category: ['BROWSABLE', 'DEFAULT']
+        }
+      ]
     },
     web: {
       bundler: 'metro',
       output: 'static',
-      favicon: './assets/images/favicon.png',
+      favicon: './assets/images/favicon.ico',
     },
     plugins: [
       'expo-notifications',
@@ -46,7 +61,7 @@ export default {
       [
         'expo-splash-screen',
         {
-          image: './assets/images/splash-icon.png',
+          image: './assets/images/_icon.png',
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#ffffff',

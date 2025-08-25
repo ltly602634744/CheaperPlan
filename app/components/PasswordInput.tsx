@@ -48,7 +48,7 @@ export default function PasswordInput({
         activeOpacity={0.7}
       >
         <Entypo 
-          name={isPasswordVisible ? 'eye-with-line' : 'eye'} 
+          name={isPasswordVisible ? 'eye' : 'eye-with-line'} 
           size={20} 
           color={Colors.text.secondary} 
         />

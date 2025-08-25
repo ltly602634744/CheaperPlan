@@ -278,10 +278,9 @@ export default function SubscriptionModal({ visible, onClose, onSubscriptionSucc
                     {currentPackage && (
                       <View style={styles.packageInfo}>
                         <Text style={styles.packagePrice}>
-                          {cleanPriceString(currentPackage.product.priceString)}
-                          <Text style={styles.packageSlash}> / </Text>
+                          {cleanPriceString(currentPackage.product.priceString) + ' / '}
                           <Text style={styles.packageDuration}>
-                            {selectedPlanRef.current === 'monthly' ? 'Month' : 'Year'}
+                            {selectedPlanRef.current === 'monthly' ? 'mo' : 'yr'}
                           </Text>
                         </Text>
 
@@ -445,13 +444,9 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: Colors.accent.blue,
+    color: Colors.text.secondary,
     marginBottom: 2,
     marginTop: 6,
-  },
-  packageSlash: {
-    fontSize: 28,
-    color: Colors.text.secondary,
   },
   packageDuration: {
     fontSize: 16,
