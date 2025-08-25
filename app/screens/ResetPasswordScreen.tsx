@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import { updatePassword, isPasswordResetSession, setPasswordResetMode } from '@/app/services/authService';
+import { updatePassword, isPasswordResetSession, PasswordResetStateManager } from '@/app/services/authService';
 import { useAuthContext } from '@/app/context/AuthContext';
 import PasswordInput from '../components/PasswordInput';
 import { Colors } from '../constants/Colors';
@@ -42,7 +42,7 @@ const ResetPasswordScreen: React.FC = () => {
             Alert.alert('Error', error.message);
         } else {
             // 密码更新成功，重置密码重置模式
-            setPasswordResetMode(false);
+            PasswordResetStateManager.setPasswordResetMode(false);
             Alert.alert(
                 'Success', 
                 'Your password has been updated successfully. You can now sign in with your new password.',

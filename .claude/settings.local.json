@@ -16,7 +16,10 @@
       "Bash(rg:*)",
       "Bash(grep:*)",
       "Bash(cp:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "WebSearch",
+      "WebFetch(domain:blog.theodo.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }

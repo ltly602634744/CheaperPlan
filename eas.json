@@ -30,6 +30,12 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "serviceAccountKey": "$GOOGLE_SERVICE_ACCOUNT_KEY",
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
   }
 }

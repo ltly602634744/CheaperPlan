@@ -1,5 +1,6 @@
 import { registerForPushNotificationsAsync } from '@/app/services/pushNotificationService';
 import { supabase } from "@/app/services/supabase";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({ 
@@ -46,13 +47,55 @@ export const updatePassword = async (password: string) => {
     return { error };
 };
 
-// 全局标记，用于记录密码重置状态
-let isPasswordResetMode = false;
+// 密码重置状态管理器
+export class PasswordResetStateManager {
+    private static readonly STORAGE_KEY = 'password_reset_state';
+    private static readonly STATE_EXPIRY_HOURS = 1; // 1小时过期
+    
+    static async setPasswordResetMode(value: boolean, token?: string) {
+        if (value) {
+            const state = {
+                isActive: true,
+                timestamp: Date.now(),
+                token: token || '', // 存储重置token用于验证
+                expiresAt: Date.now() + (this.STATE_EXPIRY_HOURS * 60 * 60 * 1000)
+            };
+            await AsyncStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
+        } else {
+            await AsyncStorage.removeItem(this.STORAGE_KEY);
+        }
+        console.log('Password reset mode set to:', value);
+    }
+    
+    static async isPasswordResetSession(): Promise<boolean> {
+        try {
+            const stateStr = await AsyncStorage.getItem(this.STORAGE_KEY);
+            if (!stateStr) return false;
+            
+            const state = JSON.parse(stateStr);
+            
+            // 检查是否过期
+            if (Date.now() > state.expiresAt) {
+                await this.clearExpiredState();
+                return false;
+            }
+            
+            return state.isActive === true;
+        } catch (error) {
+            console.error('Error checking password reset session:', error);
+            return false;
+        }
+    }
+    
+    private static async clearExpiredState() {
+        await AsyncStorage.removeItem(this.STORAGE_KEY);
+        console.log('Cleared expired password reset state');
+    }
+}
 
-// 设置密码重置模式
-export const setPasswordResetMode = (value: boolean) => {
-    isPasswordResetMode = value;
-    console.log('Password reset mode set to:', value);
+// 为了向后兼容，保留旧的函数接口
+export const setPasswordResetMode = (value: boolean, token?: string) => {
+    return PasswordResetStateManager.setPasswordResetMode(value, token);
 };
 
 // 通用的 push token 注册和保存函数
@@ -86,9 +129,10 @@ const registerAndSavePushToken = async (userId: string) => {
 // 检测当前是否为密码重置会话
 export const isPasswordResetSession = async () => {
     try {
-        // 检查全局标记
-        if (isPasswordResetMode) {
-            console.log('Password reset session detected via global flag');
+        // 使用新的状态管理器检查
+        const isPersistentResetSession = await PasswordResetStateManager.isPasswordResetSession();
+        if (isPersistentResetSession) {
+            console.log('Password reset session detected via persistent storage');
             return true;
         }
         
@@ -100,8 +144,8 @@ export const isPasswordResetSession = async () => {
             return false;
         }
         
-        // 如果有 session 且是在重置模式下，则认为有效
-        return session !== null && isPasswordResetMode;
+        // 如果有 session 且持久化状态显示是重置模式，则认为有效
+        return session !== null && isPersistentResetSession;
     } catch (err) {
         console.error('Error in isPasswordResetSession:', err);
         return false;

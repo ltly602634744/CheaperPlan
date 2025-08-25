@@ -2,16 +2,16 @@
 
 import { Href, Stack, useRouter } from 'expo-router';
 // 1. 导入你的 AuthProvider
-import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
+import * as Notifications from 'expo-notifications';
 import React, { useEffect } from 'react';
-import { Platform, StatusBar, Text, TextInput, View } from 'react-native';
+import { Alert, Platform, StatusBar, Text, TextInput, View } from 'react-native';
 import Purchases from 'react-native-purchases';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthProvider, useAuthContext } from './context/AuthContext';
-import { supabase } from './services/supabase';
-import { setPasswordResetMode } from './services/authService';
 import { Colors } from './constants/Colors';
+import { AuthProvider, useAuthContext } from './context/AuthContext';
+import { isPasswordResetSession, PasswordResetStateManager } from './services/authService';
+import { supabase } from './services/supabase';
 
 // 导入 NativeWind 样式
 import '../global.css';
@@ -94,54 +94,84 @@ function AppLayout() {
 
   // ③ Deep link处理 - 用于密码重置
   useEffect(() => {
-    const createSessionFromUrl = async (url: string) => {
-      try {
-        // 解析URL参数
-        const transformedUrl = url.replace('#', '?');
-        const parsedUrl = Linking.parse(transformedUrl);
-        
-        const access_token = parsedUrl.queryParams?.access_token;
-        const refresh_token = parsedUrl.queryParams?.refresh_token;
-        const type = parsedUrl.queryParams?.type;
-        
-        if (typeof access_token === 'string' && typeof refresh_token === 'string') {
-          console.log('Creating session from URL tokens');
-          
-          const { data, error } = await supabase.auth.setSession({
-            access_token,
-            refresh_token,
-          });
-          
-          if (error) {
-            console.error('Error setting session:', error);
-            throw error;
-          }
-          
-          if (type === 'recovery') {
-            console.log('Recovery session established, setting password reset mode');
-            setPasswordResetMode(true);
-          }
-          
-          return data.session;
-        }
-      } catch (err) {
-        console.error('Exception creating session from URL:', err);
-        throw err;
-      }
-    };
 
     const handleDeepLink = async (url: string) => {
       console.log('Deep link received:', url);
-      if (url.includes('reset-password') && url.includes('type=recovery')) {
-        console.log('Password reset deep link detected');
+      
+      if (url.includes('reset-password')) {
+        console.log('Password reset intent detected');
         
         try {
-          await createSessionFromUrl(url);
+          // 解析URL - 处理fragment参数（#）和query参数（?）
+          let parsedUrl = url;
+          if (url.includes('#')) {
+            parsedUrl = url.replace('#', '?');
+          }
+          
+          const urlObj = new URL(parsedUrl);
+          const accessToken = urlObj.searchParams.get('access_token');
+          const refreshToken = urlObj.searchParams.get('refresh_token');
+          const type = urlObj.searchParams.get('type');
+          const errorCode = urlObj.searchParams.get('error_code');
+          const error = urlObj.searchParams.get('error');
+          
+          // 情况1: 有有效token
+          if (type === 'recovery' && accessToken && refreshToken) {
+            console.log('Validating password reset tokens...');
+            
+            try {
+              // 方案1: 先设置重置状态，再建立session
+              console.log('Setting password reset mode...');
+              await PasswordResetStateManager.setPasswordResetMode(true, accessToken);
+              
+              // 使用token建立session验证其有效性
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              });
+              
+              if (!error && data.session) {
+                console.log('Valid password reset tokens verified and session established');
+              } else {
+                // 如果session建立失败，清理已设置的重置状态
+                console.error('Invalid password reset tokens:', error);
+                await PasswordResetStateManager.setPasswordResetMode(false);
+                Alert.alert('Error', 'Invalid or expired password reset link. Please request a new password reset from the login page.');
+              }
+            } catch (stateError) {
+              console.error('Error setting password reset state:', stateError);
+              Alert.alert('Error', 'Failed to initialize password reset. Please try again.');
+            }
+          }
+          // 情况2: 有错误参数
+          else if (errorCode || error) {
+            const errorMsg = errorCode === 'otp_expired' 
+              ? 'Your password reset link has expired.' 
+              : 'There was an error with your password reset link.';
+            
+            Alert.alert(
+              'Reset Link Error', 
+              `${errorMsg} Please request a new password reset from the login page.`,
+              [{ text: 'OK' }]
+            );
+          }
+          // 情况3: 用户直接访问或无效链接
+          else {
+            Alert.alert(
+              'Invalid Reset Link', 
+              'This password reset link is invalid or incomplete. Please request a new password reset from the login page.',
+              [{ text: 'OK' }]
+            );
+          }
+          
         } catch (err) {
-          console.error('Failed to create session from URL:', err);
+          console.error('Error processing reset link:', err);
+          Alert.alert(
+            'Link Error', 
+            'Unable to process password reset link. Please request a new password reset from the login page.',
+            [{ text: 'OK' }]
+          );
         }
-        
-        router.push('/screens/ResetPasswordScreen');
       }
     };
 
@@ -164,12 +194,23 @@ function AppLayout() {
   useEffect(() => {
     if (loading) return;
 
-    if (!session) {
-      router.replace('/screens/WelcomeScreen');
-    } else {
-      // 用户已登录，确保重定向到主应用并清空导航堆栈
-      router.replace('/');
-    }
+    const handleAuthStateChange = async () => {
+      if (!session) {
+        router.replace('/screens/WelcomeScreen');
+      } else {
+        // 检查是否是密码重置会话
+        const isResetSession = await isPasswordResetSession();
+        if (isResetSession) {
+          console.log('Redirecting to ResetPasswordScreen');
+          router.replace('/screens/ResetPasswordScreen');
+        } else {
+          // 用户已登录，重定向到主应用
+          router.replace('/');
+        }
+      }
+    };
+
+    handleAuthStateChange();
   }, [session, loading]);
 
   if (loading) {
