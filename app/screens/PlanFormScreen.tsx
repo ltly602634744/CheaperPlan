@@ -294,7 +294,7 @@ const PlanFormScreen: React.FC = () => {
                   field="data"
                   label="Data (GB)"
                   value={plan.data}
-                  placeholder="e.g., 10, 25, unlimited"
+                  placeholder="e.g., 10, 25, 50"
                   keyboardType="numeric"
                   ref={dataRef}
                   onSubmitEditing={() => priceRef.current?.focus()}

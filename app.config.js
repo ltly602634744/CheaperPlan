@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    name: 'cheaper_plan_frontend',
+    name: 'CheaperPlan',
     slug: 'cheaper_plan_frontend',
     version: '1.0.0',
     orientation: 'portrait',

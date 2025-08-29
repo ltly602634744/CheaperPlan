@@ -262,130 +262,133 @@ const BetterPlanScreen: React.FC = () => {
                   width: '100%',
                 }}
               >
-                <View className="px-4 py-4">
-                  {/* 三列布局 - 第一行 */}
-                  <View className="flex-row mb-4 items-end">
-                    <View className="flex-1">
-                      <Text className="text-2xl font-bold" style={{ color: Colors.text.primary, textAlign: 'left', paddingLeft: 6 }}>
-                        {plan.provider || "N/A"}
+                <View className="px-4 py-4 items-center">
+                  {/* 内容容器 - 限制最大宽度并居中 */}
+                  <View style={{ width: '96%', maxWidth: '96%' }}>
+                    {/* 三列布局 - 第一行 */}
+                    <View className="flex-row mb-4 items-end">
+                      <View className="flex-1">
+                        <Text className="text-2xl font-bold" style={{ color: Colors.text.primary, textAlign: 'left', paddingLeft: 6 }}>
+                          {plan.provider || "N/A"}
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xl" style={{ color: Colors.text.primary }}>
+                          <Text className="font-semibold">Price:</Text>{" "}
+                          ${plan.price || "N/A"}
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xl" style={{ color: Colors.text.primary }}>
+                          <Text className="font-semibold">Data:</Text>{" "}
+                          {plan.data !== null ? `${plan.data} GB` : "N/A"}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* 分隔线 */}
+                    <View className="mb-3" style={{ height: 1, backgroundColor: 'rgba(128, 128, 128, 0.2)', marginHorizontal: 0 }} />
+
+                    {/* 三列布局 - 第二行 */}
+                    <View className="flex-row mb-2">
+                      <View className="flex-1">
+                        <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                          <Text>Network:</Text>{" "}
+                          {plan.network || "N/A"}
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                          <Text>Voicemail</Text>{" "}
+                          <Text style={{ color: plan.voicemail ? Colors.functional.success : Colors.functional.error }}>
+                            {plan.voicemail ? "✓" : "✗"}
+                          </Text>
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                          <Text>Call Display</Text>{" "}
+                          <Text style={{ color: plan.call_display ? Colors.functional.success : Colors.functional.error }}>
+                            {plan.call_display ? "✓" : "✗"}
+                          </Text>
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* 三列布局 - 第三行 */}
+                    <View className="flex-row mb-2">
+                      <View className="flex-1">
+                        <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                          <Text>Call Waiting</Text>{" "}
+                          <Text style={{ color: plan.call_waiting ? Colors.functional.success : Colors.functional.error }}>
+                            {plan.call_waiting ? "✓" : "✗"}
+                          </Text>
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                          <Text>Hotspot</Text>{" "}
+                          <Text style={{ color: plan.hotspot ? Colors.functional.success : Colors.functional.error }}>
+                            {plan.hotspot ? "✓" : "✗"}
+                          </Text>
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                          <Text>Video Call</Text>{" "}
+                          <Text style={{ color: plan.video_call ? Colors.functional.success : Colors.functional.error }}>
+                            {plan.video_call ? "✓" : "✗"}
+                          </Text>
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* 三列布局 - 第四行 */}
+                    <View className="flex-row mb-2">
+                      <View className="flex-1">
+                        <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                          <Text>Group Call</Text>{" "}
+                          <Text style={{ color: plan.conference_call ? Colors.functional.success : Colors.functional.error }}>
+                            {plan.conference_call ? "✓" : "✗"}
+                          </Text>
+                        </Text>
+                      </View>
+                      <View style={{ flex: 2 }}>
+                        <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                          <Text>Suspicious Call Detection</Text>{" "}
+                          <Text style={{ color: plan.suspicious_call_detection ? Colors.functional.success : Colors.functional.error }}>
+                            {plan.suspicious_call_detection ? "✓" : "✗"}
+                          </Text>
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Coverage - 最后一行 */}
+                    <View className="mb-4">
+                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
+                        <Text>Coverage:</Text>{" "}
+                        {Array.isArray(plan.coverage) 
+                          ? plan.coverage.map(country => country.name).join(", ") 
+                          : typeof plan.coverage === 'string' 
+                          ? plan.coverage 
+                          : "N/A"}
                       </Text>
                     </View>
-                    <View className="flex-1">
-                      <Text className="text-xl" style={{ color: Colors.text.primary }}>
-                        <Text className="font-semibold">Price:</Text>{" "}
-                        ${plan.price || "N/A"}
-                      </Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-xl" style={{ color: Colors.text.primary }}>
-                        <Text className="font-semibold">Data:</Text>{" "}
-                        {plan.data !== null ? `${plan.data} GB` : "N/A"}
-                      </Text>
-                    </View>
+
+                    {/* 运营商官网按钮 - 卡片最下方 */}
+                    {plan.provider && hasProviderUrl(plan.provider) && (
+                      <View className="flex-row justify-center mb-3">
+                        <TouchableOpacity
+                          onPress={() => handleVisitWebsite(plan.provider)}
+                          className="px-6 py-3 rounded-full flex-row items-center justify-center"
+                          style={{ backgroundColor: Colors.functional.success, width: '60%' }}
+                        >
+                          <Ionicons name="globe-outline" size={16} color="white" />
+                          <Text className="text-base font-medium ml-2" style={{ color: Colors.text.inverse }}>Go to {getWebsiteDomain(plan.provider)}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
                   </View>
-
-                  {/* 分隔线 */}
-                  <View className="mb-3" style={{ height: 1, backgroundColor: 'rgba(128, 128, 128, 0.2)', marginHorizontal: 0 }} />
-
-                  {/* 三列布局 - 第二行 */}
-                  <View className="flex-row mb-2">
-                    <View className="flex-1">
-                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
-                        <Text>Network:</Text>{" "}
-                        {plan.network || "N/A"}
-                      </Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
-                        <Text>Voicemail</Text>{" "}
-                        <Text style={{ color: plan.voicemail ? Colors.functional.success : Colors.functional.error }}>
-                          {plan.voicemail ? "✓" : "✗"}
-                        </Text>
-                      </Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
-                        <Text>Call Display</Text>{" "}
-                        <Text style={{ color: plan.call_display ? Colors.functional.success : Colors.functional.error }}>
-                          {plan.call_display ? "✓" : "✗"}
-                        </Text>
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* 三列布局 - 第三行 */}
-                  <View className="flex-row mb-2">
-                    <View className="flex-1">
-                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
-                        <Text>Call Waiting</Text>{" "}
-                        <Text style={{ color: plan.call_waiting ? Colors.functional.success : Colors.functional.error }}>
-                          {plan.call_waiting ? "✓" : "✗"}
-                        </Text>
-                      </Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
-                        <Text>Hotspot</Text>{" "}
-                        <Text style={{ color: plan.hotspot ? Colors.functional.success : Colors.functional.error }}>
-                          {plan.hotspot ? "✓" : "✗"}
-                        </Text>
-                      </Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
-                        <Text>Video Call</Text>{" "}
-                        <Text style={{ color: plan.video_call ? Colors.functional.success : Colors.functional.error }}>
-                          {plan.video_call ? "✓" : "✗"}
-                        </Text>
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* 三列布局 - 第四行 */}
-                  <View className="flex-row mb-2">
-                    <View className="flex-1">
-                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
-                        <Text>Group Call</Text>{" "}
-                        <Text style={{ color: plan.conference_call ? Colors.functional.success : Colors.functional.error }}>
-                          {plan.conference_call ? "✓" : "✗"}
-                        </Text>
-                      </Text>
-                    </View>
-                    <View style={{ flex: 2 }}>
-                      <Text className="text-lg" style={{ color: Colors.text.primary }}>
-                        <Text>Suspicious Call Detection</Text>{" "}
-                        <Text style={{ color: plan.suspicious_call_detection ? Colors.functional.success : Colors.functional.error }}>
-                          {plan.suspicious_call_detection ? "✓" : "✗"}
-                        </Text>
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Coverage - 最后一行 */}
-                  <View className="mb-4">
-                    <Text className="text-lg" style={{ color: Colors.text.primary }}>
-                      <Text>Coverage:</Text>{" "}
-                      {Array.isArray(plan.coverage) 
-                        ? plan.coverage.map(country => country.name).join(", ") 
-                        : typeof plan.coverage === 'string' 
-                        ? plan.coverage 
-                        : "N/A"}
-                    </Text>
-                  </View>
-
-                  {/* 运营商官网按钮 - 卡片最下方 */}
-                  {plan.provider && hasProviderUrl(plan.provider) && (
-                    <View className="flex-row justify-center mb-3">
-                      <TouchableOpacity
-                        onPress={() => handleVisitWebsite(plan.provider)}
-                        className="px-6 py-3 rounded-full flex-row items-center justify-center"
-                        style={{ backgroundColor: Colors.functional.success, width: '60%' }}
-                      >
-                        <Ionicons name="globe-outline" size={16} color="white" />
-                        <Text className="text-base font-medium ml-2" style={{ color: Colors.text.inverse }}>Go to {getWebsiteDomain(plan.provider)}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
                 </View>
               </View>
             ))}
@@ -402,7 +405,6 @@ const BetterPlanScreen: React.FC = () => {
 
       {/* 非会员时的全页面模糊遮罩 */}
       {!isPremium && (
-      // {false && (
         <>
           <BlurView
             intensity={50}

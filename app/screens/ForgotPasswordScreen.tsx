@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { resetPassword } from '@/app/services/authService';
 import { Colors } from '../constants/Colors';
@@ -8,6 +8,18 @@ const ForgotPasswordScreen: React.FC = () => {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
+    const [emailSent, setEmailSent] = useState(false);
+    const [countdown, setCountdown] = useState(0);
+
+    useEffect(() => {
+        let timer: ReturnType<typeof setTimeout>;
+        if (countdown > 0) {
+            timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+        }
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [countdown]);
 
     const handleResetPassword = async () => {
         if (!email.trim()) {
@@ -21,15 +33,11 @@ const ForgotPasswordScreen: React.FC = () => {
         if (error) {
             Alert.alert('Error', error.message);
         } else {
+            setEmailSent(true);
+            setCountdown(60);
             Alert.alert(
                 'Check your email', 
-                'We have sent you a password reset link. Please check your email and follow the instructions.',
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => router.back()
-                    }
-                ]
+                'We have sent you a password reset link. Please check your email and follow the instructions.'
             );
         }
         setLoading(false);
@@ -61,13 +69,23 @@ const ForgotPasswordScreen: React.FC = () => {
 
             <View style={[styles.verticallySpaced, styles.mt20]}>
                 <TouchableOpacity
-                    style={[styles.button, loading && styles.buttonDisabled]}
-                    disabled={loading}
+                    style={[styles.button, (loading || countdown > 0) && styles.buttonDisabled]}
+                    disabled={loading || countdown > 0}
                     onPress={handleResetPassword}
                 >
-                    <Text style={styles.buttonText}>Send Reset Link</Text>
+                    <Text style={styles.buttonText}>
+                        {countdown > 0 ? `Resend in ${countdown}s` : 'Send Reset Link'}
+                    </Text>
                 </TouchableOpacity>
             </View>
+
+            {emailSent && (
+                <View style={[styles.verticallySpaced, styles.mt20]}>
+                    <Text style={styles.emailSentMessage}>
+                        Your email may take a few minutes to arrive. If you don't see it within 10 minutes, please try resending or contact support.
+                    </Text>
+                </View>
+            )}
 
             <View style={[styles.verticallySpaced, styles.mt20]}>
                 <Text style={styles.backToSignInText}>
@@ -134,17 +152,19 @@ const styles = StyleSheet.create({
         color: Colors.text.primary,
     },
     button: {
-        backgroundColor: Colors.accent.blue,
-        borderRadius: 8,
-        paddingVertical: 12,
+        backgroundColor: Colors.button.primaryBg,
+        borderRadius: 24,
+        paddingVertical: 16,
+        paddingHorizontal: 32,
+        minWidth: 200,
         alignItems: 'center',
     },
     buttonDisabled: {
         backgroundColor: Colors.button.disabledBg,
     },
     buttonText: {
-        color: Colors.text.inverse,
-        fontSize: 16,
+        color: Colors.button.primaryText,
+        fontSize: 18,
         fontWeight: '600',
     },
     backToSignInText: {
@@ -156,6 +176,15 @@ const styles = StyleSheet.create({
         color: Colors.accent.blue,
         fontWeight: '500',
         textDecorationLine: 'underline',
+    },
+    emailSentMessage: {
+        fontSize: 14,
+        color: Colors.text.secondary,
+        textAlign: 'center',
+        backgroundColor: Colors.status.infoBg,
+        padding: 12,
+        borderRadius: 8,
+        lineHeight: 20,
     },
 });
 

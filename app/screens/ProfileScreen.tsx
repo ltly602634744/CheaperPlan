@@ -153,10 +153,15 @@ const ProfileScreen: React.FC = () => {
       ) : (
         <View>
           <TouchableOpacity
-            style={styles.addPlanButton}
+            style={styles.updateReminderCard}
             onPress={handleAddPlan}
           >
-            <Text style={styles.addPlanButtonText}>Add your current plan to start</Text>
+            <View style={styles.savingsContent}>
+              <Text style={styles.updateReminderText}>Tell us about your current plan or what you need, and we’ll help you find cheaper plans.</Text>
+            </View>
+            <View style={styles.savingsIcon}>
+              <FontAwesome6 name="add" size={24} color={Colors.text.secondary} />
+            </View>
           </TouchableOpacity>
         </View>
       )}

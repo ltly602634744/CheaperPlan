@@ -12,13 +12,14 @@ import {
     NativeEventSubscription,
     SafeAreaView,
     ScrollView,
+    StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
 import Purchases from 'react-native-purchases';
-import { updateUserProfile } from '../services/userService';
 import { getMembershipStatusDisplay, SubscriptionInfo, SubscriptionStatus } from '../services/subscriptionService';
+import { updateUserProfile } from '../services/userService';
 import eventBus from '../utils/eventBus';
 
 export default function SettingsScreen() {
@@ -89,6 +90,62 @@ export default function SettingsScreen() {
             Alert.alert('Succeed', 'Logged out successfully!');
             router.replace("/screens/AuthScreen");
         }
+    }
+
+    const handleDeleteAccount = async () => {
+        Alert.alert(
+            'Delete Account',
+            'This action is irreversible. All your data will be permanently deleted and cannot be recovered. Are you sure you want to continue?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Continue',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            if (!session?.access_token) {
+                                Alert.alert('Error', 'Authentication token not found');
+                                return;
+                            }
+
+                            const response = await fetch('https://www.cheaperplan.net/api/delete-account', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${session.access_token}`,
+                                },
+                            });
+
+                            if (response.ok) {
+                                await signOut();
+                                router.replace("/screens/AuthScreen");
+                            } else {
+                                const errorData = await response.json().catch(() => ({}));
+                                const errorMessage = errorData.error;
+                                
+                                // 根据后端返回的具体错误提供用户友好的提示
+                                if (errorMessage === 'Missing token') {
+                                    Alert.alert('Error', 'Authentication token is missing. Please try logging out and logging back in.');
+                                } else if (errorMessage === 'Invalid session') {
+                                    Alert.alert('Error', 'Your session has expired. Please log in again and try deleting your account.');
+                                } else if (errorMessage === 'Server misconfigured') {
+                                    Alert.alert('Error', 'Server configuration error. Please contact support.');
+                                } else if (errorMessage === 'Delete failed') {
+                                    Alert.alert('Error', 'Account deletion failed. Please try again or contact support if the issue persists.');
+                                } else {
+                                    Alert.alert('Error', errorMessage || 'Failed to delete account. Please try again.');
+                                }
+                            }
+                        } catch (error) {
+                            Alert.alert('Error', 'Failed to delete account. Please check your internet connection and try again.');
+                        }
+                    },
+                },
+            ]
+        );
     }
 
     const handleRestore = async () => {
@@ -236,13 +293,54 @@ export default function SettingsScreen() {
                 </View>
 
                 <TouchableOpacity
-                    className="mx-4 mt-5 rounded-lg bg-red-500 py-3 items-center"
+                    style={styles.logoutButton}
                     onPress={handleLogOut}
                 >
-                    <Text className="text-white text-base font-semibold">Logout</Text>
+                    <Text style={styles.logoutButtonText}>Logout</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={handleDeleteAccount}
+                >
+                    <Text style={styles.deleteButtonText}>Delete Account</Text>
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    logoutButton: {
+        backgroundColor: '#ffffff',
+        borderWidth: 2,
+        borderColor: '#dc2626',
+        borderRadius: 24,
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        marginHorizontal: 60,
+        marginTop: 20,
+        alignItems: 'center',
+    },
+    logoutButtonText: {
+        color: '#dc2626',
+        fontSize: 18,
+        fontWeight: '600',
+    },
+    deleteButton: {
+        backgroundColor: '#dc2626', // 深红色
+        borderRadius: 24,
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        marginHorizontal: 60,
+        marginTop: 30, // 增大与logout按钮的距离
+        marginBottom: 40, // 与屏幕底部的间距
+        alignItems: 'center',
+    },
+    deleteButtonText: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: '600',
+    },
+});
 

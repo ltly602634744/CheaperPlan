@@ -128,17 +128,19 @@ const styles = StyleSheet.create({
         color: Colors.text.primary,
     },
     button: {
-        backgroundColor: Colors.accent.blue,
-        borderRadius: 8,
-        paddingVertical: 12,
+        backgroundColor: Colors.button.primaryBg,
+        borderRadius: 24,
+        paddingVertical: 16,
+        paddingHorizontal: 32,
+        minWidth: 200,
         alignItems: 'center',
     },
     buttonDisabled: {
         backgroundColor: Colors.button.disabledBg,
     },
     buttonText: {
-        color: Colors.text.inverse,
-        fontSize: 16,
+        color: Colors.button.primaryText,
+        fontSize: 18,
         fontWeight: '600',
     },
     title: {

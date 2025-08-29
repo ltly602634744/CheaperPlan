@@ -1,6 +1,7 @@
+import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../constants/Colors';
 
 const WelcomeScreen: React.FC = () => {
@@ -17,6 +18,11 @@ const WelcomeScreen: React.FC = () => {
     return (
         <View style={styles.container}>
             <View style={styles.titleSection}>
+                <Image 
+                    source={require('../../assets/images/cheaper_plan_icon.png')}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                />
                 <Text style={styles.titleText}>
                     Start saving on your mobile plan with CheaperPlan!
                 </Text>
@@ -34,20 +40,14 @@ const WelcomeScreen: React.FC = () => {
                     By signing up, you agree to our{' '}
                     <Text 
                         style={styles.linkText}
-                        onPress={() => router.push({
-                            pathname: '/screens/ContentDisplayScreen',
-                            params: { contentType: 'Terms of Use' }
-                        })}
+                        onPress={() => Linking.openURL('https://cheaperplan.net/terms/')}
                     >
                         Terms
                     </Text>
                     {' '}and{' '}
                     <Text 
                         style={styles.linkText}
-                        onPress={() => router.push({
-                            pathname: '/screens/ContentDisplayScreen',
-                            params: { contentType: 'Privacy Policy' }
-                        })}
+                        onPress={() => Linking.openURL('https://cheaperplan.net/privacy/')}
                     >
                         Privacy Policy
                     </Text>
@@ -77,7 +77,11 @@ const styles = StyleSheet.create({
     flex: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 80,
+  },
+  logoImage: {
+    width: 60,
+    height: 60,
+    marginBottom: 40,
   },
   titleText: {
     fontSize: 30,
@@ -106,11 +110,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   termsText: {
-    textAlign: 'center',
+    textAlign: 'left',
     fontSize: 14,
     color: Colors.text.secondary,
-    marginTop: 16,
+    marginTop: 32,
     paddingHorizontal: 16,
+    alignSelf: 'center',
+    maxWidth: 300,
+    lineHeight: 22,
   },
   linkText: {
     color: Colors.accent.blue,
